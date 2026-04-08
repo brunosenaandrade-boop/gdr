@@ -1,0 +1,83 @@
+import { z } from "zod";
+
+// ===== Auth =====
+export const loginSchema = z.object({
+  email: z.string().email("Email invalido"),
+  password: z.string().min(6, "Minimo 6 caracteres"),
+});
+
+export const registerSchema = z.object({
+  email: z.string().email("Email invalido"),
+  password: z.string().min(6, "Minimo 6 caracteres"),
+  confirmPassword: z.string().min(6, "Minimo 6 caracteres"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Senhas nao conferem",
+  path: ["confirmPassword"],
+});
+
+// ===== Onboarding =====
+export const onboardingPFSchema = z.object({
+  type: z.literal("pf"),
+  name: z.string().min(3, "Minimo 3 caracteres"),
+  document: z.string().min(14, "CPF invalido"), // com mascara
+  phone: z.string().optional(),
+});
+
+export const onboardingPJSchema = z.object({
+  type: z.literal("pj"),
+  name: z.string().min(3, "Minimo 3 caracteres"),
+  document: z.string().min(18, "CNPJ invalido"), // com mascara
+  trade_name: z.string().min(3, "Minimo 3 caracteres"),
+  phone: z.string().optional(),
+});
+
+export const onboardingSchema = z.discriminatedUnion("type", [
+  onboardingPFSchema,
+  onboardingPJSchema,
+]);
+
+// ===== Transaction =====
+export const transactionSchema = z.object({
+  type: z.enum(["receita", "despesa"]),
+  description: z.string().min(1, "Descricao obrigatoria"),
+  amount: z.number().positive("Valor deve ser positivo"),
+  category_id: z.string().uuid().nullable(),
+  due_date: z.string().nullable(),
+  paid_date: z.string().nullable(),
+  status: z.enum(["pendente", "pago", "atrasado", "cancelado"]),
+  notes: z.string().nullable(),
+});
+
+// ===== Category =====
+export const categorySchema = z.object({
+  name: z.string().min(1, "Nome obrigatorio"),
+  type: z.enum(["receita", "despesa"]),
+  icon: z.string().nullable(),
+  color: z.string().nullable(),
+});
+
+// ===== WhatsApp =====
+export const whatsappLinkSchema = z.object({
+  phone_number: z.string().min(10, "Numero invalido"),
+});
+
+export const whatsappVerifySchema = z.object({
+  code: z.string().length(6, "Codigo deve ter 6 digitos"),
+});
+
+// ===== AI Parse (resposta da OpenAI) =====
+export const aiParsedTransactionSchema = z.object({
+  type: z.enum(["receita", "despesa"]),
+  description: z.string(),
+  amount: z.number().positive(),
+  category_suggestion: z.string(),
+});
+
+// ===== Type exports =====
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
+export type TransactionInput = z.infer<typeof transactionSchema>;
+export type CategoryInput = z.infer<typeof categorySchema>;
+export type WhatsAppLinkInput = z.infer<typeof whatsappLinkSchema>;
+export type WhatsAppVerifyInput = z.infer<typeof whatsappVerifySchema>;
