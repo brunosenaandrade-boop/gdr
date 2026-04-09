@@ -7,6 +7,8 @@ import {
 import UnicornBackground from "@/components/landing/unicorn-background";
 import MobileNav from "@/components/landing/mobile-nav";
 
+const mesAtual = new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
+
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-black selection:bg-emerald-500/30 selection:text-emerald-200">
@@ -206,7 +208,7 @@ export default function LandingPage() {
                 <div className="group/item cursor-pointer rounded-2xl border border-emerald-400/20 bg-black/40 p-3 backdrop-blur-sm transition-colors hover:bg-rose-500/10">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-normal tracking-tight text-slate-200">Despesas do mês</p>
-                    <span className="text-[0.7rem] font-normal tracking-tight text-rose-300">-5.1%</span>
+                    <span className="text-[0.7rem] font-normal tracking-tight text-emerald-300">-5.1%</span>
                   </div>
                   <p className="mt-2 text-xl font-medium tracking-tight text-slate-50 transition-transform group-hover/item:translate-x-1">R$ 2.353</p>
                   <div className="mt-3 h-14 overflow-hidden rounded-xl bg-gradient-to-tr from-rose-500/20 via-emerald-400/10 to-transparent">
@@ -329,7 +331,7 @@ export default function LandingPage() {
             <div className="relative flex h-full flex-col">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-xs font-normal uppercase tracking-[0.12em] text-emerald-200/80">Categorias</p>
-                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.7rem] font-normal tracking-tight text-emerald-200">Abril</span>
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.7rem] font-normal tracking-tight text-emerald-200">{mesAtual}</span>
               </div>
               <div className="mt-4 flex flex-grow flex-col rounded-2xl border border-emerald-400/25 bg-black/50 p-3">
                 <div className="mb-2 flex items-center justify-between text-xs text-slate-300">
@@ -673,7 +675,7 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-3 flex items-center justify-between text-[10px]">
                   <span className="text-emerald-300">+R$ 5.050 líquido</span>
-                  <span className="text-slate-500">Abr 2026</span>
+                  <span className="text-slate-500">{mesAtual} {new Date().getFullYear()}</span>
                 </div>
               </div>
             </div>
