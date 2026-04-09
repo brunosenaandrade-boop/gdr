@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CashFlowEntry } from "@/types";
+import { BarChart3 } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -37,11 +38,26 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function CashFlowChart({ data }: CashFlowChartProps) {
+  const isEmpty =
+    data.length === 0 ||
+    data.every((d) => d.receitas === 0 && d.despesas === 0);
+
   return (
     <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Fluxo de Caixa</CardTitle>
       </CardHeader>
+      {isEmpty ? (
+        <div className="flex h-[300px] flex-col items-center justify-center gap-3">
+          <BarChart3 className="h-10 w-10 text-emerald-500/30" />
+          <div className="text-center">
+            <p className="text-sm text-slate-400">Nenhum lançamento ainda</p>
+            <p className="text-xs text-slate-600 mt-1">
+              Comece adicionando suas receitas e despesas
+            </p>
+          </div>
+        </div>
+      ) : (
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
@@ -88,6 +104,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      )}
     </Card>
   );
 }

@@ -80,7 +80,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
 
   return (
     <>
-      <AppHeader title="Lancamentos" description={`${totalCount} lancamento${totalCount !== 1 ? "s" : ""}`}>
+      <AppHeader title="Lançamentos" description={`${totalCount} lançamento${totalCount !== 1 ? "s" : ""}`}>
         <Button size="sm" onClick={() => { setEditData(null); setFormOpen(true); }}>
           <Plus className="h-4 w-4" />
           Novo
@@ -93,7 +93,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="Buscar descricao..."
+                placeholder="Buscar descrição..."
                 defaultValue={filters.search ?? ""}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") updateFilters("q", (e.target as HTMLInputElement).value);
@@ -142,9 +142,9 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
           ) : transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Filter className="h-8 w-8 text-slate-600" />
-              <p className="text-sm text-slate-500">Nenhum lancamento encontrado</p>
+              <p className="text-sm text-slate-500">Nenhum lançamento encontrado</p>
               <Button size="sm" onClick={() => { setEditData(null); setFormOpen(true); }}>
-                <Plus className="h-4 w-4" /> Criar primeiro lancamento
+                <Plus className="h-4 w-4" /> Criar primeiro lançamento
               </Button>
             </div>
           ) : (
@@ -153,13 +153,13 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Descricao</TableHead>
+                    <TableHead>Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Origem</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="text-right">Acoes</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -232,7 +232,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
               {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-white/5 px-4 py-3">
                   <span className="text-xs text-slate-500">
-                    Pagina {currentPage} de {totalPages} ({totalCount} itens)
+                    Página {currentPage} de {totalPages} ({totalCount} itens)
                   </span>
                   <div className="flex gap-1">
                     <button

@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Senhas nao conferem");
+      setError("Senhas não conferem");
       return;
     }
 
@@ -72,7 +72,7 @@ export default function RegisterPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Minimo 6 caracteres"
+          placeholder="Mínimo 6 caracteres"
           icon={<Lock className="h-4 w-4" />}
           required
         />
@@ -94,7 +94,7 @@ export default function RegisterPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Ja tem conta?{" "}
+        Já tem conta?{" "}
         <Link href="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">
           Entrar
         </Link>

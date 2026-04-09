@@ -21,11 +21,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ultimos Lancamentos</CardTitle>
+        <CardTitle>Últimos Lançamentos</CardTitle>
       </CardHeader>
       <div className="space-y-1">
         {transactions.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">Nenhum lancamento ainda</p>
+          <p className="py-8 text-center text-sm text-slate-500">Nenhum lançamento ainda</p>
         )}
         {transactions.map((tx) => {
           const badge = statusBadge[tx.status];

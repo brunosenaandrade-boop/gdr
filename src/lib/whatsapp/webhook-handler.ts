@@ -26,7 +26,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   if (!link) {
     await sendWhatsAppMessage(
       message.from,
-      "Numero nao vinculado. Acesse o painel do Guarda Dinheiro para vincular seu WhatsApp.",
+      "Número não vinculado. Acesse o painel do Guarda Dinheiro para vincular seu WhatsApp.",
     );
     return;
   }
@@ -58,13 +58,13 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   if (message.type === "audio" && message.audio) {
     const audioBuffer = await downloadWhatsAppMedia(message.audio.id);
     if (!audioBuffer) {
-      await sendWhatsAppMessage(message.from, "Nao consegui baixar o audio. Tente novamente.");
+      await sendWhatsAppMessage(message.from, "Não consegui baixar o áudio. Tente novamente.");
       return;
     }
 
     const transcription = await transcribeAudio(audioBuffer);
     if (!transcription.ok) {
-      await sendWhatsAppMessage(message.from, "Nao consegui transcrever o audio. Tente enviar como texto.");
+      await sendWhatsAppMessage(message.from, "Não consegui transcrever o áudio. Tente enviar como texto.");
       return;
     }
 
@@ -72,7 +72,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   } else if (message.type === "text" && message.text) {
     textContent = message.text.body;
   } else {
-    await sendWhatsAppMessage(message.from, "Envie uma mensagem de texto ou audio com seu lancamento financeiro.");
+    await sendWhatsAppMessage(message.from, "Envie uma mensagem de texto ou áudio com seu lançamento financeiro.");
     return;
   }
 
@@ -82,7 +82,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   if (!result.ok) {
     await sendWhatsAppMessage(
       message.from,
-      `Nao entendi o lancamento. Tente algo como:\n"Paguei 150 reais de luz"\n"Recebi 500 do cliente Joao"`,
+      `Não entendi o lançamento. Tente algo como:\n"Paguei 150 reais de luz"\n"Recebi 500 do cliente João"`,
     );
     return;
   }
@@ -114,7 +114,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
       `${typeLabel}: ${parsed.description}\n` +
       `Valor: ${formatCurrency(parsed.amount)}\n` +
       `Categoria: ${categoryLabel}\n\n` +
-      `Confirma? (Sim/Nao)`,
+      `Confirma? (Sim/Não)`,
   );
 }
 
@@ -129,7 +129,7 @@ async function handleConfirmation(tenantId: string, phone: string, supabase: any
     .single();
 
   if (!pending) {
-    await sendWhatsAppMessage(phone, "Nenhum lancamento pendente para confirmar.");
+    await sendWhatsAppMessage(phone, "Nenhum lançamento pendente para confirmar.");
     return;
   }
 
@@ -151,7 +151,7 @@ async function handleConfirmation(tenantId: string, phone: string, supabase: any
     .update({ confirmed: true })
     .eq("id", pending.id);
 
-  await sendWhatsAppMessage(phone, "Lancamento confirmado! Voce pode ver no painel do Guarda Dinheiro.");
+  await sendWhatsAppMessage(phone, "Lançamento confirmado! Você pode ver no painel do Guarda Dinheiro.");
 }
 
 async function handleCancellation(tenantId: string, phone: string, supabase: any) {
@@ -165,10 +165,10 @@ async function handleCancellation(tenantId: string, phone: string, supabase: any
     .single();
 
   if (!pending) {
-    await sendWhatsAppMessage(phone, "Nenhum lancamento pendente para cancelar.");
+    await sendWhatsAppMessage(phone, "Nenhum lançamento pendente para cancelar.");
     return;
   }
 
   await supabase.from("whatsapp_pending").delete().eq("id", pending.id);
-  await sendWhatsAppMessage(phone, "Lancamento cancelado. Envie uma nova mensagem quando quiser.");
+  await sendWhatsAppMessage(phone, "Lançamento cancelado. Envie uma nova mensagem quando quiser.");
 }

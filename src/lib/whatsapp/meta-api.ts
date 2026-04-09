@@ -10,7 +10,7 @@ export async function sendWhatsAppMessage(
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
   if (!phoneNumberId || !accessToken) {
-    return { ok: false, error: "WhatsApp API nao configurada" };
+    return { ok: false, error: "WhatsApp API não configurada" };
   }
 
   const response = await fetch(
@@ -32,7 +32,8 @@ export async function sendWhatsAppMessage(
 
   if (!response.ok) {
     const body = await response.text();
-    return { ok: false, error: `Meta API error: ${response.status} - ${body}` };
+    console.error(`Meta API error: ${response.status} - ${body}`);
+    return { ok: false, error: "Falha ao enviar mensagem. Tente novamente." };
   }
 
   return { ok: true };

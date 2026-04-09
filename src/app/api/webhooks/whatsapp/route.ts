@@ -59,11 +59,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
   }
 
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > 1_048_576) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
   const body = await request.text();
 
-  // Verificar assinatura HMAC (obrigatorio se app_secret configurado)
   const appSecret = process.env.WHATSAPP_APP_SECRET;
-  if (appSecret) {
+  if (!appSecret) {
+    return NextResponse.json({ error: "Webhook não configurado" }, { status: 500 });
+  }
+
+  {
     const signature = request.headers.get("x-hub-signature-256");
     if (!signature) {
       return NextResponse.json({ error: "Missing signature" }, { status: 401 });

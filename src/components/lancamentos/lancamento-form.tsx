@@ -55,8 +55,12 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
       setError("Valor deve ser positivo");
       return;
     }
+    if (amountCents > 9_999_999_999) {
+      setError("Valor máximo: R$ 99.999.999,99");
+      return;
+    }
     if (!description.trim()) {
-      setError("Descricao obrigatoria");
+      setError("Descrição obrigatória");
       return;
     }
 
@@ -88,7 +92,7 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? "Editar Lancamento" : "Novo Lancamento"} size="md">
+    <Modal open={open} onClose={onClose} title={isEditing ? "Editar Lançamento" : "Novo Lançamento"} size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-2">
           <button
@@ -117,7 +121,7 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
           </button>
         </div>
 
-        <Input label="Descricao" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Conta de luz" disabled={loading} />
+        <Input label="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Conta de luz" disabled={loading} />
         <Input label="Valor (R$)" type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" disabled={loading} />
 
         <Select
@@ -145,13 +149,13 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
           ]}
         />
 
-        <Textarea label="Observacoes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observacoes opcionais..." disabled={loading} />
+        <Textarea label="Observações" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observações opcionais..." disabled={loading} />
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={loading} className="flex-1">Cancelar</Button>
-          <Button type="submit" loading={loading} disabled={loading} className="flex-1">{isEditing ? "Salvar" : "Lancar"}</Button>
+          <Button type="submit" loading={loading} disabled={loading} className="flex-1">{isEditing ? "Salvar" : "Lançar"}</Button>
         </div>
       </form>
     </Modal>

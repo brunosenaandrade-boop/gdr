@@ -19,7 +19,7 @@ export default function DashboardError({
         </div>
         <h2 className="text-lg font-semibold text-white mb-2">Algo deu errado</h2>
         <p className="text-sm text-slate-400 mb-6">
-          {error.message || "Ocorreu um erro ao carregar esta pagina. Tente novamente."}
+          {"Ocorreu um erro ao carregar esta página. Tente novamente."}
         </p>
         <Button onClick={reset} variant="secondary">
           <RefreshCw className="h-4 w-4" />

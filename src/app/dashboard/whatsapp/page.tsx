@@ -47,7 +47,7 @@ export default function WhatsAppPage() {
   async function handleSendCode() {
     setError("");
     const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length < 10) { setError("Numero invalido"); return; }
+    if (cleaned.length < 10) { setError("Número inválido"); return; }
 
     setSaving(true);
     const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
@@ -68,7 +68,7 @@ export default function WhatsAppPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to: "55" + cleaned,
-        text: `Seu codigo de verificacao do Guarda Dinheiro: ${verificationCode}`,
+        text: `Seu código de verificação do Guarda Dinheiro: ${verificationCode}`,
       }),
     });
 
@@ -78,27 +78,25 @@ export default function WhatsAppPage() {
 
   async function handleVerify() {
     setError("");
-    if (code.length !== 6) { setError("Codigo deve ter 6 digitos"); return; }
+    if (code.length !== 6) { setError("Código deve ter 6 dígitos"); return; }
 
     setSaving(true);
-    const { data: linkData } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from("whatsapp_links")
-      .select("*")
+      .update({ verified: true, verification_code: null })
       .eq("tenant_id", tenantId)
-      .single();
+      .eq("verification_code", code)
+      .eq("verified", false)
+      .select("*")
+      .maybeSingle();
 
-    if (!linkData || linkData.verification_code !== code) {
-      setError("Codigo invalido");
+    if (updateError || !updated) {
+      setError("Código inválido");
       setSaving(false);
       return;
     }
 
-    await supabase
-      .from("whatsapp_links")
-      .update({ verified: true, verification_code: null })
-      .eq("id", linkData.id);
-
-    setLink({ ...linkData, verified: true });
+    setLink({ ...updated, verified: true });
     setStep("linked");
     setSaving(false);
   }
@@ -114,7 +112,7 @@ export default function WhatsAppPage() {
 
   return (
     <>
-      <AppHeader title="WhatsApp" description="Vincule seu numero para lancar via WhatsApp" />
+      <AppHeader title="WhatsApp" description="Vincule seu número para lançar via WhatsApp" />
 
       <div className="p-6 max-w-2xl space-y-6">
         {loading ? (
@@ -132,11 +130,11 @@ export default function WhatsAppPage() {
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <div>
-                  <CardTitle>Integracao WhatsApp</CardTitle>
+                  <CardTitle>Integração WhatsApp</CardTitle>
                   <CardDescription>
                     {step === "linked"
-                      ? "Seu WhatsApp esta vinculado. Envie mensagens para lancar!"
-                      : "Vincule seu numero para lancar receitas e despesas por mensagem ou audio."}
+                      ? "Seu WhatsApp está vinculado. Envie mensagens para lançar!"
+                      : "Vincule seu número para lançar receitas e despesas por mensagem ou áudio."}
                   </CardDescription>
                 </div>
               </div>
@@ -146,7 +144,7 @@ export default function WhatsAppPage() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                     <div>
-                      <p className="text-sm text-emerald-200">Numero vinculado</p>
+                      <p className="text-sm text-emerald-200">Número vinculado</p>
                       <p className="text-xs text-slate-400 font-mono">+{link.phone_number}</p>
                     </div>
                   </div>
@@ -160,7 +158,7 @@ export default function WhatsAppPage() {
               {step === "idle" && (
                 <div className="space-y-4">
                   <Input
-                    label="Numero do WhatsApp"
+                    label="Número do WhatsApp"
                     value={phone}
                     onChange={(e) => setPhone(maskPhone(e.target.value))}
                     placeholder="(11) 99999-9999"
@@ -169,7 +167,7 @@ export default function WhatsAppPage() {
                   {error && <p className="text-sm text-red-400">{error}</p>}
                   <Button onClick={handleSendCode} loading={saving}>
                     <Send className="h-4 w-4" />
-                    Enviar Codigo
+                    Enviar Código
                   </Button>
                 </div>
               )}
@@ -177,10 +175,10 @@ export default function WhatsAppPage() {
               {step === "verify" && (
                 <div className="space-y-4">
                   <p className="text-sm text-slate-400">
-                    Enviamos um codigo de 6 digitos para seu WhatsApp. Digite abaixo:
+                    Enviamos um código de 6 dígitos para seu WhatsApp. Digite abaixo:
                   </p>
                   <Input
-                    label="Codigo de Verificacao"
+                    label="Código de Verificação"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     placeholder="000000"
@@ -203,18 +201,18 @@ export default function WhatsAppPage() {
                 {[
                   {
                     step: "1",
-                    title: "Envie uma mensagem ou audio",
-                    desc: 'Exemplo: "Paguei 150 reais de luz" ou grave um audio dizendo o lancamento.',
+                    title: "Envie uma mensagem ou áudio",
+                    desc: 'Exemplo: "Paguei 150 reais de luz" ou grave um áudio dizendo o lançamento.',
                   },
                   {
                     step: "2",
                     title: "A IA interpreta automaticamente",
-                    desc: "O sistema identifica tipo (receita/despesa), valor, descricao e sugere uma categoria.",
+                    desc: "O sistema identifica tipo (receita/despesa), valor, descrição e sugere uma categoria.",
                   },
                   {
                     step: "3",
-                    title: "Confirme o lancamento",
-                    desc: 'O sistema mostra o que entendeu e pede confirmacao. Responda "Sim" para lancar.',
+                    title: "Confirme o lançamento",
+                    desc: 'O sistema mostra o que entendeu e pede confirmação. Responda "Sim" para lançar.',
                   },
                 ].map((item) => (
                   <div key={item.step} className="flex gap-4">

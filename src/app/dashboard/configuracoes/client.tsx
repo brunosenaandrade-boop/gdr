@@ -41,7 +41,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
 
   return (
     <>
-      <AppHeader title="Configuracoes" description="Gerencie os dados da sua conta" />
+      <AppHeader title="Configurações" description="Gerencie os dados da sua conta" />
 
       <div className="p-6 max-w-2xl space-y-6">
         <Card>
@@ -55,7 +55,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
               <CardTitle>Dados da Conta</CardTitle>
               <CardDescription>
                 <Badge variant={tenant.type === "pf" ? "success" : "info"}>
-                  {tenant.type === "pf" ? "Pessoa Fisica" : "Pessoa Juridica"}
+                  {tenant.type === "pf" ? "Pessoa Física" : "Pessoa Jurídica"}
                 </Badge>
               </CardDescription>
             </div>
@@ -71,7 +71,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
 
             {tenant.type === "pj" && (
               <Input
-                label="Razao Social"
+                label="Razão Social"
                 value={tradeName}
                 onChange={(e) => setTradeName(e.target.value)}
                 disabled={saving}
@@ -103,7 +103,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
 
             <Button onClick={handleSave} loading={saving} disabled={saving}>
               <Save className="h-4 w-4" />
-              Salvar Alteracoes
+              Salvar Alterações
             </Button>
           </div>
         </Card>

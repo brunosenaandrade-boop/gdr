@@ -53,7 +53,7 @@ export function CategoriasClient({ categories, tenantId }: Props) {
   }
 
   async function handleSave() {
-    if (!name.trim()) { setError("Nome obrigatorio"); return; }
+    if (!name.trim()) { setError("Nome obrigatório"); return; }
     setSaving(true);
     setError("");
 
@@ -79,7 +79,7 @@ export function CategoriasClient({ categories, tenantId }: Props) {
 
   return (
     <>
-      <AppHeader title="Categorias" description="Organize seus lancamentos por categoria">
+      <AppHeader title="Categorias" description="Organize seus lançamentos por categoria">
         <Button size="sm" onClick={openNew}>
           <Plus className="h-4 w-4" />
           Nova

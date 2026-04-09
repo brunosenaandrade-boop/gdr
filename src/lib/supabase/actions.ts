@@ -22,7 +22,7 @@ export async function createTransaction(formData: {
 
   const supabase = await createClient();
   const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
-  if (!tenant) return { error: "Tenant nao encontrado" };
+  if (!tenant) return { error: "Tenant não encontrado" };
 
   const { error } = await supabase.from("transactions").insert({
     ...parsed.data,
@@ -30,7 +30,10 @@ export async function createTransaction(formData: {
     source: "web",
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("createTransaction DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard");
   return {};
 }
@@ -57,7 +60,10 @@ export async function updateTransaction(
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("updateTransaction DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard");
   return {};
 }
@@ -65,7 +71,10 @@ export async function updateTransaction(
 export async function deleteTransaction(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase.from("transactions").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("deleteTransaction DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard");
   return {};
 }
@@ -78,7 +87,10 @@ export async function markTransactionPaid(id: string): Promise<{ error?: string 
     .update({ status: "pago", paid_date: today, updated_at: new Date().toISOString() })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("markTransactionPaid DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard");
   return {};
 }
@@ -95,7 +107,7 @@ export async function createCategory(formData: {
 
   const supabase = await createClient();
   const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
-  if (!tenant) return { error: "Tenant nao encontrado" };
+  if (!tenant) return { error: "Tenant não encontrado" };
 
   const { error } = await supabase.from("categories").insert({
     ...parsed.data,
@@ -103,7 +115,10 @@ export async function createCategory(formData: {
     is_default: false,
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("createCategory DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard/categorias");
   return {};
 }
@@ -118,7 +133,10 @@ export async function updateCategory(
   const supabase = await createClient();
   const { error } = await supabase.from("categories").update(parsed.data).eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("updateCategory DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard/categorias");
   return {};
 }
@@ -126,7 +144,10 @@ export async function updateCategory(
 export async function deleteCategory(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("deleteCategory DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard/categorias");
   return {};
 }
@@ -145,7 +166,10 @@ export async function updateTenant(formData: {
     .update(formData)
     .eq("user_id", (await supabase.auth.getUser()).data.user!.id);
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("updateTenant DB error:", error.message);
+    return { error: "Ocorreu um erro. Tente novamente." };
+  }
   revalidatePath("/dashboard/configuracoes");
   return {};
 }

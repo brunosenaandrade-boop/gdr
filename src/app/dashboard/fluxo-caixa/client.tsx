@@ -68,7 +68,7 @@ export function FluxoCaixaClient({ data, currentDays }: Props) {
               <Wallet className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Saldo Periodo</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Saldo Período</p>
               <p className={`text-lg font-semibold tabular-nums ${saldoFinal >= 0 ? "text-emerald-300" : "text-red-400"}`}>
                 {formatCurrency(saldoFinal)}
               </p>

@@ -22,11 +22,11 @@ export async function parseLancamento(
     messages: [
       {
         role: "system",
-        content: `Voce e um assistente financeiro brasileiro. Extraia informacoes de lancamentos financeiros do texto do usuario.
+        content: `Você é um assistente financeiro brasileiro. Extraia informações de lançamentos financeiros do texto do usuário.
 
 Retorne APENAS um JSON valido com estes campos:
 - type: "receita" ou "despesa"
-- description: descricao curta e clara do lancamento
+- description: descrição curta e clara do lançamento
 - amount: valor em CENTAVOS (inteiro). Ex: R$ 150,00 = 15000
 - category_suggestion: nome da categoria mais provavel da lista abaixo
 
@@ -34,8 +34,8 @@ Categorias disponiveis: ${categoryList}
 
 Se o texto mencionar pagamento, compra, gasto, conta = despesa.
 Se mencionar recebimento, venda, salario, ganho = receita.
-Se o valor nao for claro, retorne amount: 0.
-Nunca invente valores que nao estao no texto.`,
+Se o valor não for claro, retorne amount: 0.
+Nunca invente valores que não estão no texto.`,
       },
       { role: "user", content: text },
     ],
@@ -44,12 +44,17 @@ Nunca invente valores que nao estao no texto.`,
   const content = response.choices[0]?.message?.content;
   if (!content) return { ok: false, error: "Resposta vazia da IA" };
 
+  if (content.length > 2000) {
+    console.error("AI response too large:", content.length, "chars");
+    return { ok: false, error: "Resposta da IA excedeu o tamanho permitido" };
+  }
+
   try {
     const json = JSON.parse(content);
     const parsed = aiParsedTransactionSchema.safeParse(json);
-    if (!parsed.success) return { ok: false, error: "Formato invalido da IA" };
+    if (!parsed.success) return { ok: false, error: "Formato inválido da IA" };
     return { ok: true, data: parsed.data };
   } catch {
-    return { ok: false, error: "JSON invalido da IA" };
+    return { ok: false, error: "JSON inválido da IA" };
   }
 }

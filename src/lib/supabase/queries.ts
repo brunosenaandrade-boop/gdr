@@ -27,9 +27,9 @@ export async function getTransactions(opts: {
 }): Promise<{ data: Transaction[]; count: number }> {
   const supabase = await createClient();
   const page = opts.page ?? 1;
-  const perPage = opts.perPage ?? 25;
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
+  const safePerPage = Math.min(opts.perPage ?? 25, 100);
+  const from = (page - 1) * safePerPage;
+  const to = from + safePerPage - 1;
 
   let query = supabase
     .from("transactions")
@@ -57,7 +57,7 @@ export async function getPendingAccounts(type: "receita" | "despesa"): Promise<T
   return (data ?? []) as Transaction[];
 }
 
-/** Stats do dashboard (mes atual) */
+/** Stats do dashboard (mês atual) */
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = await createClient();
   const now = new Date();
@@ -88,7 +88,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   };
 }
 
-/** Ultimos N lancamentos */
+/** Últimos N lançamentos */
 export async function getRecentTransactions(limit = 10): Promise<Transaction[]> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -99,7 +99,7 @@ export async function getRecentTransactions(limit = 10): Promise<Transaction[]> 
   return (data ?? []) as Transaction[];
 }
 
-/** Breakdown por categoria (despesas pagas do mes) */
+/** Breakdown por categoria (despesas pagas do mês) */
 export async function getCategoryBreakdown(): Promise<{ name: string; value: number; color: string }[]> {
   const supabase = await createClient();
   const now = new Date();

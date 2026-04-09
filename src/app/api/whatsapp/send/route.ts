@@ -17,6 +17,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing to or text" }, { status: 400 });
   }
 
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("id")
+    .single();
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Tenant not found" }, { status: 403 });
+  }
+
+  const { data: whatsappLink } = await supabase
+    .from("whatsapp_links")
+    .select("phone_number")
+    .eq("tenant_id", tenant.id)
+    .eq("phone_number", to)
+    .eq("verified", true)
+    .maybeSingle();
+
+  if (!whatsappLink) {
+    return NextResponse.json({ error: "Phone number not linked to your account" }, { status: 403 });
+  }
+
   const result = await sendWhatsAppMessage(to, text);
 
   if (!result.ok) {

@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { PieChartIcon } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 type CategoryData = {
@@ -39,6 +40,17 @@ export function CategoryBreakdown({ data, title = "Despesas por Categoria" }: Ca
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
+      {data.length === 0 ? (
+        <div className="flex h-[180px] flex-col items-center justify-center gap-3">
+          <PieChartIcon className="h-10 w-10 text-emerald-500/30" />
+          <div className="text-center">
+            <p className="text-sm text-slate-400">Nenhuma categoria ainda</p>
+            <p className="text-xs text-slate-600 mt-1">
+              As categorias aparecem conforme você adiciona lançamentos
+            </p>
+          </div>
+        </div>
+      ) : (
       <div className="flex items-center gap-6">
         <div className="h-[180px] w-[180px] flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">
@@ -83,6 +95,7 @@ export function CategoryBreakdown({ data, title = "Despesas por Categoria" }: Ca
           ))}
         </div>
       </div>
+      )}
     </Card>
   );
 }

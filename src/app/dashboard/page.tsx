@@ -21,11 +21,11 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <AppHeader title="Dashboard" description="Visao geral do mes atual" />
+      <AppHeader title="Dashboard" description="Visão geral do mês atual" />
 
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Saldo" value={stats.saldo} icon={Wallet} />
+          <StatCard title="Saldo" value={stats.saldo} icon={Wallet} glow />
           <StatCard title="Receitas" value={stats.total_receitas} icon={TrendingUp} />
           <StatCard title="Despesas" value={stats.total_despesas} icon={TrendingDown} />
           <StatCard title="Contas Vencidas" value={stats.contas_vencidas} icon={AlertTriangle} isCurrency={false} />

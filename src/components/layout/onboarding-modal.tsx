@@ -29,12 +29,12 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
     if (loading) return; // Impede double-click
     setError("");
 
-    if (!name.trim()) { setError("Nome obrigatorio"); return; }
+    if (!name.trim()) { setError("Nome obrigatório"); return; }
 
     const cleanDoc = document.replace(/\D/g, "");
-    if (type === "pf" && !isValidCPF(cleanDoc)) { setError("CPF invalido"); return; }
-    if (type === "pj" && !isValidCNPJ(cleanDoc)) { setError("CNPJ invalido"); return; }
-    if (type === "pj" && !tradeName.trim()) { setError("Razao social obrigatoria"); return; }
+    if (type === "pf" && !isValidCPF(cleanDoc)) { setError("CPF inválido"); return; }
+    if (type === "pj" && !isValidCNPJ(cleanDoc)) { setError("CNPJ inválido"); return; }
+    if (type === "pj" && !tradeName.trim()) { setError("Razão social obrigatória"); return; }
 
     setLoading(true);
     const supabase = createClient();
@@ -101,8 +101,8 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-200">Pessoa Fisica</p>
-                <p className="text-xs text-slate-500 mt-1">CPF, orcamento pessoal</p>
+                <p className="text-sm font-medium text-slate-200">Pessoa Física</p>
+                <p className="text-xs text-slate-500 mt-1">CPF, orçamento pessoal</p>
               </div>
             </button>
             <button
@@ -113,8 +113,8 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
                 <Building2 className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-200">Pessoa Juridica</p>
-                <p className="text-xs text-slate-500 mt-1">CNPJ, razao social</p>
+                <p className="text-sm font-medium text-slate-200">Pessoa Jurídica</p>
+                <p className="text-xs text-slate-500 mt-1">CNPJ, razão social</p>
               </div>
             </button>
           </div>
@@ -133,7 +133,7 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
             </button>
             <span className="text-xs text-slate-600">|</span>
             <span className="text-xs text-emerald-300">
-              {type === "pf" ? "Pessoa Fisica" : "Pessoa Juridica"}
+              {type === "pf" ? "Pessoa Física" : "Pessoa Jurídica"}
             </span>
           </div>
 
@@ -147,10 +147,10 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
 
           {type === "pj" && (
             <Input
-              label="Razao Social"
+              label="Razão Social"
               value={tradeName}
               onChange={(e) => setTradeName(e.target.value)}
-              placeholder="Razao social da empresa"
+              placeholder="Razão social da empresa"
               disabled={loading}
             />
           )}
@@ -176,7 +176,7 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
           {error && <p className="text-sm text-red-400">{error}</p>}
 
           <Button onClick={handleSubmit} loading={loading} disabled={loading} className="w-full">
-            Comecar a usar
+            Começar a usar
           </Button>
         </div>
       )}

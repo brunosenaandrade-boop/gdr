@@ -2,16 +2,16 @@ import { z } from "zod";
 
 // ===== Auth =====
 export const loginSchema = z.object({
-  email: z.string().email("Email invalido"),
+  email: z.string().email("Email inválido"),
   password: z.string().min(6, "Minimo 6 caracteres"),
 });
 
 export const registerSchema = z.object({
-  email: z.string().email("Email invalido"),
+  email: z.string().email("Email inválido"),
   password: z.string().min(6, "Minimo 6 caracteres"),
   confirmPassword: z.string().min(6, "Minimo 6 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Senhas nao conferem",
+  message: "Senhas não conferem",
   path: ["confirmPassword"],
 });
 
@@ -19,14 +19,14 @@ export const registerSchema = z.object({
 export const onboardingPFSchema = z.object({
   type: z.literal("pf"),
   name: z.string().min(3, "Minimo 3 caracteres"),
-  document: z.string().min(14, "CPF invalido"), // com mascara
+  document: z.string().min(14, "CPF inválido"), // com mascara
   phone: z.string().optional(),
 });
 
 export const onboardingPJSchema = z.object({
   type: z.literal("pj"),
   name: z.string().min(3, "Minimo 3 caracteres"),
-  document: z.string().min(18, "CNPJ invalido"), // com mascara
+  document: z.string().min(18, "CNPJ inválido"), // com mascara
   trade_name: z.string().min(3, "Minimo 3 caracteres"),
   phone: z.string().optional(),
 });
@@ -39,7 +39,7 @@ export const onboardingSchema = z.discriminatedUnion("type", [
 // ===== Transaction =====
 export const transactionSchema = z.object({
   type: z.enum(["receita", "despesa"]),
-  description: z.string().min(1, "Descricao obrigatoria"),
+  description: z.string().min(1, "Descrição obrigatória"),
   amount: z.number().positive("Valor deve ser positivo"),
   category_id: z.string().uuid().nullable(),
   due_date: z.string().nullable(),
@@ -50,7 +50,7 @@ export const transactionSchema = z.object({
 
 // ===== Category =====
 export const categorySchema = z.object({
-  name: z.string().min(1, "Nome obrigatorio"),
+  name: z.string().min(1, "Nome obrigatório"),
   type: z.enum(["receita", "despesa"]),
   icon: z.string().nullable(),
   color: z.string().nullable(),
@@ -58,7 +58,7 @@ export const categorySchema = z.object({
 
 // ===== WhatsApp =====
 export const whatsappLinkSchema = z.object({
-  phone_number: z.string().min(10, "Numero invalido"),
+  phone_number: z.string().min(10, "Número inválido"),
 });
 
 export const whatsappVerifySchema = z.object({
