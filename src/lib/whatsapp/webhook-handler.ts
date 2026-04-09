@@ -12,7 +12,7 @@ type WhatsAppMessage = {
   audio?: { id: string; mime_type: string };
 };
 
-export async function handleIncomingMessage(message: WhatsAppMessage) {
+export async function handleIncomingMessage(message: WhatsAppMessage): Promise<void> {
   const supabase = await createServiceClient();
 
   // Find tenant by phone number
@@ -35,7 +35,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
 
   // Check if user is confirming a pending transaction
   if (message.type === "text" && message.text) {
-    const text = message.text.body.trim().toLowerCase();
+    const text = (message.text?.body ?? "").trim().toLowerCase();
 
     if (text === "sim" || text === "s" || text === "confirma" || text === "confirmar") {
       return handleConfirmation(tenantId, message.from, supabase);
@@ -47,10 +47,16 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   }
 
   // Get user's categories
-  const { data: categories } = await supabase
+  const { data: categories, error: catError } = await supabase
     .from("categories")
     .select("*")
     .eq("tenant_id", tenantId);
+
+  if (catError) {
+    console.error("Erro ao buscar categorias:", catError.message);
+    await sendWhatsAppMessage(message.from, "Erro interno. Tente novamente em alguns minutos.");
+    return;
+  }
 
   // Process text or audio
   let textContent: string;
@@ -70,7 +76,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
 
     textContent = transcription.text;
   } else if (message.type === "text" && message.text) {
-    textContent = message.text.body;
+    textContent = message.text?.body ?? "";
   } else {
     await sendWhatsAppMessage(message.from, "Envie uma mensagem de texto ou áudio com seu lançamento financeiro.");
     return;
@@ -95,7 +101,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
   );
 
   // Save as pending
-  await supabase.from("whatsapp_pending").insert({
+  const { error: pendingError } = await supabase.from("whatsapp_pending").insert({
     tenant_id: tenantId,
     raw_message: textContent,
     parsed_type: parsed.type,
@@ -103,6 +109,12 @@ export async function handleIncomingMessage(message: WhatsAppMessage) {
     parsed_amount: parsed.amount,
     parsed_category_id: matchedCategory?.id ?? null,
   });
+
+  if (pendingError) {
+    console.error("Erro ao salvar pendência:", pendingError.message);
+    await sendWhatsAppMessage(message.from, "Erro ao processar o lançamento. Tente novamente.");
+    return;
+  }
 
   // Ask for confirmation
   const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
@@ -134,7 +146,7 @@ async function handleConfirmation(tenantId: string, phone: string, supabase: any
   }
 
   // Create the actual transaction
-  await supabase.from("transactions").insert({
+  const { error: insertError } = await supabase.from("transactions").insert({
     tenant_id: tenantId,
     type: pending.parsed_type,
     description: pending.parsed_description,
@@ -145,11 +157,19 @@ async function handleConfirmation(tenantId: string, phone: string, supabase: any
     source: "whatsapp",
   });
 
+  if (insertError) {
+    console.error("Erro ao inserir transação:", insertError.message);
+    await sendWhatsAppMessage(phone, "Erro ao salvar o lançamento. Tente novamente.");
+    return;
+  }
+
   // Mark as confirmed
-  await supabase
+  const { error: updateError } = await supabase
     .from("whatsapp_pending")
     .update({ confirmed: true })
     .eq("id", pending.id);
+
+  if (updateError) console.error("Erro ao atualizar pending:", updateError.message);
 
   await sendWhatsAppMessage(phone, "Lançamento confirmado! Você pode ver no painel do Guarda Dinheiro.");
 }
@@ -169,6 +189,8 @@ async function handleCancellation(tenantId: string, phone: string, supabase: any
     return;
   }
 
-  await supabase.from("whatsapp_pending").delete().eq("id", pending.id);
+  const { error: deleteError } = await supabase.from("whatsapp_pending").delete().eq("id", pending.id);
+  if (deleteError) console.error("Erro ao deletar pending:", deleteError.message);
+
   await sendWhatsAppMessage(phone, "Lançamento cancelado. Envie uma nova mensagem quando quiser.");
 }

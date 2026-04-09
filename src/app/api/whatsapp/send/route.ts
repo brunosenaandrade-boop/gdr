@@ -10,8 +10,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { to, text } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { to, text } = body as { to?: string; text?: string };
 
   if (!to || !text) {
     return NextResponse.json({ error: "Missing to or text" }, { status: 400 });
@@ -20,7 +25,7 @@ export async function POST(request: NextRequest) {
   const { data: tenant } = await supabase
     .from("tenants")
     .select("id")
-    .single();
+    .maybeSingle();
 
   if (!tenant) {
     return NextResponse.json({ error: "Tenant not found" }, { status: 403 });

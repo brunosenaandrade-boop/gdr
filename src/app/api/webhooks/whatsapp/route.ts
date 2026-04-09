@@ -116,14 +116,16 @@ export async function POST(request: NextRequest) {
         const cleanFrom = message.from.replace(/\D/g, "");
         if (cleanFrom.length < 10 || cleanFrom.length > 15) continue;
 
-        handleIncomingMessage({
-          from: cleanFrom,
-          type: message.type,
-          text: message.type === "text" ? message.text : undefined,
-          audio: message.type === "audio" ? message.audio : undefined,
-        }).catch((err) => {
-          console.error("Error processing WhatsApp message:", err);
-        });
+        try {
+          await handleIncomingMessage({
+            from: cleanFrom,
+            type: message.type,
+            text: message.type === "text" ? message.text : undefined,
+            audio: message.type === "audio" ? message.audio : undefined,
+          });
+        } catch (err) {
+          console.error("Erro ao processar mensagem WhatsApp:", err);
+        }
       }
     }
   }

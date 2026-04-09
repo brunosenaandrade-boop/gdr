@@ -36,7 +36,7 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
   const [error, setError] = useState("");
   const [type, setType] = useState<TransactionType>(editData?.type ?? "despesa");
   const [description, setDescription] = useState(editData?.description ?? "");
-  const [amount, setAmount] = useState(isEditing ? String(editData!.amount / 100) : "");
+  const [amount, setAmount] = useState(isEditing ? String((editData?.amount ?? 0) / 100) : "");
   const [categoryId, setCategoryId] = useState(editData?.category_id ?? "");
   const [dueDate, setDueDate] = useState(editData?.due_date ?? "");
   const [paidDate, setPaidDate] = useState(editData?.paid_date ?? "");
@@ -75,6 +75,8 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
       status,
       notes: notes || null,
     };
+
+    if (isEditing && !editData) return;
 
     const result = isEditing
       ? await updateTransaction(editData!.id, payload)

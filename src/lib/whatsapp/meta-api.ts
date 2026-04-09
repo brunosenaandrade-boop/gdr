@@ -31,8 +31,12 @@ export async function sendWhatsAppMessage(
   );
 
   if (!response.ok) {
-    const body = await response.text();
-    console.error(`Meta API error: ${response.status} - ${body}`);
+    try {
+      const body = await response.text();
+      console.error(`Meta API error: ${response.status} - ${body}`);
+    } catch {
+      console.error(`Meta API error: ${response.status} - (could not read body)`);
+    }
     return { ok: false, error: "Falha ao enviar mensagem. Tente novamente." };
   }
 
@@ -40,23 +44,38 @@ export async function sendWhatsAppMessage(
 }
 
 export async function downloadWhatsAppMedia(mediaId: string): Promise<Buffer | null> {
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-  if (!accessToken) return null;
+  try {
+    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+    if (!accessToken) return null;
 
-  // Step 1: Get media URL
-  const metaRes = await fetch(`${GRAPH_API}/${mediaId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+    // Step 1: Get media URL
+    const metaRes = await fetch(`${GRAPH_API}/${mediaId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
 
-  if (!metaRes.ok) return null;
-  const { url } = await metaRes.json();
+    if (!metaRes.ok) return null;
 
-  // Step 2: Download media
-  const mediaRes = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+    let mediaUrl: string;
+    try {
+      const json = await metaRes.json();
+      mediaUrl = json.url;
+    } catch {
+      console.error("Erro ao parsear resposta da Meta API (media URL)");
+      return null;
+    }
 
-  if (!mediaRes.ok) return null;
-  const arrayBuffer = await mediaRes.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+    if (!mediaUrl) return null;
+
+    // Step 2: Download media
+    const mediaRes = await fetch(mediaUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!mediaRes.ok) return null;
+    const arrayBuffer = await mediaRes.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (err) {
+    console.error("Erro ao baixar mídia do WhatsApp:", err);
+    return null;
+  }
 }

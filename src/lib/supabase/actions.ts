@@ -161,10 +161,13 @@ export async function updateTenant(formData: {
   phone: string | null;
 }): Promise<{ error?: string }> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autenticado." };
+
   const { error } = await supabase
     .from("tenants")
     .update(formData)
-    .eq("user_id", (await supabase.auth.getUser()).data.user!.id);
+    .eq("user_id", user.id);
 
   if (error) {
     console.error("updateTenant DB error:", error.message);

@@ -22,7 +22,7 @@ export function DashboardShell({ userId, hasTenant, children }: Props) {
         if (event === "SIGNED_OUT") router.push("/login");
       },
     );
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, [router]);
 
   return (

@@ -64,10 +64,19 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
     });
 
     if (dbError) {
-      // Duplicate key = ja existe (race condition entre check e insert) -> sucesso
       if (dbError.code === "23505") {
+        const { data: existing } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existing) {
+          setLoading(false);
+          onComplete();
+          return;
+        }
+        setError("Erro ao criar conta. Tente novamente.");
         setLoading(false);
-        onComplete();
         return;
       }
       setError(dbError.message);

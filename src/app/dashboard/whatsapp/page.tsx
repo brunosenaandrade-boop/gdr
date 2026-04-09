@@ -25,7 +25,7 @@ export default function WhatsAppPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const { data: tenant } = await supabase.from("tenants").select("id").single();
+    const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
     if (!tenant) { setLoading(false); return; }
     setTenantId(tenant.id);
 
@@ -33,7 +33,7 @@ export default function WhatsAppPage() {
       .from("whatsapp_links")
       .select("*")
       .eq("tenant_id", tenant.id)
-      .single();
+      .maybeSingle();
 
     if (existingLink) {
       setLink(existingLink);
@@ -62,8 +62,7 @@ export default function WhatsAppPage() {
 
     if (dbError) { setError(dbError.message); setSaving(false); return; }
 
-    // Send verification code via API
-    await fetch("/api/whatsapp/send", {
+    const res = await fetch("/api/whatsapp/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -71,6 +70,12 @@ export default function WhatsAppPage() {
         text: `Seu código de verificação do Guarda Dinheiro: ${verificationCode}`,
       }),
     });
+
+    if (!res.ok) {
+      setError("Erro ao enviar código. Tente novamente.");
+      setSaving(false);
+      return;
+    }
 
     setStep("verify");
     setSaving(false);
