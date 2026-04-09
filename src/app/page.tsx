@@ -541,16 +541,20 @@ export default function LandingPage() {
           {/* Right Content: Card Grid */}
           <div className="relative grid grid-cols-2 gap-4">
             {[
-              { icon: MessageSquare, title: "WhatsApp Bot", desc: "Lançamento por voz", badge: "Ativo", badgeColor: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" },
-              { icon: Brain, title: "IA Financeira", desc: "Interpretação automática", badge: "Neural", badgeColor: "border-white/10 bg-black/40 text-slate-300" },
-              { icon: BarChart3, title: "Dashboard", desc: "Gráficos em tempo real", badge: "Live", badgeColor: "border-white/10 bg-black/40 text-slate-300" },
-              { icon: PieChart, title: "Categorias", desc: "Auto-classificação", badge: "Smart", badgeColor: "border-white/10 bg-black/40 text-slate-300" },
+              { icon: MessageSquare, title: "WhatsApp Bot", desc: "Lançamento por voz", badge: "Ativo", badgeColor: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300", img: "/images/card_whatsapp_bot.png" },
+              { icon: Brain, title: "IA Financeira", desc: "Interpretação automática", badge: "Neural", badgeColor: "border-white/10 bg-black/40 text-slate-300", img: "/images/card_ia_financeira.png" },
+              { icon: BarChart3, title: "Dashboard", desc: "Gráficos em tempo real", badge: "Live", badgeColor: "border-white/10 bg-black/40 text-slate-300", img: "/images/card_dashboard.png" },
+              { icon: PieChart, title: "Categorias", desc: "Auto-classificação", badge: "Smart", badgeColor: "border-white/10 bg-black/40 text-slate-300", img: "/images/card_categorias.png" },
             ].map((card) => (
               <div key={card.title} className="group relative h-[220px] overflow-hidden rounded-2xl border border-white/10 bg-slate-900 transition-colors hover:border-emerald-500/30">
+                {/* Background image */}
+                <img
+                  alt={card.title}
+                  src={card.img}
+                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-100"
+                />
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-black/60" />
-                {/* Grid pattern */}
-                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)", backgroundSize: "20px 20px" }} />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/50" />
                 <div className="absolute left-3 top-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/40 text-emerald-400 backdrop-blur-md">
                     <card.icon className="h-4 w-4" />
