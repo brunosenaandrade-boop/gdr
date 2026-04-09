@@ -5,7 +5,7 @@ import UnicornScene from "unicornstudio-react";
 export default function UnicornBackground() {
   return (
     <div
-      className="absolute top-0 left-0 w-full h-[800px] pointer-events-none overflow-hidden"
+      className="absolute top-0 left-0 w-full h-[800px] pointer-events-none overflow-hidden opacity-50"
       style={{ zIndex: 0 }}
     >
       <UnicornScene

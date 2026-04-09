@@ -854,7 +854,7 @@ export default function LandingPage() {
                     <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">WhatsApp</a></li>
                     <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Pagar</a></li>
                     <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Receber</a></li>
-                    <li><Link href="/register" className="transition-colors hover:text-emerald-400">Configurações</Link></li>
+                    <li><a href="#cta" className="transition-colors hover:text-emerald-400">Configurações</a></li>
                   </ul>
                 </div>
                 <div>
