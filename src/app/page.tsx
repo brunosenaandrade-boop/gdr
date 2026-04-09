@@ -337,11 +337,11 @@ export default function LandingPage() {
                 <div className="flex flex-grow items-end gap-2 pt-4">
                   {[
                     { label: "Moradia", h: "h-16" },
-                    { label: "Aliment", h: "h-24" },
-                    { label: "Transp", h: "h-12" },
+                    { label: "Alimentação", h: "h-24" },
+                    { label: "Transporte", h: "h-12" },
                     { label: "Saúde", h: "h-20" },
                     { label: "Lazer", h: "h-8" },
-                    { label: "Educ", h: "h-6" },
+                    { label: "Educação", h: "h-6" },
                     { label: "Outros", h: "h-4" },
                   ].map((bar) => (
                     <div key={bar.label} className="flex flex-1 flex-col items-center gap-1">
