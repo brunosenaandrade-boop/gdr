@@ -51,7 +51,7 @@ export default function LoginPage() {
           label="Email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setError(""); }}
           placeholder="seu@email.com"
           icon={<Mail className="h-4 w-4" />}
           required
@@ -60,7 +60,7 @@ export default function LoginPage() {
           label="Senha"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setError(""); }}
           placeholder="Sua senha"
           icon={<Lock className="h-4 w-4" />}
           required

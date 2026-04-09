@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Shield, ArrowRight, MessageSquare, BarChart3, Zap, Lock, Smartphone, Brain,
-  Search, Bell, Mic, DollarSign, PieChart, TrendingUp, Check,
+  Mic, DollarSign, PieChart, TrendingUp, Check,
   Wallet, Receipt,
 } from "lucide-react";
 import UnicornBackground from "@/components/landing/unicorn-background";
@@ -32,23 +32,18 @@ export default function LandingPage() {
           </div>
           {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative hidden lg:block">
-              <Search className="absolute left-2.5 top-1.5 h-3.5 w-3.5 text-slate-500" />
-              <input
-                className="h-7 w-48 rounded-full border border-white/10 bg-white/5 pl-8 pr-3 text-xs text-slate-300 placeholder:text-slate-600 focus:border-emerald-500/50 focus:bg-white/10 focus:outline-none"
-                placeholder="Buscar..."
-                type="text"
-                readOnly
-              />
-            </div>
-            <button className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-colors hover:text-emerald-400">
-              <Bell className="h-3.5 w-3.5" />
-            </button>
-            <div className="overflow-hidden cursor-pointer bg-emerald-900/20 w-7 h-7 border-emerald-500/30 border rounded-full p-0.5">
-              <div className="flex text-[0.6rem] font-medium text-emerald-300 bg-emerald-500/20 w-full h-full rounded-full items-center justify-center">
-                GD
-              </div>
-            </div>
+            <Link
+              href="/login"
+              className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              Entrar
+            </Link>
+            <Link
+              href="/register"
+              className="hidden sm:inline-flex h-7 items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 text-xs font-medium text-black transition-all hover:bg-emerald-400 hover:scale-105"
+            >
+              Criar conta
+            </Link>
           </div>
         </div>
       </nav>
@@ -308,10 +303,7 @@ export default function LandingPage() {
                 <span>
                   Precisão de <span className="font-normal tracking-tight text-emerald-300">98.5%</span>
                 </span>
-                <button className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/40 bg-black/30 px-2.5 py-1 text-[0.7rem] font-normal tracking-tight text-emerald-100 transition-colors hover:bg-emerald-500/20">
-                  <MessageSquare className="h-3 w-3" />
-                  Ver demo
-                </button>
+                <span className="text-[0.7rem] font-normal tracking-tight text-slate-500">Texto e áudio</span>
               </div>
             </div>
             <div className="relative mt-6">
