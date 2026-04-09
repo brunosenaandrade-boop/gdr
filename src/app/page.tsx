@@ -880,8 +880,8 @@ export default function LandingPage() {
               &copy; 2026 Guarda Dinheiro. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-6 text-[10px] text-slate-600">
-              <span className="cursor-pointer hover:text-slate-400">Política de Privacidade</span>
-              <span className="cursor-pointer hover:text-slate-400">Termos de Uso</span>
+              <Link href="/privacidade" className="hover:text-slate-400 transition-colors">Política de Privacidade</Link>
+              <Link href="/termos" className="hover:text-slate-400 transition-colors">Termos de Uso</Link>
             </div>
           </div>
         </footer>

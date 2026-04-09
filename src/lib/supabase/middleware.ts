@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Public routes
-  const publicRoutes = ["/", "/login", "/register"];
+  const publicRoutes = ["/", "/login", "/register", "/privacidade", "/termos"];
   const isPublicRoute = publicRoutes.includes(path);
   const isApiRoute = path.startsWith("/api/");
 
