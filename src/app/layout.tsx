@@ -13,9 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Guarda Dinheiro - Controle Financeiro Inteligente",
+  title: {
+    default: "Guarda Dinheiro - Controle Financeiro Inteligente",
+    template: "%s | Guarda Dinheiro",
+  },
   description:
-    "Sistema de controle financeiro para pessoa fisica e juridica. Lance via web ou WhatsApp com inteligencia artificial.",
+    "Sistema de controle financeiro para pessoa física e jurídica. Lance via web ou WhatsApp com inteligência artificial.",
 };
 
 export default function RootLayout({

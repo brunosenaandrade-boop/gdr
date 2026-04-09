@@ -345,13 +345,11 @@ export default function LandingPage() {
                     { label: "Alimentação", h: "h-24" },
                     { label: "Transporte", h: "h-12" },
                     { label: "Saúde", h: "h-20" },
-                    { label: "Lazer", h: "h-8" },
-                    { label: "Educação", h: "h-6" },
-                    { label: "Outros", h: "h-4" },
+                    { label: "Outros", h: "h-8" },
                   ].map((bar) => (
                     <div key={bar.label} className="flex flex-1 flex-col items-center gap-1">
                       <div className={`${bar.h} w-full rounded bg-gradient-to-t from-emerald-500/80 to-emerald-400/20 transition-all hover:from-emerald-400 hover:to-emerald-300/40`} />
-                      <span className="text-[8px] text-slate-500">{bar.label}</span>
+                      <span className="text-[9px] text-slate-500">{bar.label}</span>
                     </div>
                   ))}
                 </div>
@@ -833,11 +831,7 @@ export default function LandingPage() {
               <p className="mt-4 text-xs leading-relaxed text-slate-500">
                 O sistema financeiro inteligente para pessoas físicas e jurídicas.
               </p>
-              <div className="mt-4 flex gap-4">
-                <Link href="/register" className="text-slate-500 transition-colors hover:text-white" aria-label="Criar conta grátis">
-                  <Shield className="h-4 w-4" />
-                </Link>
-              </div>
+              <p className="mt-4 text-[10px] text-slate-600">Dados protegidos conforme a LGPD</p>
             </div>
             <div className="col-span-2 md:col-span-3">
               <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -856,7 +850,7 @@ export default function LandingPage() {
                     <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">WhatsApp</a></li>
                     <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Pagar</a></li>
                     <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Receber</a></li>
-                    <li><a href="#cta" className="transition-colors hover:text-emerald-400">Configurações</a></li>
+                    <li><Link href="/login" className="transition-colors hover:text-emerald-400">Configurações</Link></li>
                   </ul>
                 </div>
                 <div>
