@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  Shield, ArrowRight, MessageSquare, BarChart3, Zap, Lock, Smartphone, Brain,
+  Shield, ArrowRight, MessageSquare, BarChart3, Zap, Lock, Brain,
   Mic, DollarSign, PieChart, TrendingUp, Check,
   Wallet, Receipt,
 } from "lucide-react";
@@ -829,12 +829,9 @@ export default function LandingPage() {
                 O sistema financeiro inteligente para pessoas físicas e jurídicas.
               </p>
               <div className="mt-4 flex gap-4">
-                <span className="text-slate-500 transition-colors hover:text-white cursor-pointer">
-                  <MessageSquare className="h-4 w-4" />
-                </span>
-                <span className="text-slate-500 transition-colors hover:text-white cursor-pointer">
-                  <Smartphone className="h-4 w-4" />
-                </span>
+                <Link href="/register" className="text-slate-500 transition-colors hover:text-white" aria-label="Criar conta grátis">
+                  <Shield className="h-4 w-4" />
+                </Link>
               </div>
             </div>
             <div className="col-span-2 md:col-span-3">

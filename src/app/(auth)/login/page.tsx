@@ -68,6 +68,12 @@ export default function LoginPage() {
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
+        <div className="flex justify-end">
+          <Link href="/esqueci-senha" className="text-xs text-slate-500 hover:text-emerald-400 transition-colors">
+            Esqueci minha senha
+          </Link>
+        </div>
+
         <Button type="submit" loading={loading} className="w-full">
           Entrar
         </Button>
