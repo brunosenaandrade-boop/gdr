@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { handleIncomingMessage } from "@/lib/whatsapp/webhook-handler";
@@ -116,14 +117,22 @@ export async function POST(request: NextRequest) {
         const cleanFrom = message.from.replace(/\D/g, "");
         if (cleanFrom.length < 10 || cleanFrom.length > 15) continue;
 
+        // Extrair message ID para idempotência (Meta pode reenviar webhooks)
+        const messageId: string | undefined =
+          typeof message.id === "string" && message.id.length > 0
+            ? message.id
+            : undefined;
+
         try {
           await handleIncomingMessage({
             from: cleanFrom,
             type: message.type,
             text: message.type === "text" ? message.text : undefined,
             audio: message.type === "audio" ? message.audio : undefined,
+            messageId,
           });
         } catch (err) {
+          Sentry.captureException(err);
           console.error("Erro ao processar mensagem WhatsApp:", err);
         }
       }

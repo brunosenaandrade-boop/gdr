@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { createServiceClient } from "@/lib/supabase/server";
 import { parseLancamento } from "@/lib/openai/parse-lancamento";
 import { transcribeAudio } from "@/lib/openai/transcribe-audio";
@@ -10,10 +11,34 @@ type WhatsAppMessage = {
   type: string;
   text?: { body: string };
   audio?: { id: string; mime_type: string };
+  messageId?: string;
 };
 
 export async function handleIncomingMessage(message: WhatsAppMessage): Promise<void> {
   const supabase = await createServiceClient();
+
+  // Idempotência: ignorar mensagens já processadas (Meta pode reenviar webhooks)
+  if (message.messageId) {
+    const { data: existing } = await supabase
+      .from("whatsapp_message_log")
+      .select("message_id")
+      .eq("message_id", message.messageId)
+      .maybeSingle();
+
+    if (existing) return; // Já processada, ignorar silenciosamente
+
+    // Best-effort: registrar antes de processar para garantir idempotência
+    // mesmo se o processamento falhar no meio
+    await supabase
+      .from("whatsapp_message_log")
+      .insert({
+        message_id: message.messageId,
+        phone_number: message.from,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Erro ao registrar message_log:", error.message);
+      });
+  }
 
   // Find tenant by phone number
   const { data: link } = await supabase
@@ -53,6 +78,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .eq("tenant_id", tenantId);
 
   if (catError) {
+    Sentry.captureException(catError);
     console.error("Erro ao buscar categorias:", catError.message);
     await sendWhatsAppMessage(message.from, "Erro interno. Tente novamente em alguns minutos.");
     return;
@@ -111,6 +137,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   });
 
   if (pendingError) {
+    Sentry.captureException(pendingError);
     console.error("Erro ao salvar pendência:", pendingError.message);
     await sendWhatsAppMessage(message.from, "Erro ao processar o lançamento. Tente novamente.");
     return;
@@ -158,6 +185,7 @@ async function handleConfirmation(tenantId: string, phone: string, supabase: any
   });
 
   if (insertError) {
+    Sentry.captureException(insertError);
     console.error("Erro ao inserir transação:", insertError.message);
     await sendWhatsAppMessage(phone, "Erro ao salvar o lançamento. Tente novamente.");
     return;

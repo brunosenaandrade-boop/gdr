@@ -1,5 +1,6 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
 import { createClient } from "./server";
 import { transactionSchema, categorySchema } from "@/lib/validators/schemas";
@@ -31,6 +32,7 @@ export async function createTransaction(formData: {
   });
 
   if (error) {
+    Sentry.captureException(error);
     console.error("createTransaction DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -61,6 +63,7 @@ export async function updateTransaction(
     .eq("id", id);
 
   if (error) {
+    Sentry.captureException(error);
     console.error("updateTransaction DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -72,6 +75,7 @@ export async function deleteTransaction(id: string): Promise<{ error?: string }>
   const supabase = await createClient();
   const { error } = await supabase.from("transactions").delete().eq("id", id);
   if (error) {
+    Sentry.captureException(error);
     console.error("deleteTransaction DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -88,6 +92,7 @@ export async function markTransactionPaid(id: string): Promise<{ error?: string 
     .eq("id", id);
 
   if (error) {
+    Sentry.captureException(error);
     console.error("markTransactionPaid DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -116,6 +121,7 @@ export async function createCategory(formData: {
   });
 
   if (error) {
+    Sentry.captureException(error);
     console.error("createCategory DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -134,6 +140,7 @@ export async function updateCategory(
   const { error } = await supabase.from("categories").update(parsed.data).eq("id", id);
 
   if (error) {
+    Sentry.captureException(error);
     console.error("updateCategory DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -145,6 +152,7 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) {
+    Sentry.captureException(error);
     console.error("deleteCategory DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
@@ -170,6 +178,7 @@ export async function updateTenant(formData: {
     .eq("user_id", user.id);
 
   if (error) {
+    Sentry.captureException(error);
     console.error("updateTenant DB error:", error.message);
     return { error: "Ocorreu um erro. Tente novamente." };
   }
