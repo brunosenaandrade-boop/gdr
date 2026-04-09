@@ -5,6 +5,7 @@ import {
   Wallet, Receipt,
 } from "lucide-react";
 import UnicornBackground from "@/components/landing/unicorn-background";
+import MobileNav from "@/components/landing/mobile-nav";
 
 export default function LandingPage() {
   return (
@@ -31,7 +32,7 @@ export default function LandingPage() {
             </div>
           </div>
           {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
               className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
@@ -40,11 +41,13 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/register"
-              className="hidden sm:inline-flex h-7 items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 text-xs font-medium text-black transition-all hover:bg-emerald-400 hover:scale-105"
+              className="inline-flex h-7 items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 text-xs font-medium text-black transition-all hover:bg-emerald-400 hover:scale-105"
             >
               Criar conta
             </Link>
           </div>
+          {/* Mobile hamburger menu */}
+          <MobileNav />
         </div>
       </nav>
 

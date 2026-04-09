@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { Shield, Mail, Lock } from "lucide-react";
+import { Shield, Mail, Lock, User } from "lucide-react";
 
 export default function RegisterPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +21,11 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!name.trim()) {
+      setError("Nome é obrigatório");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Senhas não conferem");
@@ -36,6 +42,7 @@ export default function RegisterPage() {
     const { error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: { data: { full_name: name.trim() } },
     });
 
     if (authError) {
@@ -59,10 +66,19 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
+          label="Nome completo"
+          type="text"
+          value={name}
+          onChange={(e) => { setName(e.target.value); setError(""); }}
+          placeholder="Seu nome"
+          icon={<User className="h-4 w-4" />}
+          required
+        />
+        <Input
           label="Email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setError(""); }}
           placeholder="seu@email.com"
           icon={<Mail className="h-4 w-4" />}
           required
@@ -71,7 +87,7 @@ export default function RegisterPage() {
           label="Senha"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setError(""); }}
           placeholder="Mínimo 6 caracteres"
           icon={<Lock className="h-4 w-4" />}
           required
@@ -80,7 +96,7 @@ export default function RegisterPage() {
           label="Confirmar Senha"
           type="password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
           placeholder="Repita a senha"
           icon={<Lock className="h-4 w-4" />}
           required
