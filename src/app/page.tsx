@@ -60,7 +60,7 @@ export default function LandingPage() {
           {/* Glow Effect */}
           <div className="pointer-events-none absolute -top-24 left-0 h-96 w-96 rounded-full bg-emerald-500/10 blur-[100px] opacity-50" />
 
-          <div className="relative z-10 max-w-2xl">
+          <div className="relative z-10 max-w-2xl" style={{ textShadow: "0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.6)" }}>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 backdrop-blur-md transition-all hover:bg-emerald-500/10 hover:border-emerald-500/30 cursor-default">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
