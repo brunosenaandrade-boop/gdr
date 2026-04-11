@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { Shield, Mail, Lock, User } from "lucide-react";
+import { Shield, Mail, Lock, User, CheckCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -39,10 +40,13 @@ export default function RegisterPage() {
 
     setLoading(true);
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name.trim() } },
+      options: {
+        data: { full_name: name.trim() },
+        emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
+      },
     });
 
     if (authError) {
@@ -51,7 +55,39 @@ export default function RegisterPage() {
       return;
     }
 
+    // Se retornou user sem session, email confirmation está ativo
+    if (data.user && !data.session) {
+      setAwaitingConfirmation(true);
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: confirmation desativado → vai direto ao dashboard
     router.push("/dashboard");
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] mx-auto mb-4">
+          <CheckCircle className="h-6 w-6 text-black" />
+        </div>
+        <h1 className="text-xl font-semibold tracking-tight text-white">Verifique seu email</h1>
+        <p className="text-sm text-slate-400 mt-3 leading-relaxed">
+          Enviamos um link de confirmação para <span className="text-emerald-400">{email}</span>.
+          Abra o email e clique no link para ativar sua conta.
+        </p>
+        <p className="text-xs text-slate-500 mt-4">
+          Não esqueça de verificar a pasta de spam.
+        </p>
+        <Link
+          href="/login"
+          className="mt-6 inline-block text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+        >
+          Voltar ao login
+        </Link>
+      </Card>
+    );
   }
 
   return (

@@ -6,7 +6,7 @@ export async function getTenant(): Promise<Tenant | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("tenants").select("*").maybeSingle();
   if (error) console.error("getTenant failed:", error.message);
-  return data;
+  return data as Tenant | null;
 }
 
 /** Categorias do tenant */
@@ -16,7 +16,7 @@ export async function getCategories(type?: "receita" | "despesa"): Promise<Categ
   if (type) query = query.eq("type", type);
   const { data, error } = await query;
   if (error) console.error("getCategories failed:", error.message);
-  return data ?? [];
+  return (data ?? []) as Category[];
 }
 
 /** Lancamentos com paginacao */
@@ -155,6 +155,7 @@ export async function getCashFlow(days = 30): Promise<CashFlowEntry[]> {
   }
 
   for (const tx of flowTx ?? []) {
+    if (!tx.created_at) continue;
     const key = tx.created_at.split("T")[0];
     if (byDate[key]) {
       if (tx.type === "receita") byDate[key].receitas += tx.amount;

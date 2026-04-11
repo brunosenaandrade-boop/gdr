@@ -39,9 +39,19 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Public routes
-  const publicRoutes = ["/", "/login", "/register", "/privacidade", "/termos", "/esqueci-senha", "/redefinir-senha"];
+  const publicRoutes = [
+    "/",
+    "/login",
+    "/register",
+    "/privacidade",
+    "/termos",
+    "/esqueci-senha",
+    "/redefinir-senha",
+    "/verificar-email",
+  ];
   const isPublicRoute = publicRoutes.includes(path);
   const isApiRoute = path.startsWith("/api/");
+  const isVerifyPage = path === "/verificar-email";
 
   // Unauthenticated user trying to access protected route
   if (!user && !isPublicRoute && !isApiRoute) {
@@ -50,8 +60,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Authenticated but email not confirmed → force to /verificar-email
+  if (user && !user.email_confirmed_at && !isPublicRoute && !isApiRoute && !isVerifyPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/verificar-email";
+    return NextResponse.redirect(url);
+  }
+
   // Authenticated user trying to access auth pages
-  if (user && (path === "/login" || path === "/register")) {
+  if (user && user.email_confirmed_at && (path === "/login" || path === "/register")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

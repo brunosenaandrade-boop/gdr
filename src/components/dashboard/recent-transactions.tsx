@@ -50,7 +50,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   <p className="text-sm text-slate-200">{tx.description}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[0.7rem] text-slate-500">
-                      {formatRelativeDate(tx.created_at)}
+                      {formatRelativeDate(tx.created_at ?? new Date().toISOString())}
                     </span>
                     {tx.source === "whatsapp" ? (
                       <MessageSquare className="h-3 w-3 text-emerald-500/50" />

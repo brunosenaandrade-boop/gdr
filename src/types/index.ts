@@ -1,29 +1,19 @@
+import type { Database } from "./supabase";
+
+type Tables = Database["public"]["Tables"];
+
 // ===== Tenant =====
 export type TenantType = "pf" | "pj";
 
-export type Tenant = {
-  id: string;
-  user_id: string;
+export type Tenant = Omit<Tables["tenants"]["Row"], "type"> & {
   type: TenantType;
-  name: string;
-  document: string;
-  trade_name: string | null;
-  phone: string | null;
-  created_at: string;
 };
 
 // ===== Category =====
 export type CategoryType = "receita" | "despesa";
 
-export type Category = {
-  id: string;
-  tenant_id: string;
-  name: string;
+export type Category = Omit<Tables["categories"]["Row"], "type"> & {
   type: CategoryType;
-  icon: string | null;
-  color: string | null;
-  is_default: boolean;
-  created_at: string;
 };
 
 // ===== Transaction =====
@@ -31,44 +21,24 @@ export type TransactionType = "receita" | "despesa";
 export type TransactionStatus = "pendente" | "pago" | "atrasado" | "cancelado";
 export type TransactionSource = "web" | "whatsapp";
 
-export type Transaction = {
-  id: string;
-  tenant_id: string;
-  category_id: string | null;
+export type Transaction = Omit<
+  Tables["transactions"]["Row"],
+  "type" | "status" | "source"
+> & {
   type: TransactionType;
-  description: string;
-  amount: number; // centavos
-  due_date: string | null;
-  paid_date: string | null;
   status: TransactionStatus;
   source: TransactionSource;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
   category?: Category;
 };
 
 // ===== WhatsApp =====
-export type WhatsAppLink = {
-  id: string;
-  tenant_id: string;
-  phone_number: string;
-  verified: boolean;
-  verification_code: string | null;
-  created_at: string;
-};
+export type WhatsAppLink = Tables["whatsapp_links"]["Row"];
 
-export type WhatsAppPending = {
-  id: string;
-  tenant_id: string;
-  raw_message: string;
+export type WhatsAppPending = Omit<
+  Tables["whatsapp_pending"]["Row"],
+  "parsed_type"
+> & {
   parsed_type: TransactionType | null;
-  parsed_description: string | null;
-  parsed_amount: number | null;
-  parsed_category_id: string | null;
-  confirmed: boolean;
-  expires_at: string;
-  created_at: string;
 };
 
 // ===== AI Parse Result =====

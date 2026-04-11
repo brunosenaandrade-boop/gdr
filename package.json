@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "supabase:gen-types": "npx -y supabase gen types typescript --project-id ecojxxmsdmhqtmwvkjwg --schema public > src/types/supabase.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.47.0",

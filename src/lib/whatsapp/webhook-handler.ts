@@ -180,7 +180,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // Parse with AI
-  const result = await parseLancamento(textContent, categories ?? []);
+  const typedCategories = (categories ?? []) as Category[];
+  const result = await parseLancamento(textContent, typedCategories);
 
   if (!result.ok) {
     await sendWhatsAppMessage(
@@ -193,7 +194,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   const { data: parsed } = result;
 
   // Find matching category
-  const matchedCategory = (categories ?? []).find(
+  const matchedCategory = typedCategories.find(
     (c: Category) => c.name.toLowerCase() === parsed.category_suggestion.toLowerCase(),
   );
 
