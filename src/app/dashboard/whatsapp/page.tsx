@@ -1,25 +1,35 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { maskPhone } from "@/lib/utils";
 import type { WhatsAppLink } from "@/types";
-import { MessageSquare, Phone, CheckCircle2, Unlink, Send } from "lucide-react";
+import { MessageSquare, CheckCircle2, Unlink, ExternalLink, Copy, CheckCheck } from "lucide-react";
+
+const BOT_NUMBER = "554820270106";
+const BOT_DISPLAY = "+55 48 2027-0106";
+
+function generateCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "GD-";
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
 
 export default function WhatsAppPage() {
   const [link, setLink] = useState<WhatsAppLink | null>(null);
   const [tenantId, setTenantId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"idle" | "verify" | "linked">("idle");
+  const [linkCode, setLinkCode] = useState("");
+  const [step, setStep] = useState<"idle" | "waiting" | "linked">("idle");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const supabase = createClient();
 
@@ -37,72 +47,65 @@ export default function WhatsAppPage() {
 
     if (existingLink) {
       setLink(existingLink);
-      setStep(existingLink.verified ? "linked" : "verify");
+      if (existingLink.verified) {
+        setStep("linked");
+      } else if (existingLink.verification_code) {
+        setLinkCode(existingLink.verification_code);
+        setStep("waiting");
+      }
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  async function handleSendCode() {
+  // Polling: verifica a cada 3s se o número foi vinculado
+  useEffect(() => {
+    if (step !== "waiting" || !tenantId) return;
+
+    pollingRef.current = setInterval(async () => {
+      const { data } = await supabase
+        .from("whatsapp_links")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+
+      if (data?.verified) {
+        setLink(data);
+        setStep("linked");
+        if (pollingRef.current) clearInterval(pollingRef.current);
+      }
+    }, 3000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [step, tenantId, supabase]);
+
+  async function handleGenerateCode() {
     setError("");
-    const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length < 10) { setError("Número inválido"); return; }
-
     setSaving(true);
-    const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
 
-    // Save to database
+    const code = generateCode();
+
+    // phone_number é único e NOT NULL, então uso um placeholder único com o código
+    const placeholderPhone = `pending_${code}`;
+
     const { error: dbError } = await supabase.from("whatsapp_links").upsert({
       tenant_id: tenantId,
-      phone_number: "55" + cleaned,
+      phone_number: placeholderPhone,
       verified: false,
-      verification_code: verificationCode,
+      verification_code: code,
     }, { onConflict: "tenant_id" });
 
-    if (dbError) { setError(dbError.message); setSaving(false); return; }
-
-    const res = await fetch("/api/whatsapp/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: "55" + cleaned,
-        text: `Seu código de verificação do Guarda Dinheiro: ${verificationCode}`,
-      }),
-    });
-
-    if (!res.ok) {
-      setError("Erro ao enviar código. Tente novamente.");
+    if (dbError) {
+      setError("Erro ao gerar código. Tente novamente.");
       setSaving(false);
       return;
     }
 
-    setStep("verify");
-    setSaving(false);
-  }
-
-  async function handleVerify() {
-    setError("");
-    if (code.length !== 6) { setError("Código deve ter 6 dígitos"); return; }
-
-    setSaving(true);
-    const { data: updated, error: updateError } = await supabase
-      .from("whatsapp_links")
-      .update({ verified: true, verification_code: null })
-      .eq("tenant_id", tenantId)
-      .eq("verification_code", code)
-      .eq("verified", false)
-      .select("*")
-      .maybeSingle();
-
-    if (updateError || !updated) {
-      setError("Código inválido");
-      setSaving(false);
-      return;
-    }
-
-    setLink({ ...updated, verified: true });
-    setStep("linked");
+    setLinkCode(code);
+    setStep("waiting");
     setSaving(false);
   }
 
@@ -110,10 +113,26 @@ export default function WhatsAppPage() {
     if (!link) return;
     await supabase.from("whatsapp_links").delete().eq("id", link.id);
     setLink(null);
+    setLinkCode("");
     setStep("idle");
-    setPhone("");
-    setCode("");
   }
+
+  async function handleCancel() {
+    if (!tenantId) return;
+    await supabase.from("whatsapp_links").delete().eq("tenant_id", tenantId);
+    setLink(null);
+    setLinkCode("");
+    setStep("idle");
+    if (pollingRef.current) clearInterval(pollingRef.current);
+  }
+
+  function handleCopyCode() {
+    navigator.clipboard.writeText(linkCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const waLink = `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent(linkCode)}`;
 
   return (
     <>
@@ -126,7 +145,6 @@ export default function WhatsAppPage() {
           </div>
         ) : (
           <>
-            {/* Status Card */}
             <Card glow={step === "linked"}>
               <div className="flex items-center gap-4 mb-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
@@ -162,44 +180,78 @@ export default function WhatsAppPage() {
 
               {step === "idle" && (
                 <div className="space-y-4">
-                  <Input
-                    label="Número do WhatsApp"
-                    value={phone}
-                    onChange={(e) => setPhone(maskPhone(e.target.value))}
-                    placeholder="(11) 99999-9999"
-                    icon={<Phone className="h-4 w-4" />}
-                  />
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                    <p className="text-xs text-emerald-200 leading-relaxed">
+                      Ao clicar em Gerar Código, você receberá um código único.
+                      Envie esse código do seu WhatsApp para o nosso número para vincular sua conta.
+                    </p>
+                  </div>
                   {error && <p className="text-sm text-red-400">{error}</p>}
-                  <Button onClick={handleSendCode} loading={saving}>
-                    <Send className="h-4 w-4" />
-                    Enviar Código
+                  <Button onClick={handleGenerateCode} loading={saving}>
+                    <MessageSquare className="h-4 w-4" />
+                    Gerar Código de Vinculação
                   </Button>
                 </div>
               )}
 
-              {step === "verify" && (
+              {step === "waiting" && (
                 <div className="space-y-4">
-                  <p className="text-sm text-slate-400">
-                    Enviamos um código de 6 dígitos para seu WhatsApp. Digite abaixo:
-                  </p>
-                  <Input
-                    label="Código de Verificação"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="000000"
-                    maxLength={6}
-                    className="text-center text-lg tracking-[0.3em] font-mono"
-                  />
-                  {error && <p className="text-sm text-red-400">{error}</p>}
-                  <div className="flex gap-3">
-                    <Button variant="secondary" onClick={() => setStep("idle")} className="flex-1">Voltar</Button>
-                    <Button onClick={handleVerify} loading={saving} className="flex-1">Verificar</Button>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Seu código</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-lg font-mono tracking-[0.2em] text-emerald-300 text-center">
+                          {linkCode}
+                        </code>
+                        <Button variant="secondary" size="sm" onClick={handleCopyCode}>
+                          {copied ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-white/5" />
+
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Como vincular</p>
+                      <ol className="space-y-2 text-sm text-slate-300">
+                        <li className="flex gap-2">
+                          <span className="text-emerald-400 font-semibold">1.</span>
+                          <span>Abra o WhatsApp no seu celular</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-emerald-400 font-semibold">2.</span>
+                          <span>Envie o código acima para <span className="font-mono text-emerald-300">{BOT_DISPLAY}</span></span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-emerald-400 font-semibold">3.</span>
+                          <span>Aguarde a confirmação automática aqui</span>
+                        </li>
+                      </ol>
+                    </div>
+
+                    <a
+                      href={waLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-medium text-black transition-all hover:bg-emerald-400 hover:scale-[1.02] active:scale-95"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Abrir no WhatsApp
+                    </a>
                   </div>
+
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Aguardando sua mensagem...</span>
+                  </div>
+
+                  <Button variant="secondary" onClick={handleCancel} className="w-full">
+                    Cancelar
+                  </Button>
                 </div>
               )}
             </Card>
 
-            {/* How it works */}
             <Card>
               <CardTitle className="mb-4">Como funciona</CardTitle>
               <div className="space-y-4">

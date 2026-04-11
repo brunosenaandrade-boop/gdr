@@ -40,18 +40,68 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       });
   }
 
+  // Verificar se é uma mensagem de vinculação (código GD-XXXXXX)
+  if (message.type === "text" && message.text) {
+    const rawText = (message.text?.body ?? "").trim();
+    const linkCodeMatch = rawText.toUpperCase().match(/GD-[A-Z0-9]{6}/);
+
+    if (linkCodeMatch) {
+      const code = linkCodeMatch[0];
+      const { data: pendingLink, error: pendingLinkError } = await supabase
+        .from("whatsapp_links")
+        .select("id, tenant_id")
+        .eq("verification_code", code)
+        .eq("verified", false)
+        .maybeSingle();
+
+      if (pendingLinkError) {
+        console.error("Erro ao buscar código de vinculação:", pendingLinkError.message);
+        await sendWhatsAppMessage(message.from, "Erro ao vincular. Tente novamente em alguns minutos.");
+        return;
+      }
+
+      if (!pendingLink) {
+        await sendWhatsAppMessage(message.from, "Código inválido ou expirado. Gere um novo código no painel.");
+        return;
+      }
+
+      // Vincular: atualizar o registro com o número real e marcar como verificado
+      const { error: updateError } = await supabase
+        .from("whatsapp_links")
+        .update({
+          phone_number: message.from,
+          verified: true,
+          verification_code: null,
+        })
+        .eq("id", pendingLink.id);
+
+      if (updateError) {
+        Sentry.captureException(updateError);
+        console.error("Erro ao vincular número:", updateError.message);
+        await sendWhatsAppMessage(message.from, "Erro ao vincular. Tente novamente.");
+        return;
+      }
+
+      await sendWhatsAppMessage(
+        message.from,
+        "Número vinculado com sucesso! 🎉\n\nAgora você pode lançar receitas e despesas por aqui.\n\nExemplo:\n• \"Paguei 150 de luz\"\n• \"Recebi 500 do cliente João\"\n\nOu envie um áudio dizendo o lançamento.",
+      );
+      return;
+    }
+  }
+
   // Find tenant by phone number
   const { data: link } = await supabase
     .from("whatsapp_links")
     .select("tenant_id")
     .eq("phone_number", message.from)
     .eq("verified", true)
-    .single();
+    .maybeSingle();
 
   if (!link) {
     await sendWhatsAppMessage(
       message.from,
-      "Número não vinculado. Acesse o painel do Guarda Dinheiro para vincular seu WhatsApp.",
+      "Número não vinculado. Acesse o painel do Guarda Dinheiro, gere um código e envie-o aqui para vincular.",
     );
     return;
   }
