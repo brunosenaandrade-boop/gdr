@@ -71,6 +71,8 @@ export const aiParsedTransactionSchema = z.object({
   description: z.string(),
   amount: z.number().positive(),
   category_suggestion: z.string(),
+  counterparty: z.string().nullable().optional(),
+  confidence: z.enum(["high", "medium", "low"]).optional(),
 });
 
 // ===== Type exports =====

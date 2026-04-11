@@ -305,16 +305,21 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  // Perguntar confirmação
+  // Perguntar confirmação (com aviso extra quando confidence é baixa)
   const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
   const categoryLabel = matchedCategory?.name ?? parsed.category_suggestion;
+  const lowConfidenceWarning =
+    parsed.confidence === "low"
+      ? `\n\n⚠️ Não tenho certeza se entendi tudo. Confira os dados acima antes de confirmar.`
+      : "";
 
   await respond(
     `Entendi! Vou lançar:\n\n` +
       `${typeLabel}: ${parsed.description}\n` +
       `Valor: ${formatCurrency(parsed.amount)}\n` +
-      `Categoria: ${categoryLabel}\n\n` +
-      `Confirma? (Sim/Não)`,
+      `Categoria: ${categoryLabel}` +
+      lowConfidenceWarning +
+      `\n\nConfirma? (Sim/Não)`,
   );
 }
 

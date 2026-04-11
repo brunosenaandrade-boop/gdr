@@ -42,11 +42,15 @@ export type WhatsAppPending = Omit<
 };
 
 // ===== AI Parse Result =====
+export type AIConfidence = "high" | "medium" | "low";
+
 export type AIParsedTransaction = {
   type: TransactionType;
   description: string;
   amount: number; // centavos
   category_suggestion: string;
+  counterparty?: string | null;
+  confidence?: AIConfidence;
 };
 
 // ===== Dashboard =====
