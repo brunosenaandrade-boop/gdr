@@ -47,11 +47,16 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
     if (linkCodeMatch) {
       const code = linkCodeMatch[0];
+
+      // Código expira em 10 minutos
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
       const { data: pendingLink, error: pendingLinkError } = await supabase
         .from("whatsapp_links")
-        .select("id, tenant_id")
+        .select("id, tenant_id, created_at")
         .eq("verification_code", code)
         .eq("verified", false)
+        .gte("created_at", tenMinutesAgo)
         .maybeSingle();
 
       if (pendingLinkError) {
@@ -62,6 +67,22 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (!pendingLink) {
         await sendWhatsAppMessage(message.from, "Código inválido ou expirado. Gere um novo código no painel.");
+        return;
+      }
+
+      // Verificar se o número já está vinculado em outra conta
+      const { data: existingPhone } = await supabase
+        .from("whatsapp_links")
+        .select("id")
+        .eq("phone_number", message.from)
+        .eq("verified", true)
+        .maybeSingle();
+
+      if (existingPhone) {
+        await sendWhatsAppMessage(
+          message.from,
+          "Este número já está vinculado a outra conta do Guarda Dinheiro. Desvincule na outra conta primeiro.",
+        );
         return;
       }
 
