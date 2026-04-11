@@ -48,6 +48,15 @@ export async function GET(request: NextRequest) {
     if (links.error) throw links.error;
     results.whatsapp_links_orphan_deleted = links.data?.length ?? 0;
 
+    // 4. whatsapp_conversation_log > 30 dias
+    const convLog = await supabase
+      .from("whatsapp_conversation_log")
+      .delete()
+      .lt("created_at", thirtyDaysAgo)
+      .select("id");
+    if (convLog.error) throw convLog.error;
+    results.whatsapp_conversation_log_deleted = convLog.data?.length ?? 0;
+
     return NextResponse.json({ status: "ok", ranAt: nowIso, ...results });
   } catch (err) {
     Sentry.captureException(err);

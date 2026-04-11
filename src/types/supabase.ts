@@ -151,6 +151,47 @@ export type Database = {
           },
         ]
       }
+      whatsapp_conversation_log: {
+        Row: {
+          content: string
+          created_at: string | null
+          direction: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          phone_number: string
+          tenant_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          direction: string
+          id?: string
+          message_type: string
+          metadata?: Json | null
+          phone_number: string
+          tenant_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          direction?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          phone_number?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversation_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_links: {
         Row: {
           created_at: string | null
