@@ -100,6 +100,74 @@ export async function sendWhatsAppButtons(
   return { ok: true };
 }
 
+type CTAParams = {
+  displayText: string;
+  url: string;
+};
+
+/**
+ * Envia mensagem interativa com botão CTA (link externo) via WhatsApp Business API.
+ * Usado para direcionar o usuário a uma URL (cadastro, painel, etc).
+ */
+export async function sendWhatsAppCTA(
+  to: string,
+  body: string,
+  cta: CTAParams,
+  footer?: string,
+): Promise<SendMessageResult> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+
+  if (!phoneNumberId || !accessToken) {
+    return { ok: false, error: "WhatsApp API não configurada" };
+  }
+
+  const interactive: Record<string, unknown> = {
+    type: "cta_url",
+    body: { text: body },
+    action: {
+      name: "cta_url",
+      parameters: {
+        display_text: cta.displayText,
+        url: cta.url,
+      },
+    },
+  };
+
+  if (footer) {
+    interactive.footer = { text: footer };
+  }
+
+  const response = await fetch(
+    `${GRAPH_API}/${phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    try {
+      const respBody = await response.text();
+      console.error(`Meta API CTA error: ${response.status} - ${respBody}`);
+    } catch {
+      console.error(`Meta API CTA error: ${response.status}`);
+    }
+    return { ok: false, error: "Falha ao enviar CTA." };
+  }
+
+  return { ok: true };
+}
+
 export async function downloadWhatsAppMedia(mediaId: string): Promise<Buffer | null> {
   try {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;

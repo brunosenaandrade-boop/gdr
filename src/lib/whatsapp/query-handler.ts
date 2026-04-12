@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatCurrency } from "@/lib/utils";
+import { generateResponse } from "@/lib/openai/generate-response";
 
 /**
  * Detecta se a mensagem é uma consulta financeira (não um lançamento).
@@ -58,8 +59,26 @@ function classifyQuery(text: string): { type: QueryType; categoryFilter?: string
 
 /**
  * Executa a consulta financeira e retorna a resposta formatada.
+ * Os dados são buscados do banco e passados pela persona para resposta natural.
  */
 export async function handleQuery(
+  tenantId: string,
+  text: string,
+  supabase: SupabaseClient,
+): Promise<string> {
+  const rawData = await buildQueryData(tenantId, text, supabase);
+
+  return generateResponse({
+    action: "query_response",
+    query: text,
+    data: rawData,
+  });
+}
+
+/**
+ * Busca os dados reais do banco e retorna como texto estruturado (fallback-safe).
+ */
+async function buildQueryData(
   tenantId: string,
   text: string,
   supabase: SupabaseClient,
@@ -74,22 +93,23 @@ export async function handleQuery(
   switch (type) {
     case "saldo": {
       const stats = await getMonthStats(supabase, tenantId, startOfMonth, endOfMonth);
+      const saldo = stats.receitas - stats.despesas;
       return (
-        `💵 Seu saldo em ${mesNome}:\n\n` +
+        `Saldo em ${mesNome}:\n` +
         `Receitas: ${formatCurrency(stats.receitas)}\n` +
         `Despesas: ${formatCurrency(stats.despesas)}\n` +
-        `Saldo: ${formatCurrency(stats.receitas - stats.despesas)}`
+        `Saldo: ${formatCurrency(saldo)} (${saldo >= 0 ? "positivo" : "negativo"})`
       );
     }
 
     case "receitas": {
       const stats = await getMonthStats(supabase, tenantId, startOfMonth, endOfMonth);
-      return `📈 Receitas em ${mesNome}: ${formatCurrency(stats.receitas)}`;
+      return `Receitas em ${mesNome}: ${formatCurrency(stats.receitas)}`;
     }
 
     case "despesas": {
       const stats = await getMonthStats(supabase, tenantId, startOfMonth, endOfMonth);
-      return `📉 Despesas em ${mesNome}: ${formatCurrency(stats.despesas)}`;
+      return `Despesas em ${mesNome}: ${formatCurrency(stats.despesas)}`;
     }
 
     case "contas_pagar": {
@@ -103,7 +123,7 @@ export async function handleQuery(
         .limit(10);
 
       if (!data || data.length === 0) {
-        return "✅ Você não tem contas a pagar pendentes!";
+        return "Nenhuma conta a pagar pendente.";
       }
 
       const lines = data.map((t) => {
@@ -111,7 +131,7 @@ export async function handleQuery(
         return `• ${t.description} — ${formatCurrency(t.amount)} (vence ${venc})`;
       });
 
-      return `📋 Contas a pagar:\n\n${lines.join("\n")}`;
+      return `Contas a pagar (${data.length}):\n${lines.join("\n")}`;
     }
 
     case "contas_vencidas": {
@@ -124,7 +144,7 @@ export async function handleQuery(
         .limit(10);
 
       if (!data || data.length === 0) {
-        return "✅ Nenhuma conta vencida! Tudo em dia.";
+        return "Nenhuma conta vencida. Tudo em dia.";
       }
 
       const lines = data.map((t) => {
@@ -132,11 +152,11 @@ export async function handleQuery(
         return `• ${t.description} — ${formatCurrency(t.amount)} (venceu ${venc})`;
       });
 
-      return `⚠️ Contas vencidas:\n\n${lines.join("\n")}`;
+      return `Contas vencidas (${data.length}):\n${lines.join("\n")}`;
     }
 
     case "categoria": {
-      if (!categoryFilter) return handleQuery(tenantId, "resumo", supabase);
+      if (!categoryFilter) return buildQueryData(tenantId, "resumo", supabase);
 
       const { data } = await supabase
         .from("transactions")
@@ -164,10 +184,10 @@ export async function handleQuery(
       }
 
       if (count === 0) {
-        return `Não encontrei gastos em "${categoryFilter}" este mês.`;
+        return `Nenhum gasto encontrado em "${categoryFilter}" este mês.`;
       }
 
-      return `📂 ${matchedName} em ${mesNome}:\n${count} lançamento${count > 1 ? "s" : ""} totalizando ${formatCurrency(total)}`;
+      return `${matchedName} em ${mesNome}: ${count} lançamento${count > 1 ? "s" : ""} totalizando ${formatCurrency(total)}`;
     }
 
     case "resumo_mes":
@@ -188,16 +208,15 @@ export async function handleQuery(
         .eq("status", "atrasado");
 
       const saldo = stats.receitas - stats.despesas;
-      const emoji = saldo >= 0 ? "💚" : "🔴";
 
       return (
-        `📊 Resumo de ${mesNome}:\n\n` +
-        `💰 Receitas: ${formatCurrency(stats.receitas)}\n` +
-        `📉 Despesas: ${formatCurrency(stats.despesas)}\n` +
-        `${emoji} Saldo: ${formatCurrency(saldo)}\n\n` +
-        `📋 Contas pendentes: ${pendentes ?? 0}\n` +
-        `⚠️ Contas vencidas: ${vencidas ?? 0}\n\n` +
-        `Para mais detalhes, acesse o painel:\nhttps://www.guardadinheiro.com.br/dashboard`
+        `Resumo de ${mesNome}:\n` +
+        `Receitas: ${formatCurrency(stats.receitas)}\n` +
+        `Despesas: ${formatCurrency(stats.despesas)}\n` +
+        `Saldo: ${formatCurrency(saldo)} (${saldo >= 0 ? "positivo" : "negativo"})\n` +
+        `Contas pendentes: ${pendentes ?? 0}\n` +
+        `Contas vencidas: ${vencidas ?? 0}\n` +
+        `Painel: https://www.guardadinheiro.com.br/dashboard`
       );
     }
   }

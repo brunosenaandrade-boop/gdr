@@ -3,12 +3,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/server";
 import { parseLancamento } from "@/lib/openai/parse-lancamento";
 import { transcribeAudio } from "@/lib/openai/transcribe-audio";
-import { sendWhatsAppMessage, sendWhatsAppButtons, downloadWhatsAppMedia } from "./meta-api";
+import { sendWhatsAppMessage, sendWhatsAppButtons, sendWhatsAppCTA, downloadWhatsAppMedia } from "./meta-api";
 import { formatCurrency } from "@/lib/utils";
 import { isConfirmation, isCancellation } from "./intent";
 import { matchCategory } from "./category-match";
 import { logConversation } from "./conversation-log";
 import { isQuery, handleQuery } from "./query-handler";
+import { generateResponse } from "@/lib/openai/generate-response";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -125,9 +126,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       }
 
       currentTenantId = pendingLink.tenant_id;
-      await respond(
-        'Número vinculado com sucesso! 🎉\n\nAgora você pode lançar receitas e despesas por aqui.\n\nExemplo:\n• "Paguei 150 de luz"\n• "Recebi 500 do cliente João"\n\nOu envie um áudio dizendo o lançamento.',
-      );
+      const welcomeMsg = await generateResponse({ action: "welcome" });
+      await respond(welcomeMsg);
       return;
     }
   }
@@ -141,7 +141,26 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .maybeSingle();
 
   if (!link) {
-    await respond("Número não vinculado. Acesse o painel do Guarda Dinheiro, gere um código e envie-o aqui para vincular.");
+    const ctaBody =
+      "Olá! Sou o Guardinha, seu assistente financeiro 24h. " +
+      "Você está a um passo de começar a organizar suas finanças de vez! 🚀\n\n" +
+      "Cadastre-se agora e ganhe *7 dias gratuitos* para testar tudo.";
+    await sendWhatsAppCTA(
+      message.from,
+      ctaBody,
+      {
+        displayText: "FAZER MEU CADASTRO GRÁTIS",
+        url: "https://www.guardadinheiro.com.br/register",
+      },
+      "O cadastro demora apenas 30 segundos",
+    );
+    await logConversation(supabase, {
+      tenantId: null,
+      phoneNumber: message.from,
+      direction: "out",
+      messageType: "text",
+      content: ctaBody + " [CTA: FAZER MEU CADASTRO GRÁTIS]",
+    });
     return;
   }
 
@@ -162,8 +181,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   if (message.type === "interactive" && message.interactive?.button_reply) {
     const buttonId = message.interactive.button_reply.id;
 
-    if (buttonId.startsWith("edit_tx_")) {
-      const txId = buttonId.replace("edit_tx_", "");
+    if (buttonId.startsWith("editar_")) {
+      const txId = buttonId.replace("editar_", "");
       // Guardar que estamos editando e pedir nova info
       await supabase.from("whatsapp_pending").insert({
         tenant_id: tenantId,
@@ -177,8 +196,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       return;
     }
 
-    if (buttonId.startsWith("del_tx_")) {
-      const txId = buttonId.replace("del_tx_", "");
+    if (buttonId.startsWith("excluir_")) {
+      const txId = buttonId.replace("excluir_", "");
       const { error: delErr } = await supabase
         .from("transactions")
         .delete()
@@ -220,7 +239,16 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (updates.amount || updates.description || updates.category_id) {
         await supabase.from("transactions").update(updates).eq("id", txId).eq("tenant_id", tenantId);
-        await respond("Lançamento atualizado com sucesso!");
+        const updatedMsg = await generateResponse({
+          action: "transaction_updated",
+          data: {
+            type: editResult.data.type,
+            description: editResult.data.description,
+            amount: editResult.data.amount,
+            category: matchedCat?.name ?? editResult.data.category_suggestion,
+          },
+        });
+        await respond(updatedMsg);
       } else {
         await respond("Não consegui identificar o que alterar. Tente ser mais específico.");
       }
@@ -395,16 +423,16 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       console.error("Erro ao atualizar pending:", updateErr.message);
     }
 
-    const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
-    const categoryLabel = matched?.name ?? parsed.category_suggestion;
-
-    await respond(
-      `Atualizei o lançamento:\n\n` +
-        `${typeLabel}: ${parsed.description}\n` +
-        `Valor: ${formatCurrency(parsed.amount)}\n` +
-        `Categoria: ${categoryLabel}\n\n` +
-        `Confirma? (Sim/Não)`,
-    );
+    const updatedPendingMsg = await generateResponse({
+      action: "transaction_updated",
+      data: {
+        type: parsed.type,
+        description: parsed.description,
+        amount: parsed.amount,
+        category: matched?.name ?? parsed.category_suggestion,
+      },
+    });
+    await respond(updatedPendingMsg);
     return;
   }
 
@@ -499,23 +527,27 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
 
     const txId = newTx?.id ?? "";
-    const summary =
-      `Lançamento registrado! ✅\n\n` +
-      `${typeLabel}: ${parsed.description}\n` +
-      `Valor: ${formatCurrency(parsed.amount)}\n` +
-      `Categoria: ${categoryLabel}` +
-      recurringLabel;
+    const summary = await generateResponse({
+      action: "transaction_registered",
+      data: {
+        type: parsed.type,
+        description: parsed.description,
+        amount: parsed.amount,
+        category: categoryLabel,
+        recurring: recurringLabel || null,
+      },
+    });
 
     await sendWhatsAppButtons(message.from, summary, [
-      { id: `edit_tx_${txId}`, title: "Editar" },
-      { id: `del_tx_${txId}`, title: "Excluir" },
+      { id: `editar_${txId}`, title: "✏️ Editar" },
+      { id: `excluir_${txId}`, title: "🗑️ Excluir" },
     ]);
     await logConversation(supabase, {
       tenantId: currentTenantId,
       phoneNumber: message.from,
       direction: "out",
       messageType: "text",
-      content: summary + " [botões: Editar | Excluir]",
+      content: summary + " [botões: ✏️ Editar | 🗑️ Excluir]",
     });
     return;
   }
@@ -539,20 +571,18 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  const lowConfidenceWarning =
-    parsed.confidence === "low"
-      ? `\n\n⚠️ Não tenho certeza se entendi tudo. Confira os dados acima antes de confirmar.`
-      : "";
-
-  await respond(
-    `Entendi! Vou lançar:\n\n` +
-      `${typeLabel}: ${parsed.description}\n` +
-      `Valor: ${formatCurrency(parsed.amount)}\n` +
-      `Categoria: ${categoryLabel}` +
-      recurringLabel +
-      lowConfidenceWarning +
-      `\n\nConfirma? (Sim/Não)`,
-  );
+  const pendingMsg = await generateResponse({
+    action: "transaction_pending",
+    data: {
+      type: parsed.type,
+      description: parsed.description,
+      amount: parsed.amount,
+      category: categoryLabel,
+      recurring: recurringLabel || null,
+    },
+    lowConfidence: parsed.confidence === "low",
+  });
+  await respond(pendingMsg);
 }
 
 type RespondFn = (text: string) => Promise<void>;
@@ -595,15 +625,19 @@ async function handleConfirmation(
   if (updateError) console.error("Erro ao atualizar pending:", updateError.message);
 
   const txId = newTx?.id ?? "";
-  const typeLabel = pending.parsed_type === "receita" ? "RECEITA" : "DESPESA";
-  const summary =
-    `Lançamento confirmado! ✅\n\n` +
-    `${typeLabel}: ${pending.parsed_description}\n` +
-    `Valor: ${formatCurrency(pending.parsed_amount ?? 0)}`;
+  const summary = await generateResponse({
+    action: "transaction_confirmed",
+    data: {
+      type: (pending.parsed_type as "receita" | "despesa") ?? "despesa",
+      description: pending.parsed_description ?? "",
+      amount: pending.parsed_amount ?? 0,
+      category: "",
+    },
+  });
 
   await sendWhatsAppButtons(phone ?? "", summary, [
-    { id: `edit_tx_${txId}`, title: "Editar" },
-    { id: `del_tx_${txId}`, title: "Excluir" },
+    { id: `editar_${txId}`, title: "✏️ Editar" },
+    { id: `excluir_${txId}`, title: "🗑️ Excluir" },
   ]);
 }
 
