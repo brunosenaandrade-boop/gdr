@@ -71,33 +71,28 @@ function todayFormatted(): string {
 }
 
 function buildDataBlock(d: TransactionData): string {
-  const tipoLabel = d.type === "receita" ? "Receita" : "Despesa";
+  const statusLabel = d.type === "receita" ? "recebido" : "pago";
   return (
-    `📋 *Resumo do registro*\n\n` +
-    `Descrição: ${d.description}\n` +
-    `Valor: ${formatCurrency(d.amount)}\n` +
-    `Categoria: ${d.category}\n` +
-    `Data: ${todayFormatted()}\n` +
-    `Tipo: ${tipoLabel}\n` +
-    `Status: pago` +
+    `📋 *Descrição:* ${d.description}\n` +
+    `💰 *Valor:* ${formatCurrency(d.amount)}\n` +
+    `📁 *Categoria:* ${d.category}\n` +
+    `📅 *Data:* ${todayFormatted()}\n` +
+    `✅ *Status:* ${statusLabel}` +
     (d.recurring ? `\n🔄 ${d.recurring}` : "")
   );
 }
 
 function buildPendingDataBlock(d: TransactionData): string {
-  const tipoLabel = d.type === "receita" ? "Receita" : "Despesa";
   return (
-    `📋 *Dados do lançamento*\n\n` +
-    `Descrição: ${d.description}\n` +
-    `Valor: ${formatCurrency(d.amount)}\n` +
-    `Categoria: ${d.category}\n` +
-    `Tipo: ${tipoLabel}` +
+    `📋 *Descrição:* ${d.description}\n` +
+    `💰 *Valor:* ${formatCurrency(d.amount)}\n` +
+    `📁 *Categoria:* ${d.category}` +
     (d.recurring ? `\n🔄 ${d.recurring}` : "")
   );
 }
 
 function buildFooter(): string {
-  return `\n\n📊 Para mais detalhes e relatórios, acesse o painel:\n${DASHBOARD_URL}`;
+  return `\n\n📊 Para visualizar seus relatórios acesse o painel!`;
 }
 
 // ===== Templates de fallback (quando a API falha) =====

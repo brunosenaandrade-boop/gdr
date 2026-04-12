@@ -79,13 +79,13 @@ export default function MobileNav() {
               >
                 Entrar
               </Link>
-              <Link
-                href="/register"
+              <a
+                href="https://wa.me/554820270106?text=Quero+me+cadastrar"
                 onClick={close}
                 className="mt-1 flex h-9 items-center justify-center rounded-full bg-emerald-500/90 text-sm font-medium text-black transition-all hover:bg-emerald-400"
               >
-                Criar conta
-              </Link>
+                Cadastre-se pelo WhatsApp
+              </a>
             </div>
           </div>
         </>

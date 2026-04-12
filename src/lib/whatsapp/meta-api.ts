@@ -168,6 +168,89 @@ export async function sendWhatsAppCTA(
   return { ok: true };
 }
 
+/**
+ * Envia um WhatsApp Flow (formulário nativo dentro do WhatsApp).
+ * Requer WHATSAPP_FLOW_ID e WHATSAPP_FLOW_TOKEN configurados.
+ * O Flow deve estar criado e publicado no Meta Business Manager.
+ */
+export async function sendWhatsAppFlow(
+  to: string,
+  body: string,
+  opts?: {
+    header?: string;
+    footer?: string;
+    ctaText?: string;
+    screen?: string;
+  },
+): Promise<SendMessageResult> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const flowId = process.env.WHATSAPP_FLOW_ID;
+  const flowToken = process.env.WHATSAPP_FLOW_TOKEN;
+
+  if (!phoneNumberId || !accessToken) {
+    return { ok: false, error: "WhatsApp API não configurada" };
+  }
+
+  if (!flowId || !flowToken) {
+    return { ok: false, error: "WhatsApp Flow não configurado (WHATSAPP_FLOW_ID / WHATSAPP_FLOW_TOKEN)" };
+  }
+
+  const interactive: Record<string, unknown> = {
+    type: "flow",
+    body: { text: body },
+    action: {
+      name: "flow",
+      parameters: {
+        flow_message_version: "3",
+        flow_token: flowToken,
+        flow_id: flowId,
+        flow_cta: opts?.ctaText ?? "🎯 Criar minha conta grátis",
+        flow_action: "navigate",
+        flow_action_payload: {
+          screen: opts?.screen ?? "CADASTRO",
+        },
+      },
+    },
+  };
+
+  if (opts?.header) {
+    interactive.header = { type: "text", text: opts.header };
+  }
+  if (opts?.footer) {
+    interactive.footer = { text: opts.footer };
+  }
+
+  const response = await fetch(
+    `${GRAPH_API}/${phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    try {
+      const respBody = await response.text();
+      console.error(`Meta API Flow error: ${response.status} - ${respBody}`);
+    } catch {
+      console.error(`Meta API Flow error: ${response.status}`);
+    }
+    return { ok: false, error: "Falha ao enviar Flow." };
+  }
+
+  return { ok: true };
+}
+
 export async function downloadWhatsAppMedia(mediaId: string): Promise<Buffer | null> {
   try {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;

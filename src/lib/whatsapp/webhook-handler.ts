@@ -10,6 +10,7 @@ import { matchCategory } from "./category-match";
 import { logConversation } from "./conversation-log";
 import { isQuery, handleQuery } from "./query-handler";
 import { generateResponse } from "@/lib/openai/generate-response";
+import { sendSignupFlow, handleFlowResponse } from "./onboarding-flow";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -17,7 +18,11 @@ type WhatsAppMessage = {
   type: string;
   text?: { body: string };
   audio?: { id: string; mime_type: string };
-  interactive?: { type: string; button_reply?: { id: string; title: string } };
+  interactive?: {
+    type: string;
+    button_reply?: { id: string; title: string };
+    nfm_reply?: { response_json: string };
+  };
   messageId?: string;
 };
 
@@ -126,8 +131,45 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       }
 
       currentTenantId = pendingLink.tenant_id;
-      const welcomeMsg = await generateResponse({ action: "welcome" });
-      await respond(welcomeMsg);
+
+      // Mensagem 1: Apresentação do Guardinha + Como funciona
+      const msg1Body =
+        "A partir de agora, eu serei o seu Guardinha, seu assistente financeiro pessoal! 🛡️💚\n\n" +
+        "Estou aqui para te ajudar a organizar sua vida financeira, registrar seus gastos e te ajudar a sair das dívidas de vez!\n\n" +
+        "Preparei um guia rápido de como eu funciono para que possamos começar juntos da melhor forma. Clique no botão abaixo para entender! 👇";
+
+      await sendWhatsAppCTA(message.from, msg1Body, {
+        displayText: "📖 Entender como funciona",
+        url: "https://www.guardadinheiro.com.br/como-funciona",
+      });
+      await logConversation(supabase, {
+        tenantId: currentTenantId,
+        phoneNumber: message.from,
+        direction: "out",
+        messageType: "text",
+        content: msg1Body + " [CTA: 📖 Entender como funciona]",
+      });
+
+      // Aguardar 3 segundos entre as mensagens
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // Mensagem 2: Pronto para começar + Acessar plataforma
+      const msg2Body =
+        "Estamos prontos para começar! 🚀\n\n" +
+        "Esse contato de WhatsApp será nosso canal principal. Você já pode começar a registrar tudo aqui comigo, é só mandar uma mensagem de voz ou texto!\n\n" +
+        "Para acessar o painel com todos os seus dados:";
+
+      await sendWhatsAppCTA(message.from, msg2Body, {
+        displayText: "📊 Acessar a plataforma",
+        url: "https://www.guardadinheiro.com.br/dashboard",
+      });
+      await logConversation(supabase, {
+        tenantId: currentTenantId,
+        phoneNumber: message.from,
+        direction: "out",
+        messageType: "text",
+        content: msg2Body + " [CTA: 📊 Acessar a plataforma]",
+      });
       return;
     }
   }
@@ -141,26 +183,17 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .maybeSingle();
 
   if (!link) {
-    const ctaBody =
-      "Olá! Sou o Guardinha, seu assistente financeiro 24h. " +
-      "Você está a um passo de começar a organizar suas finanças de vez! 🚀\n\n" +
-      "Cadastre-se agora e ganhe *7 dias gratuitos* para testar tudo.";
-    await sendWhatsAppCTA(
-      message.from,
-      ctaBody,
-      {
-        displayText: "FAZER MEU CADASTRO GRÁTIS",
-        url: "https://www.guardadinheiro.com.br/register",
-      },
-      "O cadastro demora apenas 30 segundos",
-    );
-    await logConversation(supabase, {
-      tenantId: null,
-      phoneNumber: message.from,
-      direction: "out",
-      messageType: "text",
-      content: ctaBody + " [CTA: FAZER MEU CADASTRO GRÁTIS]",
-    });
+    // Verificar se é resposta do WhatsApp Flow (cadastro concluído)
+    if (
+      message.type === "interactive" &&
+      message.interactive?.nfm_reply?.response_json
+    ) {
+      await handleFlowResponse(supabase, message.from, message.interactive.nfm_reply.response_json);
+      return;
+    }
+
+    // Número sem cadastro → enviar formulário de cadastro via WhatsApp Flow
+    await sendSignupFlow(supabase, message.from);
     return;
   }
 
@@ -181,6 +214,25 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   if (message.type === "interactive" && message.interactive?.button_reply) {
     const buttonId = message.interactive.button_reply.id;
 
+    if (buttonId === "ver_dashboard") {
+      await sendWhatsAppCTA(
+        message.from,
+        "Acesse o painel com todos os seus dados, relatórios e categorias:",
+        {
+          displayText: "📊 Acessar a plataforma",
+          url: "https://www.guardadinheiro.com.br/dashboard",
+        },
+      );
+      await logConversation(supabase, {
+        tenantId: currentTenantId,
+        phoneNumber: message.from,
+        direction: "out",
+        messageType: "text",
+        content: "[CTA: 📊 Acessar a plataforma]",
+      });
+      return;
+    }
+
     if (buttonId.startsWith("editar_")) {
       const txId = buttonId.replace("editar_", "");
       // Guardar que estamos editando e pedir nova info
@@ -192,7 +244,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         parsed_amount: null,
         parsed_category_id: null,
       });
-      await respond("O que deseja alterar? Descreva na próxima mensagem.\n\nExemplo:\n• \"O valor era 200\"\n• \"Coloca na categoria Transporte\"\n• \"A descrição é almoço com cliente\"");
+      await respond("Claro! Descreva na próxima mensagem o que você precisa que eu altere na transação.\n\nExemplo:\n• \"O valor era 200\"\n• \"Coloca na categoria Transporte\"\n• \"A descrição é almoço com cliente\"");
       return;
     }
 
@@ -541,13 +593,14 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     await sendWhatsAppButtons(message.from, summary, [
       { id: `editar_${txId}`, title: "✏️ Editar" },
       { id: `excluir_${txId}`, title: "🗑️ Excluir" },
+      { id: "ver_dashboard", title: "📊 Ver Dashboard" },
     ]);
     await logConversation(supabase, {
       tenantId: currentTenantId,
       phoneNumber: message.from,
       direction: "out",
       messageType: "text",
-      content: summary + " [botões: ✏️ Editar | 🗑️ Excluir]",
+      content: summary + " [botões: ✏️ Editar | 🗑️ Excluir | 📊 Ver Dashboard]",
     });
     return;
   }
@@ -638,6 +691,7 @@ async function handleConfirmation(
   await sendWhatsAppButtons(phone ?? "", summary, [
     { id: `editar_${txId}`, title: "✏️ Editar" },
     { id: `excluir_${txId}`, title: "🗑️ Excluir" },
+    { id: "ver_dashboard", title: "📊 Ver Dashboard" },
   ]);
 }
 

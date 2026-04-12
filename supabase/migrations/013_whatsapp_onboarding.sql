@@ -1,0 +1,2 @@
+-- Placeholder: tabela whatsapp_onboarding removida antes de ir pra produção.
+-- O cadastro usa WhatsApp Flows (formulário nativo), não precisa de tabela intermediária.

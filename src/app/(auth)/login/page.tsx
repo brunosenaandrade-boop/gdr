@@ -81,9 +81,9 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Não tem conta?{" "}
-        <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-          Criar conta
-        </Link>
+        <a href="https://wa.me/554820270106?text=Quero+me+cadastrar" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+          Cadastre-se pelo WhatsApp
+        </a>
       </p>
     </Card>
   );
