@@ -67,10 +67,21 @@ export function polishDescription(
   return `${base} - ${formatShortDate(now)}`;
 }
 
+export type ParseContext = {
+  tenantType?: "pf" | "pj";
+  pendingContext?: {
+    type: "receita" | "despesa";
+    description: string;
+    amount: number; // centavos
+    category: string | null;
+  } | null;
+};
+
 export async function parseLancamento(
   text: string,
   categories: Category[],
-): Promise<{ ok: true; data: AIParsedTransaction } | { ok: false; error: string }> {
+  context: ParseContext = {},
+): Promise<{ ok: true; data: AIParsedTransaction & { is_update_to_pending?: boolean } } | { ok: false; error: string }> {
   const categoryList = categories
     .map((c) => `${c.name} (${c.type})`)
     .join(", ");
@@ -80,6 +91,23 @@ export async function parseLancamento(
     month: "long",
     year: "numeric",
   });
+
+  const tenantContext =
+    context.tenantType === "pj"
+      ? "Esta é uma conta de PESSOA JURÍDICA (empresa). Receitas tipicamente são vendas/serviços/notas fiscais. Despesas tipicamente são folha, aluguel, fornecedores, impostos."
+      : context.tenantType === "pf"
+        ? "Esta é uma conta de PESSOA FÍSICA (orçamento pessoal). Receitas tipicamente são salário/freelance/transferências. Despesas tipicamente são contas, alimentação, transporte, lazer."
+        : "";
+
+  const pendingContextText = context.pendingContext
+    ? `\n\nLANÇAMENTO PENDENTE DO USUÁRIO (aguardando confirmação):\n` +
+      `- Tipo: ${context.pendingContext.type}\n` +
+      `- Descrição: ${context.pendingContext.description}\n` +
+      `- Valor: R$ ${(context.pendingContext.amount / 100).toFixed(2)}\n` +
+      `- Categoria: ${context.pendingContext.category ?? "(nenhuma)"}\n\n` +
+      `Se a nova mensagem for um COMPLEMENTO desse lançamento (ex: usuário adicionando contraparte, ajustando valor, mudando categoria), retorne os dados ATUALIZADOS e adicione "is_update_to_pending": true.\n` +
+      `Se for um LANÇAMENTO NOVO totalmente diferente, ignore o pendente e retorne normalmente (sem o campo is_update_to_pending).`
+    : "";
 
   const openai = getClient();
   const response = await openai.chat.completions.create({
@@ -92,6 +120,7 @@ export async function parseLancamento(
         content: `Você é um assistente financeiro brasileiro. Extraia informações de lançamentos financeiros a partir do texto do usuário (que pode ser transcrição de áudio, com hesitações, repetições e palavras de preenchimento).
 
 Hoje é ${today}.
+${tenantContext ? `\n${tenantContext}\n` : ""}${pendingContextText}
 
 Retorne APENAS um JSON válido com estes campos:
 - type: "receita" ou "despesa"
@@ -170,6 +199,7 @@ Nunca invente valores que não estão no texto.`,
       data: {
         ...parsed.data,
         description: polishedDescription,
+        is_update_to_pending: (json as { is_update_to_pending?: boolean }).is_update_to_pending === true,
       },
     };
   } catch {

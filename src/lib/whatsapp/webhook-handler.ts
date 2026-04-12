@@ -6,6 +6,7 @@ import { transcribeAudio } from "@/lib/openai/transcribe-audio";
 import { sendWhatsAppMessage, downloadWhatsAppMedia } from "./meta-api";
 import { formatCurrency } from "@/lib/utils";
 import { isConfirmation, isCancellation } from "./intent";
+import { matchCategory } from "./category-match";
 import { logConversation } from "./conversation-log";
 import type { Category } from "@/types";
 
@@ -17,16 +18,13 @@ type WhatsAppMessage = {
   messageId?: string;
 };
 
-// Janela para considerar um pending como "recente" para dedup (30s)
 const DEDUP_WINDOW_MS = 30 * 1000;
-// Pendings mais antigos que isso são descartados quando chega novo lançamento (2 min)
 const STALE_PENDING_MS = 2 * 60 * 1000;
 
 export async function handleIncomingMessage(message: WhatsAppMessage): Promise<void> {
   const supabase = await createServiceClient();
   let currentTenantId: string | null = null;
 
-  // Helper: envia mensagem + registra no log de conversas
   async function respond(text: string): Promise<void> {
     await sendWhatsAppMessage(message.from, text);
     await logConversation(supabase, {
@@ -38,7 +36,6 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     });
   }
 
-  // Log da mensagem recebida (best-effort, antes de qualquer processamento)
   const incomingContent =
     message.type === "text"
       ? (message.text?.body ?? "")
@@ -55,7 +52,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     metadata: { messageId: message.messageId },
   });
 
-  // Idempotência: ignorar mensagens já processadas (Meta pode reenviar webhooks)
+  // Idempotência
   if (message.messageId) {
     const { data: existing } = await supabase
       .from("whatsapp_message_log")
@@ -67,10 +64,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
     await supabase
       .from("whatsapp_message_log")
-      .insert({
-        message_id: message.messageId,
-        phone_number: message.from,
-      })
+      .insert({ message_id: message.messageId, phone_number: message.from })
       .then(({ error }) => {
         if (error) console.error("Erro ao registrar message_log:", error.message);
       });
@@ -112,19 +106,13 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         .maybeSingle();
 
       if (existingPhone) {
-        await respond(
-          "Este número já está vinculado a outra conta do Guarda Dinheiro. Desvincule na outra conta primeiro.",
-        );
+        await respond("Este número já está vinculado a outra conta do Guarda Dinheiro. Desvincule na outra conta primeiro.");
         return;
       }
 
       const { error: updateError } = await supabase
         .from("whatsapp_links")
-        .update({
-          phone_number: message.from,
-          verified: true,
-          verification_code: null,
-        })
+        .update({ phone_number: message.from, verified: true, verification_code: null })
         .eq("id", pendingLink.id);
 
       if (updateError) {
@@ -142,7 +130,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
   }
 
-  // ===== Descobrir tenant do número =====
+  // ===== Descobrir tenant =====
   const { data: link } = await supabase
     .from("whatsapp_links")
     .select("tenant_id")
@@ -151,31 +139,68 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .maybeSingle();
 
   if (!link) {
-    await respond(
-      "Número não vinculado. Acesse o painel do Guarda Dinheiro, gere um código e envie-o aqui para vincular.",
-    );
+    await respond("Número não vinculado. Acesse o painel do Guarda Dinheiro, gere um código e envie-o aqui para vincular.");
     return;
   }
 
   currentTenantId = link.tenant_id;
   const tenantId = link.tenant_id;
 
-  // ===== FLUXO 2: Confirmação/Cancelamento (detecta na última cláusula) =====
+  // ===== Buscar pending ativo (para contexto multi-turn e detecção de intent) =====
+  const { data: activePending } = await supabase
+    .from("whatsapp_pending")
+    .select("*, category:categories(name)")
+    .eq("tenant_id", tenantId)
+    .eq("confirmed", false)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  // ===== FLUXO 2: Confirmação/Cancelamento =====
   if (message.type === "text" && message.text) {
     const text = message.text?.body ?? "";
 
+    // Regex-based intent (rápido, sem custo)
     if (isConfirmation(text)) {
-      return handleConfirmation(tenantId, supabase, respond);
+      return handleConfirmation(tenantId, supabase, respond, activePending);
+    }
+    if (isCancellation(text)) {
+      return handleCancellation(tenantId, supabase, respond, activePending);
     }
 
-    if (isCancellation(text)) {
-      return handleCancellation(tenantId, supabase, respond);
+    // #4: Fallback semântico via IA — só se existe pending ativo e a frase é curta
+    // Mensagens como "isso", "manda", "joga lá", "pode ser" que o regex não cobriu
+    if (activePending && text.split(/\s+/).length <= 5) {
+      const lower = text.trim().toLowerCase();
+      // Verificar se parece ser um complemento com informação nova ou confirmação vaga
+      const looksLikeValue = /\d/.test(lower);
+      const looksLikeConfirmOrCancel = !/[0-9]/.test(lower) && lower.length < 30;
+
+      if (looksLikeConfirmOrCancel && !looksLikeValue) {
+        // Frase curta sem números com pending ativo — possivelmente confirmação/cancelamento
+        // Palavras positivas genéricas
+        const positiveVibes = /^(bora|vamo|vamos|vai|valeu|show|top|massa|boa|dale|dale|certinho|certeza|exato|fechou|isso a[ií]|manda|mete|joga|lan[çc]a|salva|grava|registra|bota|coloca)/i;
+        const negativeVibes = /^(para|espera|calma|epa|opa|perai|p[eé]ra|errei|errado|engano|troca|muda|altera)/i;
+
+        if (positiveVibes.test(lower)) {
+          return handleConfirmation(tenantId, supabase, respond, activePending);
+        }
+        if (negativeVibes.test(lower)) {
+          return handleCancellation(tenantId, supabase, respond, activePending);
+        }
+      }
     }
   }
 
   // ===== FLUXO 3: Novo lançamento =====
 
-  // Buscar categorias do tenant
+  // Buscar tenant type (PF/PJ) para contexto da IA
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("type")
+    .eq("id", tenantId)
+    .maybeSingle();
+
   const { data: categories, error: catError } = await supabase
     .from("categories")
     .select("*")
@@ -206,7 +231,6 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
     textContent = transcription.text;
 
-    // Registrar transcrição do áudio no log
     await logConversation(supabase, {
       tenantId: currentTenantId,
       phoneNumber: message.from,
@@ -222,9 +246,23 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  // Parse com IA
+  // #3: Montar contexto multi-turn (se há pending ativo)
+  const pendingCat = activePending?.category as { name: string } | null | undefined;
+  const pendingContext = activePending
+    ? {
+        type: activePending.parsed_type as "receita" | "despesa",
+        description: activePending.parsed_description ?? "",
+        amount: activePending.parsed_amount ?? 0,
+        category: pendingCat?.name ?? null,
+      }
+    : null;
+
+  // Parse com IA (com contexto PF/PJ + pending)
   const typedCategories = (categories ?? []) as Category[];
-  const result = await parseLancamento(textContent, typedCategories);
+  const result = await parseLancamento(textContent, typedCategories, {
+    tenantType: (tenant?.type as "pf" | "pj") ?? undefined,
+    pendingContext,
+  });
 
   if (!result.ok) {
     await respond(
@@ -235,12 +273,55 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
   const { data: parsed } = result;
 
-  // Encontrar categoria matching
-  const matchedCategory = typedCategories.find(
-    (c: Category) => c.name.toLowerCase() === parsed.category_suggestion.toLowerCase(),
+  // #2: Confidence low + amount 0 → pedir clarificação em vez de criar pending
+  if (parsed.confidence === "low" && parsed.amount === 0) {
+    await respond(
+      "Não consegui identificar o valor do lançamento.\n\n" +
+        "Pode repetir informando o valor? Exemplo:\n" +
+        '• "Paguei 150 de luz"\n' +
+        '• "Recebi 500 do João"',
+    );
+    return;
+  }
+
+  // #1: Fuzzy match de categoria (em vez de .find exato)
+  const matched = matchCategory(
+    parsed.category_suggestion,
+    parsed.type,
+    typedCategories,
   );
 
-  // Limpar pendings antigos (> STALE_PENDING_MS) antes de criar novo
+  // #3: Se a IA indicou que é update do pending, atualizar em vez de criar novo
+  if (parsed.is_update_to_pending && activePending) {
+    const { error: updateErr } = await supabase
+      .from("whatsapp_pending")
+      .update({
+        parsed_type: parsed.type,
+        parsed_description: parsed.description,
+        parsed_amount: parsed.amount,
+        parsed_category_id: matched?.id ?? null,
+        raw_message: textContent,
+      })
+      .eq("id", activePending.id);
+
+    if (updateErr) {
+      console.error("Erro ao atualizar pending:", updateErr.message);
+    }
+
+    const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
+    const categoryLabel = matched?.name ?? parsed.category_suggestion;
+
+    await respond(
+      `Atualizei o lançamento:\n\n` +
+        `${typeLabel}: ${parsed.description}\n` +
+        `Valor: ${formatCurrency(parsed.amount)}\n` +
+        `Categoria: ${categoryLabel}\n\n` +
+        `Confirma? (Sim/Não)`,
+    );
+    return;
+  }
+
+  // Limpar pendings antigos
   const staleCutoff = new Date(Date.now() - STALE_PENDING_MS).toISOString();
   await supabase
     .from("whatsapp_pending")
@@ -252,7 +333,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       if (error) console.error("Erro ao limpar pendings antigos:", error.message);
     });
 
-  // Dedup: se já existe um pending recente (< DEDUP_WINDOW_MS) igual, não duplica
+  // Dedup
   const dedupCutoff = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString();
   const { data: recentSimilar } = await supabase
     .from("whatsapp_pending")
@@ -265,9 +346,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .maybeSingle();
 
   if (recentSimilar) {
-    // Já existe pending igual recente — só reenvia a pergunta de confirmação
     const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
-    const categoryLabel = matchedCategory?.name ?? parsed.category_suggestion;
+    const categoryLabel = matched?.name ?? parsed.category_suggestion;
     await respond(
       `Ainda aguardando sua confirmação do lançamento anterior:\n\n` +
         `${typeLabel}: ${parsed.description}\n` +
@@ -278,7 +358,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  // Remover qualquer outro pending ativo do mesmo tenant (só permite 1 ativo por vez)
+  // Remover pendings ativos antigos (1 ativo por vez)
   await supabase
     .from("whatsapp_pending")
     .delete()
@@ -295,7 +375,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     parsed_type: parsed.type,
     parsed_description: parsed.description,
     parsed_amount: parsed.amount,
-    parsed_category_id: matchedCategory?.id ?? null,
+    parsed_category_id: matched?.id ?? null,
   });
 
   if (pendingError) {
@@ -305,9 +385,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  // Perguntar confirmação (com aviso extra quando confidence é baixa)
   const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
-  const categoryLabel = matchedCategory?.name ?? parsed.category_suggestion;
+  const categoryLabel = matched?.name ?? parsed.category_suggestion;
   const lowConfidenceWarning =
     parsed.confidence === "low"
       ? `\n\n⚠️ Não tenho certeza se entendi tudo. Confira os dados acima antes de confirmar.`
@@ -329,16 +408,8 @@ async function handleConfirmation(
   tenantId: string,
   supabase: SupabaseClient,
   respond: RespondFn,
+  pending?: { id: string; parsed_type: string | null; parsed_description: string | null; parsed_amount: number | null; parsed_category_id: string | null } | null,
 ): Promise<void> {
-  const { data: pending } = await supabase
-    .from("whatsapp_pending")
-    .select("*")
-    .eq("tenant_id", tenantId)
-    .eq("confirmed", false)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
   if (!pending) {
     await respond("Nenhum lançamento pendente para confirmar.");
     return;
@@ -369,23 +440,15 @@ async function handleConfirmation(
 
   if (updateError) console.error("Erro ao atualizar pending:", updateError.message);
 
-  await respond("Lançamento confirmado! Você pode ver no painel do Guarda Dinheiro.");
+  await respond("Lançamento confirmado! ✅ Você pode ver no painel do Guarda Dinheiro.");
 }
 
 async function handleCancellation(
   tenantId: string,
   supabase: SupabaseClient,
   respond: RespondFn,
+  pending?: { id: string } | null,
 ): Promise<void> {
-  const { data: pending } = await supabase
-    .from("whatsapp_pending")
-    .select("id")
-    .eq("tenant_id", tenantId)
-    .eq("confirmed", false)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
   if (!pending) {
     await respond("Nenhum lançamento pendente para cancelar.");
     return;
