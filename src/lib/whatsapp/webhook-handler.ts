@@ -3,11 +3,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/server";
 import { parseLancamento } from "@/lib/openai/parse-lancamento";
 import { transcribeAudio } from "@/lib/openai/transcribe-audio";
-import { sendWhatsAppMessage, downloadWhatsAppMedia } from "./meta-api";
+import { sendWhatsAppMessage, sendWhatsAppButtons, downloadWhatsAppMedia } from "./meta-api";
 import { formatCurrency } from "@/lib/utils";
 import { isConfirmation, isCancellation } from "./intent";
 import { matchCategory } from "./category-match";
 import { logConversation } from "./conversation-log";
+import { isQuery, handleQuery } from "./query-handler";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -15,6 +16,7 @@ type WhatsAppMessage = {
   type: string;
   text?: { body: string };
   audio?: { id: string; mime_type: string };
+  interactive?: { type: string; button_reply?: { id: string; title: string } };
   messageId?: string;
 };
 
@@ -156,13 +158,88 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     .limit(1)
     .maybeSingle();
 
+  // ===== FLUXO 1.5: Botões interativos (Editar/Excluir transação) =====
+  if (message.type === "interactive" && message.interactive?.button_reply) {
+    const buttonId = message.interactive.button_reply.id;
+
+    if (buttonId.startsWith("edit_tx_")) {
+      const txId = buttonId.replace("edit_tx_", "");
+      // Guardar que estamos editando e pedir nova info
+      await supabase.from("whatsapp_pending").insert({
+        tenant_id: tenantId,
+        raw_message: `__edit__${txId}`,
+        parsed_type: null,
+        parsed_description: null,
+        parsed_amount: null,
+        parsed_category_id: null,
+      });
+      await respond("O que deseja alterar? Descreva na próxima mensagem.\n\nExemplo:\n• \"O valor era 200\"\n• \"Coloca na categoria Transporte\"\n• \"A descrição é almoço com cliente\"");
+      return;
+    }
+
+    if (buttonId.startsWith("del_tx_")) {
+      const txId = buttonId.replace("del_tx_", "");
+      const { error: delErr } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", txId)
+        .eq("tenant_id", tenantId);
+
+      if (delErr) {
+        console.error("Erro ao excluir transação:", delErr.message);
+        await respond("Erro ao excluir. Tente novamente.");
+      } else {
+        await respond("Lançamento excluído com sucesso.");
+      }
+      return;
+    }
+  }
+
+  // ===== FLUXO 1.6: Edição de transação em andamento =====
+  if (activePending?.raw_message?.startsWith("__edit__") && message.type === "text" && message.text) {
+    const txId = activePending.raw_message.replace("__edit__", "");
+    const editText = message.text?.body ?? "";
+
+    // Usar IA para interpretar a edição
+    const typedCategories = await supabase.from("categories").select("*").eq("tenant_id", tenantId);
+    const cats = (typedCategories.data ?? []) as Category[];
+    const editResult = await parseLancamento(editText, cats);
+
+    if (editResult.ok) {
+      const matchedCat = matchCategory(editResult.data.category_suggestion, editResult.data.type, cats);
+      const updates: {
+        amount?: number;
+        description?: string;
+        category_id?: string;
+        updated_at: string;
+      } = { updated_at: new Date().toISOString() };
+
+      if (editResult.data.amount > 0) updates.amount = editResult.data.amount;
+      if (editResult.data.description && editResult.data.description.length > 1) updates.description = editResult.data.description;
+      if (matchedCat) updates.category_id = matchedCat.id;
+
+      if (updates.amount || updates.description || updates.category_id) {
+        await supabase.from("transactions").update(updates).eq("id", txId).eq("tenant_id", tenantId);
+        await respond("Lançamento atualizado com sucesso!");
+      } else {
+        await respond("Não consegui identificar o que alterar. Tente ser mais específico.");
+      }
+    } else {
+      await respond("Não entendi a alteração. Tente algo como:\n• \"O valor era 200\"\n• \"Coloca na categoria Transporte\"");
+    }
+
+    // Limpar o pending de edição
+    await supabase.from("whatsapp_pending").delete().eq("id", activePending.id);
+    return;
+  }
+
   // ===== FLUXO 2: Confirmação/Cancelamento =====
   if (message.type === "text" && message.text) {
     const text = message.text?.body ?? "";
 
     // Regex-based intent (rápido, sem custo)
     if (isConfirmation(text)) {
-      return handleConfirmation(tenantId, supabase, respond, activePending);
+      return handleConfirmation(tenantId, supabase, respond, activePending, message.from);
     }
     if (isCancellation(text)) {
       return handleCancellation(tenantId, supabase, respond, activePending);
@@ -183,12 +260,22 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         const negativeVibes = /^(para|espera|calma|epa|opa|perai|p[eé]ra|errei|errado|engano|troca|muda|altera)/i;
 
         if (positiveVibes.test(lower)) {
-          return handleConfirmation(tenantId, supabase, respond, activePending);
+          return handleConfirmation(tenantId, supabase, respond, activePending, message.from);
         }
         if (negativeVibes.test(lower)) {
           return handleCancellation(tenantId, supabase, respond, activePending);
         }
       }
+    }
+  }
+
+  // ===== FLUXO 2.5: Consulta livre ("quanto gastei?", "qual meu saldo?") =====
+  if (message.type === "text" && message.text) {
+    const text = message.text?.body ?? "";
+    if (isQuery(text)) {
+      const answer = await handleQuery(tenantId, text, supabase);
+      await respond(answer);
+      return;
     }
   }
 
@@ -368,6 +455,73 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       if (error) console.error("Erro ao limpar pendings ativos:", error.message);
     });
 
+  const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
+  const categoryLabel = matched?.name ?? parsed.category_suggestion;
+
+  // === Recorrência: salvar em recurring_transactions se detectada ===
+  let recurringLabel = "";
+  if (parsed.is_recurring && parsed.amount > 0) {
+    const dayOfMonth = parsed.day_of_month ?? new Date().getDate();
+    const { error: recError } = await supabase.from("recurring_transactions").insert({
+      tenant_id: tenantId,
+      type: parsed.type,
+      description: parsed.description,
+      amount: parsed.amount,
+      category_id: matched?.id ?? null,
+      day_of_month: dayOfMonth,
+      source: "whatsapp",
+    });
+    if (recError) {
+      console.error("Erro ao criar recorrência:", recError.message);
+    } else {
+      recurringLabel = `\n🔄 Recorrência ativa: todo dia ${dayOfMonth} de cada mês`;
+    }
+  }
+
+  // === Lançamento DIRETO para high confidence (sem Sim/Não) ===
+  if (parsed.confidence === "high" && parsed.amount > 0) {
+    const { data: newTx, error: insertError } = await supabase.from("transactions").insert({
+      tenant_id: tenantId,
+      type: parsed.type,
+      description: parsed.description,
+      amount: parsed.amount,
+      category_id: matched?.id ?? null,
+      status: "pago",
+      paid_date: new Date().toISOString().split("T")[0],
+      source: "whatsapp",
+    }).select("id").maybeSingle();
+
+    if (insertError) {
+      Sentry.captureException(insertError);
+      console.error("Erro ao inserir transação direta:", insertError.message);
+      await respond("Erro ao salvar o lançamento. Tente novamente.");
+      return;
+    }
+
+    const txId = newTx?.id ?? "";
+    const summary =
+      `Lançamento registrado! ✅\n\n` +
+      `${typeLabel}: ${parsed.description}\n` +
+      `Valor: ${formatCurrency(parsed.amount)}\n` +
+      `Categoria: ${categoryLabel}` +
+      recurringLabel;
+
+    await sendWhatsAppButtons(message.from, summary, [
+      { id: `edit_tx_${txId}`, title: "Editar" },
+      { id: `del_tx_${txId}`, title: "Excluir" },
+    ]);
+    await logConversation(supabase, {
+      tenantId: currentTenantId,
+      phoneNumber: message.from,
+      direction: "out",
+      messageType: "text",
+      content: summary + " [botões: Editar | Excluir]",
+    });
+    return;
+  }
+
+  // === Lançamento com confirmação para medium/low confidence ===
+
   // Salvar novo pending
   const { error: pendingError } = await supabase.from("whatsapp_pending").insert({
     tenant_id: tenantId,
@@ -385,8 +539,6 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
-  const categoryLabel = matched?.name ?? parsed.category_suggestion;
   const lowConfidenceWarning =
     parsed.confidence === "low"
       ? `\n\n⚠️ Não tenho certeza se entendi tudo. Confira os dados acima antes de confirmar.`
@@ -397,6 +549,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       `${typeLabel}: ${parsed.description}\n` +
       `Valor: ${formatCurrency(parsed.amount)}\n` +
       `Categoria: ${categoryLabel}` +
+      recurringLabel +
       lowConfidenceWarning +
       `\n\nConfirma? (Sim/Não)`,
   );
@@ -409,13 +562,14 @@ async function handleConfirmation(
   supabase: SupabaseClient,
   respond: RespondFn,
   pending?: { id: string; parsed_type: string | null; parsed_description: string | null; parsed_amount: number | null; parsed_category_id: string | null } | null,
+  phone?: string,
 ): Promise<void> {
   if (!pending) {
     await respond("Nenhum lançamento pendente para confirmar.");
     return;
   }
 
-  const { error: insertError } = await supabase.from("transactions").insert({
+  const { data: newTx, error: insertError } = await supabase.from("transactions").insert({
     tenant_id: tenantId,
     type: pending.parsed_type,
     description: pending.parsed_description,
@@ -424,7 +578,7 @@ async function handleConfirmation(
     status: "pago",
     paid_date: new Date().toISOString().split("T")[0],
     source: "whatsapp",
-  });
+  }).select("id").maybeSingle();
 
   if (insertError) {
     Sentry.captureException(insertError);
@@ -440,11 +594,21 @@ async function handleConfirmation(
 
   if (updateError) console.error("Erro ao atualizar pending:", updateError.message);
 
-  await respond("Lançamento confirmado! ✅ Você pode ver no painel do Guarda Dinheiro.");
+  const txId = newTx?.id ?? "";
+  const typeLabel = pending.parsed_type === "receita" ? "RECEITA" : "DESPESA";
+  const summary =
+    `Lançamento confirmado! ✅\n\n` +
+    `${typeLabel}: ${pending.parsed_description}\n` +
+    `Valor: ${formatCurrency(pending.parsed_amount ?? 0)}`;
+
+  await sendWhatsAppButtons(phone ?? "", summary, [
+    { id: `edit_tx_${txId}`, title: "Editar" },
+    { id: `del_tx_${txId}`, title: "Excluir" },
+  ]);
 }
 
 async function handleCancellation(
-  tenantId: string,
+  _tenantId: string,
   supabase: SupabaseClient,
   respond: RespondFn,
   pending?: { id: string } | null,

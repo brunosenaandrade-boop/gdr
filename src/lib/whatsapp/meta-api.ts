@@ -43,6 +43,63 @@ export async function sendWhatsAppMessage(
   return { ok: true };
 }
 
+type InteractiveButton = { id: string; title: string };
+
+/**
+ * Envia mensagem com botões interativos via WhatsApp Business API.
+ * Máximo 3 botões por mensagem.
+ */
+export async function sendWhatsAppButtons(
+  to: string,
+  body: string,
+  buttons: InteractiveButton[],
+): Promise<SendMessageResult> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+
+  if (!phoneNumberId || !accessToken) {
+    return { ok: false, error: "WhatsApp API não configurada" };
+  }
+
+  const response = await fetch(
+    `${GRAPH_API}/${phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive: {
+          type: "button",
+          body: { text: body },
+          action: {
+            buttons: buttons.slice(0, 3).map((b) => ({
+              type: "reply",
+              reply: { id: b.id, title: b.title },
+            })),
+          },
+        },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    try {
+      const respBody = await response.text();
+      console.error(`Meta API interactive error: ${response.status} - ${respBody}`);
+    } catch {
+      console.error(`Meta API interactive error: ${response.status}`);
+    }
+    return { ok: false, error: "Falha ao enviar botões." };
+  }
+
+  return { ok: true };
+}
+
 export async function downloadWhatsAppMedia(mediaId: string): Promise<Buffer | null> {
   try {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;

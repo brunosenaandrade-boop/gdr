@@ -30,7 +30,7 @@ setInterval(() => {
 }, 300_000);
 
 // Tipos permitidos de mensagem
-const ALLOWED_MESSAGE_TYPES = new Set(["text", "audio"]);
+const ALLOWED_MESSAGE_TYPES = new Set(["text", "audio", "interactive"]);
 
 // GET: Webhook verification (Meta sends a challenge)
 export async function GET(request: NextRequest) {
@@ -129,6 +129,7 @@ export async function POST(request: NextRequest) {
             type: message.type,
             text: message.type === "text" ? message.text : undefined,
             audio: message.type === "audio" ? message.audio : undefined,
+            interactive: message.type === "interactive" ? message.interactive : undefined,
             messageId,
           });
         } catch (err) {

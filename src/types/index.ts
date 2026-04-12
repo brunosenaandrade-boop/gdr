@@ -51,6 +51,8 @@ export type AIParsedTransaction = {
   category_suggestion: string;
   counterparty?: string | null;
   confidence?: AIConfidence;
+  is_recurring?: boolean;
+  day_of_month?: number;
 };
 
 // ===== Dashboard =====

@@ -55,6 +55,60 @@ export type Database = {
           },
         ]
       }
+      recurring_transactions: {
+        Row: {
+          active: boolean | null
+          amount: number
+          category_id: string | null
+          created_at: string | null
+          day_of_month: number
+          description: string
+          id: string
+          source: string | null
+          tenant_id: string
+          type: string
+        }
+        Insert: {
+          active?: boolean | null
+          amount: number
+          category_id?: string | null
+          created_at?: string | null
+          day_of_month: number
+          description: string
+          id?: string
+          source?: string | null
+          tenant_id: string
+          type: string
+        }
+        Update: {
+          active?: boolean | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string | null
+          day_of_month?: number
+          description?: string
+          id?: string
+          source?: string | null
+          tenant_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string | null
