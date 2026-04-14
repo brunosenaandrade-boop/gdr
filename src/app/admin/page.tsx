@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { getAdminMetrics } from "@/lib/admin/queries";
+import { getCurrentAdmin } from "@/lib/admin/auth";
 import { AdminShell } from "./layout";
-import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus } from "lucide-react";
+import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus, ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +48,7 @@ function Card({
 }
 
 export default async function AdminOverviewPage() {
-  const m = await getAdminMetrics();
+  const [m, admin] = await Promise.all([getAdminMetrics(), getCurrentAdmin()]);
 
   return (
     <AdminShell>
@@ -55,6 +57,24 @@ export default async function AdminOverviewPage() {
           <h1 className="text-2xl font-semibold">Overview</h1>
           <p className="text-sm text-zinc-400">Métricas em tempo real do Guarda Dinheiro</p>
         </div>
+
+        {/* 2FA warning */}
+        {admin && !admin.totpEnabled && (
+          <Link
+            href="/admin/security"
+            className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 hover:bg-amber-500/15 transition"
+          >
+            <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-200">Ative a autenticação em 2 fatores</p>
+              <p className="text-xs text-amber-200/70 mt-1">
+                Recomendamos fortemente ativar o 2FA pra proteger seu acesso administrativo. Leva 1
+                minuto.
+              </p>
+            </div>
+            <span className="text-amber-400 text-sm">Configurar →</span>
+          </Link>
+        )}
 
         {/* Revenue */}
         <div>
