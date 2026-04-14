@@ -11,6 +11,8 @@ import { logConversation } from "./conversation-log";
 import { isQuery, handleQuery } from "./query-handler";
 import { generateResponse } from "@/lib/openai/generate-response";
 import { sendSignupFlow, handleFlowResponse } from "./onboarding-flow";
+import { hasActiveAccess, type AccessResult } from "@/lib/subscriptions/access";
+import { sendPaywallCTA } from "./paywall";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -200,6 +202,26 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   currentTenantId = link.tenant_id;
   const tenantId = link.tenant_id;
 
+  // ===== Verificar acesso (feature gating) =====
+  // Leitura sempre liberada (loss aversion), escrita requer subscription ativa
+  const accessResult: AccessResult = await hasActiveAccess(tenantId, supabase);
+  const canWrite = accessResult.ok;
+
+  // Helper: envia CTA de paywall e loga. Retorna true (pra permitir early return).
+  async function blockWithPaywall(): Promise<true> {
+    if (!accessResult.ok) {
+      await sendPaywallCTA(message.from, accessResult.reason);
+      await logConversation(supabase, {
+        tenantId: currentTenantId,
+        phoneNumber: message.from,
+        direction: "out",
+        messageType: "text",
+        content: `[paywall: ${accessResult.reason}]`,
+      });
+    }
+    return true;
+  }
+
   // ===== Buscar pending ativo (para contexto multi-turn e detecção de intent) =====
   const { data: activePending } = await supabase
     .from("whatsapp_pending")
@@ -234,6 +256,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
 
     if (buttonId.startsWith("editar_")) {
+      if (!canWrite) { await blockWithPaywall(); return; }
       const txId = buttonId.replace("editar_", "");
       // Guardar que estamos editando e pedir nova info
       await supabase.from("whatsapp_pending").insert({
@@ -249,6 +272,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
 
     if (buttonId.startsWith("excluir_")) {
+      if (!canWrite) { await blockWithPaywall(); return; }
       const txId = buttonId.replace("excluir_", "");
       const { error: delErr } = await supabase
         .from("transactions")
@@ -268,6 +292,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
   // ===== FLUXO 1.6: Edição de transação em andamento =====
   if (activePending?.raw_message?.startsWith("__edit__") && message.type === "text" && message.text) {
+    if (!canWrite) { await blockWithPaywall(); return; }
     const txId = activePending.raw_message.replace("__edit__", "");
     const editText = message.text?.body ?? "";
 
@@ -360,6 +385,11 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 3: Novo lançamento =====
+  // Bloqueio antecipado: se não tem acesso, nem gasta IA chamando parser
+  if (!canWrite) {
+    await blockWithPaywall();
+    return;
+  }
 
   // Buscar tenant type (PF/PJ) para contexto da IA
   const { data: tenant } = await supabase
@@ -649,6 +679,15 @@ async function handleConfirmation(
 ): Promise<void> {
   if (!pending) {
     await respond("Nenhum lançamento pendente para confirmar.");
+    return;
+  }
+
+  // Feature gating: revalida acesso antes de confirmar (caso subscription tenha expirado entre o pending e a confirmação)
+  const access = await hasActiveAccess(tenantId, supabase);
+  if (!access.ok) {
+    if (phone) {
+      await sendPaywallCTA(phone, access.reason);
+    }
     return;
   }
 

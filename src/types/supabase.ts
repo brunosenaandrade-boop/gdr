@@ -299,6 +299,116 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          id: string
+          tenant_id: string
+          status: string
+          hotmart_transaction: string | null
+          hotmart_subscriber_code: string | null
+          hotmart_buyer_email: string | null
+          current_period_end: string | null
+          canceled_at: string | null
+          refunded_at: string | null
+          past_due_since: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          status: string
+          hotmart_transaction?: string | null
+          hotmart_subscriber_code?: string | null
+          hotmart_buyer_email?: string | null
+          current_period_end?: string | null
+          canceled_at?: string | null
+          refunded_at?: string | null
+          past_due_since?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          status?: string
+          hotmart_transaction?: string | null
+          hotmart_subscriber_code?: string | null
+          hotmart_buyer_email?: string | null
+          current_period_end?: string | null
+          canceled_at?: string | null
+          refunded_at?: string | null
+          past_due_since?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_events: {
+        Row: {
+          id: string
+          subscription_id: string | null
+          tenant_id: string | null
+          event_type: string
+          hotmart_event_id: string | null
+          hotmart_transaction: string | null
+          buyer_email: string | null
+          payload: Json
+          processed: boolean | null
+          processing_error: string | null
+          received_at: string | null
+        }
+        Insert: {
+          id?: string
+          subscription_id?: string | null
+          tenant_id?: string | null
+          event_type: string
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          buyer_email?: string | null
+          payload: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          received_at?: string | null
+        }
+        Update: {
+          id?: string
+          subscription_id?: string | null
+          tenant_id?: string | null
+          event_type?: string
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          buyer_email?: string | null
+          payload?: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          received_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_pending: {
         Row: {
           confirmed: boolean | null
