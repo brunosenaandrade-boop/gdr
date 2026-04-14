@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentAffiliate } from "@/lib/affiliates/auth";
 import { getAffiliateStats, getAffiliateCoupons } from "@/lib/affiliates/queries";
 import { AfiliadoShell } from "./layout";
-import { TrendingUp, Clock, CheckCircle2, ShoppingBag } from "lucide-react";
+import { TrendingUp, Clock, CheckCircle2, ShoppingBag, AlertTriangle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,27 @@ export default async function AfiliadoDashboardPage() {
             Comissão de {affiliate.commissionRate.toFixed(0)}% por venda · Próximo pagamento em {formatDate(stats.nextPayoutEstimate)}
           </p>
         </div>
+
+        {/* Banner senha temporária */}
+        {affiliate.mustChangePassword && (
+          <Link
+            href="/afiliado/conta"
+            className="block bg-amber-50 border border-amber-300 rounded-2xl p-4 hover:bg-amber-100 transition"
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">
+                  Troque sua senha temporária
+                </p>
+                <p className="text-xs text-amber-800 mt-1">
+                  Você está usando uma senha gerada pelo administrador. Por segurança, defina uma senha própria agora.
+                </p>
+              </div>
+              <span className="text-amber-700 text-sm font-medium">Trocar →</span>
+            </div>
+          </Link>
+        )}
 
         {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

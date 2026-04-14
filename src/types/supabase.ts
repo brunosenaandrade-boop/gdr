@@ -195,6 +195,7 @@ export type Database = {
           hotmart_affiliate_code: string | null
           hotmart_email: string | null
           id: string
+          must_change_password: boolean
           name: string
           notes: string | null
           phone: string | null
@@ -211,6 +212,7 @@ export type Database = {
           hotmart_affiliate_code?: string | null
           hotmart_email?: string | null
           id?: string
+          must_change_password?: boolean
           name: string
           notes?: string | null
           phone?: string | null
@@ -227,6 +229,7 @@ export type Database = {
           hotmart_affiliate_code?: string | null
           hotmart_email?: string | null
           id?: string
+          must_change_password?: boolean
           name?: string
           notes?: string | null
           phone?: string | null

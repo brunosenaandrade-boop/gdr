@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentAffiliate } from "@/lib/affiliates/auth";
 import { signOutAffiliate } from "@/lib/affiliates/affiliate-actions";
-import { LayoutDashboard, ShoppingCart, FileText, LogOut, Handshake } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, FileText, LogOut, Handshake, UserCircle } from "lucide-react";
 
 export const metadata = {
   title: "Afiliado — Guarda Dinheiro",
@@ -40,6 +40,7 @@ export async function AfiliadoShell({ children }: { children: React.ReactNode })
     { href: "/afiliado", label: "Dashboard", icon: LayoutDashboard },
     { href: "/afiliado/vendas", label: "Vendas", icon: ShoppingCart },
     { href: "/afiliado/materiais", label: "Materiais", icon: FileText },
+    { href: "/afiliado/conta", label: "Minha conta", icon: UserCircle },
   ];
 
   return (

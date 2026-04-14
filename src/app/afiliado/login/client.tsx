@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInAffiliate } from "@/lib/affiliates/affiliate-actions";
 
@@ -62,6 +63,15 @@ export function LoginClient() {
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex justify-end">
+            <Link
+              href="/afiliado/esqueci-senha"
+              className="text-xs text-gray-500 hover:text-gray-900"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
 
           <button
             type="submit"

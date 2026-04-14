@@ -7,6 +7,7 @@ export type AffiliateContext = {
   name: string;
   status: "active" | "suspended" | "blocked";
   commissionRate: number;
+  mustChangePassword: boolean;
 };
 
 /**
@@ -21,7 +22,7 @@ export async function getCurrentAffiliate(): Promise<AffiliateContext | null> {
   const service = await createServiceClient();
   const { data } = await service
     .from("affiliates")
-    .select("id, user_id, email, name, status, commission_rate")
+    .select("id, user_id, email, name, status, commission_rate, must_change_password")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -34,6 +35,7 @@ export async function getCurrentAffiliate(): Promise<AffiliateContext | null> {
     name: data.name,
     status: data.status as AffiliateContext["status"],
     commissionRate: Number(data.commission_rate),
+    mustChangePassword: data.must_change_password ?? false,
   };
 }
 

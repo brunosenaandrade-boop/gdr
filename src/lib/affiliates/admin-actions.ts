@@ -25,8 +25,10 @@ async function requireAdmin() {
   return admin;
 }
 
-function generateTempPassword(length = 12): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+function generateTempPassword(length = 16): string {
+  // Removidos caracteres ambíguos visualmente:
+  // 0/O/o, 1/l/I, 2/Z/z, 5/S/s, 8/B, 6/G, 9/g/q, vV, uU, wW
+  const chars = "ACDEFHJKMNPRTXYabcdefhjkmnprtxy347";
   let password = "";
   for (let i = 0; i < length; i++) {
     password += chars[Math.floor(Math.random() * chars.length)];
@@ -193,6 +195,45 @@ export async function setAffiliateStatus(
   revalidatePath(`/admin/affiliates/${id}`);
   revalidatePath("/admin/affiliates");
   return { ok: true };
+}
+
+/**
+ * Admin reseta a senha do afiliado e gera nova temporária.
+ */
+export async function resetAffiliatePassword(
+  id: string,
+): Promise<ActionResult<{ tempPassword: string; email: string }>> {
+  const admin = await requireAdmin();
+  const service = await createServiceClient();
+
+  const { data: affiliate } = await service
+    .from("affiliates")
+    .select("user_id, email")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!affiliate) return { ok: false, error: "Afiliado não encontrado" };
+  if (!affiliate.user_id) return { ok: false, error: "Afiliado sem conta de auth" };
+
+  const tempPassword = generateTempPassword(16);
+
+  const { error } = await service.auth.admin.updateUserById(affiliate.user_id, {
+    password: tempPassword,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  // Reativa a flag de troca obrigatória
+  await service.from("affiliates").update({ must_change_password: true }).eq("id", id);
+
+  await logAdminAction({
+    adminUserId: admin.userId,
+    action: "affiliate.password_reset",
+    targetType: "affiliate",
+    targetId: id,
+    ipAddress: await getIP(),
+  });
+
+  return { ok: true, data: { tempPassword, email: affiliate.email } };
 }
 
 // ============================================================

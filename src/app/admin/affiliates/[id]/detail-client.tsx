@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateAffiliate, setAffiliateStatus } from "@/lib/affiliates/admin-actions";
+import { updateAffiliate, setAffiliateStatus, resetAffiliatePassword } from "@/lib/affiliates/admin-actions";
+import { Copy, CheckCheck, KeyRound } from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 type Affiliate = Database["public"]["Tables"]["affiliates"]["Row"];
@@ -13,6 +14,8 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [resetResult, setResetResult] = useState<{ tempPassword: string; email: string } | null>(null);
+  const [copiedReset, setCopiedReset] = useState(false);
 
   function handleSave(formData: FormData) {
     setError("");
@@ -48,6 +51,31 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
       }
       router.refresh();
     });
+  }
+
+  function handleResetPassword() {
+    if (!confirm(
+      `Gerar nova senha temporária para ${affiliate.name}?\n\n` +
+      `A senha atual deixará de funcionar. O afiliado precisará ` +
+      `usar a nova senha que você vai entregar a ele.`,
+    )) return;
+    setError("");
+    startTransition(async () => {
+      const res = await resetAffiliatePassword(affiliate.id);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setResetResult(res.data);
+    });
+  }
+
+  function copyResetCredentials() {
+    if (!resetResult) return;
+    const text = `Email: ${resetResult.email}\nNova senha: ${resetResult.tempPassword}\n\nAcesse: https://afiliado.guardadinheiro.com.br/afiliado/login`;
+    navigator.clipboard.writeText(text);
+    setCopiedReset(true);
+    setTimeout(() => setCopiedReset(false), 2000);
   }
 
   return (
@@ -157,7 +185,54 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
             Bloquear
           </button>
         )}
+
+        <div className="ml-auto">
+          <button
+            onClick={handleResetPassword}
+            disabled={pending}
+            className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-xs rounded inline-flex items-center gap-1.5"
+          >
+            <KeyRound className="h-3 w-3" />
+            Resetar senha
+          </button>
+        </div>
       </div>
+
+      {/* Resultado do reset */}
+      {resetResult && (
+        <div className="border-t border-emerald-500/30 pt-4 mt-4 bg-emerald-500/5 -mx-5 -mb-5 px-5 pb-5 rounded-b-xl">
+          <h3 className="text-sm font-semibold text-emerald-300">Nova senha gerada</h3>
+          <p className="text-xs text-zinc-400 mt-1">
+            Anote ou copie agora — não vai aparecer de novo.
+          </p>
+          <div className="mt-3 rounded-lg bg-zinc-950 border border-zinc-800 p-3 font-mono text-sm space-y-1">
+            <div>
+              <span className="text-zinc-500">Email: </span>
+              <span>{resetResult.email}</span>
+            </div>
+            <div>
+              <span className="text-zinc-500">Senha: </span>
+              <span>{resetResult.tempPassword}</span>
+            </div>
+          </div>
+          <button
+            onClick={copyResetCredentials}
+            className="mt-3 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs rounded inline-flex items-center gap-1.5"
+          >
+            {copiedReset ? (
+              <>
+                <CheckCheck className="h-3 w-3 text-emerald-400" />
+                Copiado!
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3" />
+                Copiar credenciais
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
