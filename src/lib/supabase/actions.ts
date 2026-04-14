@@ -185,3 +185,51 @@ export async function updateTenant(formData: {
   revalidatePath("/dashboard/configuracoes");
   return {};
 }
+
+// ===== Password =====
+
+/**
+ * Altera a senha do usuário logado.
+ * Exige senha atual (revalidada via Supabase Auth) + nova senha (mínimo 6 chars).
+ */
+export async function changePassword(formData: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}): Promise<{ error?: string; success?: string }> {
+  if (formData.newPassword.length < 6) {
+    return { error: "A nova senha deve ter pelo menos 6 caracteres." };
+  }
+  if (formData.newPassword !== formData.confirmPassword) {
+    return { error: "As senhas não conferem." };
+  }
+  if (formData.currentPassword === formData.newPassword) {
+    return { error: "A nova senha deve ser diferente da atual." };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return { error: "Não autenticado." };
+
+  // Revalida senha atual
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: formData.currentPassword,
+  });
+
+  if (signInError) {
+    return { error: "Senha atual incorreta." };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: formData.newPassword,
+  });
+
+  if (error) {
+    Sentry.captureException(error);
+    console.error("changePassword error:", error.message);
+    return { error: "Não foi possível alterar a senha. Tente novamente." };
+  }
+
+  return { success: "Senha alterada com sucesso!" };
+}

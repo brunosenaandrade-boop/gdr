@@ -326,6 +326,48 @@ export async function forceRenewSubscription(
   return { ok: true };
 }
 
+// ============================================================
+// Trocar senha (usuário logado)
+// ============================================================
+
+export async function changeAdminPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+
+  if (newPassword.length < 8) {
+    return { ok: false, error: "A nova senha precisa ter pelo menos 8 caracteres" };
+  }
+
+  const supabase = await createClient();
+
+  // Revalidar a senha atual (Supabase não bloqueia updateUser sem isso,
+  // mas pedimos pra garantir segurança)
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: admin.email,
+    password: currentPassword,
+  });
+
+  if (signInError) {
+    return { ok: false, error: "Senha atual incorreta" };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  await logAdminAction({
+    adminUserId: admin.userId,
+    action: "admin.password_changed",
+    ipAddress: await getIPFromRequest(),
+    userAgent: await getUAFromRequest(),
+  });
+
+  return { ok: true };
+}
+
 export async function sendDirectMessage(
   tenantId: string,
   message: string,

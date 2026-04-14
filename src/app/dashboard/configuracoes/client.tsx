@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { updateTenant } from "@/lib/supabase/actions";
+import { updateTenant, changePassword } from "@/lib/supabase/actions";
 import { maskCPF, maskCNPJ, maskPhone } from "@/lib/utils";
 import type { Tenant } from "@/types";
-import { User, Building2, Save } from "lucide-react";
+import { User, Building2, Save, Lock, KeyRound } from "lucide-react";
 
 type Props = {
   tenant: Tenant;
@@ -22,6 +22,14 @@ export function ConfiguracoesClient({ tenant }: Props) {
   const [tradeName, setTradeName] = useState(tenant.trade_name ?? "");
   const [phone, setPhone] = useState(tenant.phone ?? "");
   const [message, setMessage] = useState("");
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState("");
+  const [passwordErr, setPasswordErr] = useState("");
 
   async function handleSave() {
     setSaving(true);
@@ -37,6 +45,32 @@ export function ConfiguracoesClient({ tenant }: Props) {
     setSaving(false);
     setMessage(result.error ?? "Salvo com sucesso!");
     if (!result.error) setTimeout(() => setMessage(""), 3000);
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setChangingPassword(true);
+    setPasswordMsg("");
+    setPasswordErr("");
+
+    const result = await changePassword({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
+
+    setChangingPassword(false);
+
+    if (result.error) {
+      setPasswordErr(result.error);
+      return;
+    }
+
+    setPasswordMsg(result.success ?? "Senha alterada.");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setTimeout(() => setPasswordMsg(""), 4000);
   }
 
   return (
@@ -106,6 +140,75 @@ export function ConfiguracoesClient({ tenant }: Props) {
               Salvar Alterações
             </Button>
           </div>
+        </Card>
+
+        {/* Alterar senha */}
+        <Card>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+              <Lock className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle>Alterar senha</CardTitle>
+              <CardDescription>
+                Troque sua senha de acesso. Você permanecerá logado.
+              </CardDescription>
+            </div>
+          </div>
+
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <Input
+              label="Senha atual"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => { setCurrentPassword(e.target.value); setPasswordErr(""); }}
+              icon={<KeyRound className="h-4 w-4" />}
+              disabled={changingPassword}
+              required
+              autoComplete="current-password"
+            />
+
+            <Input
+              label="Nova senha"
+              type="password"
+              value={newPassword}
+              onChange={(e) => { setNewPassword(e.target.value); setPasswordErr(""); }}
+              icon={<Lock className="h-4 w-4" />}
+              placeholder="Mínimo 6 caracteres"
+              disabled={changingPassword}
+              required
+              autoComplete="new-password"
+            />
+
+            <Input
+              label="Confirmar nova senha"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setPasswordErr(""); }}
+              icon={<Lock className="h-4 w-4" />}
+              placeholder="Repita a nova senha"
+              disabled={changingPassword}
+              required
+              autoComplete="new-password"
+            />
+
+            {passwordErr && <p className="text-sm text-red-400">{passwordErr}</p>}
+            {passwordMsg && <p className="text-sm text-emerald-400">{passwordMsg}</p>}
+
+            <Button
+              type="submit"
+              loading={changingPassword}
+              disabled={
+                changingPassword ||
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword
+              }
+            >
+              <Lock className="h-4 w-4" />
+              Alterar senha
+            </Button>
+          </form>
         </Card>
       </div>
     </>
