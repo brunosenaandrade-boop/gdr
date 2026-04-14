@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, Lock, Mail, KeyRound } from "lucide-react";
+import { Lock, Mail, KeyRound } from "lucide-react";
 import { adminSignIn, adminVerify2FA } from "@/lib/admin/actions";
 
 type Step = "credentials" | "2fa";
@@ -62,9 +62,6 @@ export function LoginClient() {
       <div className="relative w-full max-w-md">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/50 backdrop-blur-xl p-8">
           <div className="text-center mb-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-400 to-red-600 shadow-[0_0_20px_rgba(239,68,68,0.3)] mx-auto mb-4">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
             <h1 className="text-xl font-semibold tracking-tight text-white">
               {step === "credentials" ? "Super Admin" : "Autenticação 2FA"}
             </h1>
