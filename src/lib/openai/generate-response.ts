@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { logAIUsage } from "./usage-tracker";
 
 function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -214,7 +215,10 @@ function assembleResponse(comment: string, input: ResponseAction): string {
   }
 }
 
-export async function generateResponse(input: ResponseAction): Promise<string> {
+export async function generateResponse(
+  input: ResponseAction,
+  opts: { tenantId?: string | null } = {},
+): Promise<string> {
   const fallback = fallbackResponse(input);
 
   try {
@@ -228,6 +232,14 @@ export async function generateResponse(input: ResponseAction): Promise<string> {
         { role: "user", content: buildUserPrompt(input) },
       ],
     });
+
+    logAIUsage({
+      tenantId: opts.tenantId ?? null,
+      model: "gpt-4o-mini",
+      functionName: "generate-response",
+      inputTokens: response.usage?.prompt_tokens ?? 0,
+      outputTokens: response.usage?.completion_tokens ?? 0,
+    }).catch(() => {});
 
     const content = response.choices[0]?.message?.content?.trim();
     if (!content || content.length < 5) return fallback;

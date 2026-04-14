@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { aiParsedTransactionSchema } from "@/lib/validators/schemas";
+import { logAIUsage } from "./usage-tracker";
 import type { AIParsedTransaction, Category } from "@/types";
 
 function getClient() {
@@ -69,6 +70,7 @@ export function polishDescription(
 
 export type ParseContext = {
   tenantType?: "pf" | "pj";
+  tenantId?: string | null;
   pendingContext?: {
     type: "receita" | "despesa";
     description: string;
@@ -175,6 +177,15 @@ Nunca invente valores que não estão no texto.`,
       { role: "user", content: text },
     ],
   });
+
+  // Log usage (não bloqueia fluxo se falhar)
+  logAIUsage({
+    tenantId: context.tenantId ?? null,
+    model: "gpt-4o-mini",
+    functionName: "parse-lancamento",
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+  }).catch(() => {});
 
   const content = response.choices[0]?.message?.content;
   if (!content) return { ok: false, error: "Resposta vazia da IA" };

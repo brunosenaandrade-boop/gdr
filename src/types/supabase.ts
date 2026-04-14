@@ -14,6 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown
+          target_id: string | null
+          target_tenant_id: string | null
+          target_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown
+          target_id?: string | null
+          target_tenant_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown
+          target_id?: string | null
+          target_tenant_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          last_login_at: string | null
+          last_login_ip: unknown
+          recovery_codes: string[] | null
+          role: string
+          totp_enabled: boolean | null
+          totp_secret: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          last_login_at?: string | null
+          last_login_ip?: unknown
+          recovery_codes?: string[] | null
+          role?: string
+          totp_enabled?: boolean | null
+          totp_secret?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          last_login_at?: string | null
+          last_login_ip?: unknown
+          recovery_codes?: string[] | null
+          role?: string
+          totp_enabled?: boolean | null
+          totp_secret?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_usage: {
+        Row: {
+          audio_seconds: number | null
+          created_at: string | null
+          estimated_cost_cents: number
+          function_name: string
+          id: string
+          input_tokens: number | null
+          model: string
+          output_tokens: number | null
+          tenant_id: string | null
+        }
+        Insert: {
+          audio_seconds?: number | null
+          created_at?: string | null
+          estimated_cost_cents: number
+          function_name: string
+          id?: string
+          input_tokens?: number | null
+          model: string
+          output_tokens?: number | null
+          tenant_id?: string | null
+        }
+        Update: {
+          audio_seconds?: number | null
+          created_at?: string | null
+          estimated_cost_cents?: number
+          function_name?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string
+          output_tokens?: number | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color: string | null
@@ -104,6 +228,116 @@ export type Database = {
             foreignKeyName: "recurring_transactions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_events: {
+        Row: {
+          buyer_email: string | null
+          event_type: string
+          hotmart_event_id: string | null
+          hotmart_transaction: string | null
+          id: string
+          payload: Json
+          processed: boolean | null
+          processing_error: string | null
+          received_at: string | null
+          subscription_id: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          buyer_email?: string | null
+          event_type: string
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          payload: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          received_at?: string | null
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          buyer_email?: string | null
+          event_type?: string
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          payload?: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          received_at?: string | null
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string | null
+          current_period_end: string | null
+          hotmart_buyer_email: string | null
+          hotmart_subscriber_code: string | null
+          hotmart_transaction: string | null
+          id: string
+          past_due_since: string | null
+          refunded_at: string | null
+          status: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          hotmart_buyer_email?: string | null
+          hotmart_subscriber_code?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          past_due_since?: string | null
+          refunded_at?: string | null
+          status: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          hotmart_buyer_email?: string | null
+          hotmart_subscriber_code?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          past_due_since?: string | null
+          refunded_at?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -205,36 +439,86 @@ export type Database = {
           },
         ]
       }
+      user_rate_limits: {
+        Row: {
+          ai_cost_limit_cents_per_day: number | null
+          blocked: boolean | null
+          blocked_at: string | null
+          blocked_by: string | null
+          blocked_reason: string | null
+          max_audio_seconds_per_day: number | null
+          max_messages_per_day: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_cost_limit_cents_per_day?: number | null
+          blocked?: boolean | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
+          max_audio_seconds_per_day?: number | null
+          max_messages_per_day?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_cost_limit_cents_per_day?: number | null
+          blocked?: boolean | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
+          max_audio_seconds_per_day?: number | null
+          max_messages_per_day?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rate_limits_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_conversation_log: {
         Row: {
           content: string
           created_at: string | null
           direction: string
           id: string
+          ip_address: unknown
           message_type: string
           metadata: Json | null
           phone_number: string
           tenant_id: string | null
+          user_agent: string | null
         }
         Insert: {
           content: string
           created_at?: string | null
           direction: string
           id?: string
+          ip_address?: unknown
           message_type: string
           metadata?: Json | null
           phone_number: string
           tenant_id?: string | null
+          user_agent?: string | null
         }
         Update: {
           content?: string
           created_at?: string | null
           direction?: string
           id?: string
+          ip_address?: unknown
           message_type?: string
           metadata?: Json | null
           phone_number?: string
           tenant_id?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {
@@ -298,116 +582,6 @@ export type Database = {
           processed_at?: string | null
         }
         Relationships: []
-      }
-      subscriptions: {
-        Row: {
-          id: string
-          tenant_id: string
-          status: string
-          hotmart_transaction: string | null
-          hotmart_subscriber_code: string | null
-          hotmart_buyer_email: string | null
-          current_period_end: string | null
-          canceled_at: string | null
-          refunded_at: string | null
-          past_due_since: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          status: string
-          hotmart_transaction?: string | null
-          hotmart_subscriber_code?: string | null
-          hotmart_buyer_email?: string | null
-          current_period_end?: string | null
-          canceled_at?: string | null
-          refunded_at?: string | null
-          past_due_since?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          status?: string
-          hotmart_transaction?: string | null
-          hotmart_subscriber_code?: string | null
-          hotmart_buyer_email?: string | null
-          current_period_end?: string | null
-          canceled_at?: string | null
-          refunded_at?: string | null
-          past_due_since?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: true
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      subscription_events: {
-        Row: {
-          id: string
-          subscription_id: string | null
-          tenant_id: string | null
-          event_type: string
-          hotmart_event_id: string | null
-          hotmart_transaction: string | null
-          buyer_email: string | null
-          payload: Json
-          processed: boolean | null
-          processing_error: string | null
-          received_at: string | null
-        }
-        Insert: {
-          id?: string
-          subscription_id?: string | null
-          tenant_id?: string | null
-          event_type: string
-          hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
-          buyer_email?: string | null
-          payload: Json
-          processed?: boolean | null
-          processing_error?: string | null
-          received_at?: string | null
-        }
-        Update: {
-          id?: string
-          subscription_id?: string | null
-          tenant_id?: string | null
-          event_type?: string
-          hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
-          buyer_email?: string | null
-          payload?: Json
-          processed?: boolean | null
-          processing_error?: string | null
-          received_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscription_events_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subscription_events_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       whatsapp_pending: {
         Row: {

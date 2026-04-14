@@ -1,0 +1,144 @@
+import { getAdminMetrics } from "@/lib/admin/queries";
+import { AdminShell } from "./layout";
+import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+
+function formatCurrency(cents: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(cents / 100);
+}
+
+function Card({
+  title,
+  value,
+  icon: Icon,
+  subtitle,
+  accent = "emerald",
+}: {
+  title: string;
+  value: string;
+  icon: React.ElementType;
+  subtitle?: string;
+  accent?: "emerald" | "blue" | "red" | "amber";
+}) {
+  const accentColor = {
+    emerald: "bg-emerald-500/10 text-emerald-400",
+    blue: "bg-blue-500/10 text-blue-400",
+    red: "bg-red-500/10 text-red-400",
+    amber: "bg-amber-500/10 text-amber-400",
+  }[accent];
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-zinc-500 uppercase tracking-wider">{title}</span>
+        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${accentColor}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+      <div className="text-2xl font-semibold text-white">{value}</div>
+      {subtitle && <div className="text-xs text-zinc-500 mt-1">{subtitle}</div>}
+    </div>
+  );
+}
+
+export default async function AdminOverviewPage() {
+  const m = await getAdminMetrics();
+
+  return (
+    <AdminShell>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">Overview</h1>
+          <p className="text-sm text-zinc-400">Métricas em tempo real do Guarda Dinheiro</p>
+        </div>
+
+        {/* Revenue */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Receita</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card
+              title="MRR"
+              value={formatCurrency(m.mrr)}
+              subtitle={`${m.activeSubscriptions} assinaturas ativas`}
+              icon={TrendingUp}
+              accent="emerald"
+            />
+            <Card
+              title="ARR"
+              value={formatCurrency(m.arr)}
+              subtitle="Projeção anual"
+              icon={TrendingUp}
+              accent="emerald"
+            />
+            <Card
+              title="Churn mensal"
+              value={`${m.churnRateMonth.toFixed(1)}%`}
+              icon={TrendingDown}
+              accent={m.churnRateMonth > 10 ? "red" : "amber"}
+            />
+          </div>
+        </div>
+
+        {/* Users */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Usuários</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card
+              title="Total de Tenants"
+              value={m.totalTenants.toString()}
+              icon={Users}
+              accent="blue"
+            />
+            <Card
+              title="Novos hoje"
+              value={m.newTenantsToday.toString()}
+              icon={UserPlus}
+              accent="emerald"
+            />
+            <Card
+              title="Novos essa semana"
+              value={m.newTenantsWeek.toString()}
+              icon={UserPlus}
+              accent="emerald"
+            />
+            <Card
+              title="Novos esse mês"
+              value={m.newTenantsMonth.toString()}
+              icon={UserPlus}
+              accent="emerald"
+            />
+          </div>
+        </div>
+
+        {/* Subscriptions Status */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Status de Assinaturas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card
+              title="Ativas"
+              value={m.activeSubscriptions.toString()}
+              icon={CreditCard}
+              accent="emerald"
+            />
+            <Card
+              title="Expiradas"
+              value={m.expiredCount.toString()}
+              icon={AlertCircle}
+              accent="amber"
+            />
+            <Card
+              title="Pagamento pendente"
+              value={m.pastDueCount.toString()}
+              icon={AlertCircle}
+              accent="red"
+            />
+          </div>
+        </div>
+      </div>
+    </AdminShell>
+  );
+}

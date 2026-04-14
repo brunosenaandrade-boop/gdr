@@ -105,8 +105,14 @@ export async function handleHotmartEvent(
     .select("id")
     .maybeSingle();
 
-  // Se não achou tenant, loga e tenta notificar o usuário via WhatsApp
+  // Se não achou tenant, loga erro no evento salvo e tenta notificar via WhatsApp
   if (!tenantId) {
+    if (savedEvent?.id) {
+      await supabase
+        .from("subscription_events")
+        .update({ processing_error: "tenant_not_found" })
+        .eq("id", savedEvent.id);
+    }
     if (payload.data?.buyer?.checkout_phone) {
       await notifyEmailMismatch(payload.data.buyer.checkout_phone, buyerEmail);
     }

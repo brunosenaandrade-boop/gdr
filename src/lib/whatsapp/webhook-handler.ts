@@ -13,6 +13,7 @@ import { generateResponse } from "@/lib/openai/generate-response";
 import { sendSignupFlow, handleFlowResponse } from "./onboarding-flow";
 import { hasActiveAccess, type AccessResult } from "@/lib/subscriptions/access";
 import { sendPaywallCTA } from "./paywall";
+import { checkTenantRateLimit, getRateLimitMessage } from "./rate-limiter";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -202,6 +203,21 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   currentTenantId = link.tenant_id;
   const tenantId = link.tenant_id;
 
+  // ===== Rate limit por tenant (bloqueio admin, limites diários) =====
+  const rateCheck = await checkTenantRateLimit(supabase, tenantId);
+  if (!rateCheck.allowed) {
+    const msg = getRateLimitMessage(rateCheck.reason, rateCheck.details);
+    await sendWhatsAppMessage(message.from, msg);
+    await logConversation(supabase, {
+      tenantId,
+      phoneNumber: message.from,
+      direction: "out",
+      messageType: "text",
+      content: `[rate_limit: ${rateCheck.reason}] ${msg.slice(0, 100)}`,
+    });
+    return;
+  }
+
   // ===== Verificar acesso (feature gating) =====
   // Leitura sempre liberada (loss aversion), escrita requer subscription ativa
   const accessResult: AccessResult = await hasActiveAccess(tenantId, supabase);
@@ -299,7 +315,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     // Usar IA para interpretar a edição
     const typedCategories = await supabase.from("categories").select("*").eq("tenant_id", tenantId);
     const cats = (typedCategories.data ?? []) as Category[];
-    const editResult = await parseLancamento(editText, cats);
+    const editResult = await parseLancamento(editText, cats, { tenantId });
 
     if (editResult.ok) {
       const matchedCat = matchCategory(editResult.data.category_suggestion, editResult.data.type, cats);
@@ -324,7 +340,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
             amount: editResult.data.amount,
             category: matchedCat?.name ?? editResult.data.category_suggestion,
           },
-        });
+        }, { tenantId });
         await respond(updatedMsg);
       } else {
         await respond("Não consegui identificar o que alterar. Tente ser mais específico.");
@@ -420,7 +436,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       return;
     }
 
-    const transcription = await transcribeAudio(audioBuffer);
+    const transcription = await transcribeAudio(audioBuffer, { tenantId });
     if (!transcription.ok) {
       await respond("Não consegui transcrever o áudio. Tente enviar como texto.");
       return;
@@ -458,6 +474,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   const typedCategories = (categories ?? []) as Category[];
   const result = await parseLancamento(textContent, typedCategories, {
     tenantType: (tenant?.type as "pf" | "pj") ?? undefined,
+    tenantId,
     pendingContext,
   });
 
@@ -513,7 +530,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         amount: parsed.amount,
         category: matched?.name ?? parsed.category_suggestion,
       },
-    });
+    }, { tenantId });
     await respond(updatedPendingMsg);
     return;
   }
@@ -618,7 +635,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         category: categoryLabel,
         recurring: recurringLabel || null,
       },
-    });
+    }, { tenantId });
 
     await sendWhatsAppButtons(message.from, summary, [
       { id: `editar_${txId}`, title: "✏️ Editar" },
@@ -664,7 +681,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       recurring: recurringLabel || null,
     },
     lowConfidence: parsed.confidence === "low",
-  });
+  }, { tenantId });
   await respond(pendingMsg);
 }
 
@@ -725,7 +742,7 @@ async function handleConfirmation(
       amount: pending.parsed_amount ?? 0,
       category: "",
     },
-  });
+  }, { tenantId });
 
   await sendWhatsAppButtons(phone ?? "", summary, [
     { id: `editar_${txId}`, title: "✏️ Editar" },
