@@ -7,9 +7,20 @@ const ADMIN_HOSTS = [
   "admin.localhost",
 ];
 
+const AFFILIATE_HOSTS = [
+  "afiliado.guardadinheiro.com.br",
+  "afiliado.localhost:3000",
+  "afiliado.localhost",
+];
+
 function isAdminHost(host: string | null | undefined): boolean {
   if (!host) return false;
-  return ADMIN_HOSTS.some((h) => host === h || host.startsWith("admin."));
+  return ADMIN_HOSTS.some((h) => host === h) || host.startsWith("admin.");
+}
+
+function isAffiliateHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  return AFFILIATE_HOSTS.some((h) => host === h) || host.startsWith("afiliado.");
 }
 
 export async function updateSession(request: NextRequest) {
@@ -24,18 +35,27 @@ export async function updateSession(request: NextRequest) {
 
   const host = request.headers.get("host");
   const isAdmin = isAdminHost(host);
+  const isAffiliate = !isAdmin && isAffiliateHost(host);
   const path = request.nextUrl.pathname;
 
   // ============================================================
   // Subdomínio admin.*: reescreve para /admin/*
   // ============================================================
   if (isAdmin) {
-    // Se o path já começa com /admin, não reescrever
-    // Caso contrário, reescrever: admin.guardadinheiro.com.br/ → /admin
-    //                              admin.guardadinheiro.com.br/users → /admin/users
     if (!path.startsWith("/admin") && !path.startsWith("/api") && !path.startsWith("/_next")) {
       const url = request.nextUrl.clone();
       url.pathname = path === "/" ? "/admin" : `/admin${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  // ============================================================
+  // Subdomínio afiliado.*: reescreve para /afiliado/*
+  // ============================================================
+  if (isAffiliate) {
+    if (!path.startsWith("/afiliado") && !path.startsWith("/api") && !path.startsWith("/_next")) {
+      const url = request.nextUrl.clone();
+      url.pathname = path === "/" ? "/afiliado" : `/afiliado${path}`;
       return NextResponse.rewrite(url);
     }
   }
@@ -86,6 +106,23 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ============================================================
+  // Affiliate subdomain: só permite /afiliado/login se não autenticado
+  // ============================================================
+  if (isAffiliate) {
+    const affPath = path.startsWith("/afiliado") ? path : `/afiliado${path === "/" ? "" : path}`;
+    const isLoginPage = affPath === "/afiliado/login";
+    const isApiRoute = path.startsWith("/api/");
+
+    if (!user && !isLoginPage && !isApiRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/afiliado/login";
+      return NextResponse.redirect(url);
+    }
+    // Autorização full (afiliado ativo) é validada na page usando getCurrentAffiliate()
+    return supabaseResponse;
+  }
+
+  // ============================================================
   // Domínio principal: auth flow padrão
   // ============================================================
   const publicRoutes = [
@@ -104,8 +141,8 @@ export async function updateSession(request: NextRequest) {
   const isApiRoute = path.startsWith("/api/");
   const isVerifyPage = path === "/verificar-email";
 
-  // Bloquear acesso a /admin pelo domínio principal
-  if (path.startsWith("/admin")) {
+  // Bloquear acesso a /admin e /afiliado pelo domínio principal
+  if (path.startsWith("/admin") || path.startsWith("/afiliado")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

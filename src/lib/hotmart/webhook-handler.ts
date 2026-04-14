@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
 import { logConversation } from "@/lib/whatsapp/conversation-log";
 import { emitirNFE } from "@/lib/nfe/enotas";
+import { attributeAffiliateSale, refundAffiliateSale } from "@/lib/affiliates/webhook-attribution";
 
 // Eventos Hotmart que processamos
 export type HotmartEventType =
@@ -120,7 +121,7 @@ export async function handleHotmartEvent(
   }
 
   // Processar evento
-  const result = await processEvent(supabase, tenantId, eventType, payload);
+  const result = await processEvent(supabase, tenantId, eventType, payload, savedEvent?.id ?? null);
 
   // Marcar evento como processado
   if (savedEvent?.id) {
@@ -141,6 +142,7 @@ async function processEvent(
   tenantId: string,
   eventType: HotmartEventType,
   payload: HotmartWebhookPayload,
+  eventId: string | null,
 ): Promise<HandlerResult> {
   const now = new Date().toISOString();
   const anniversaryMs = payload.data?.subscription?.anniversary_date;
@@ -159,7 +161,7 @@ async function processEvent(
   switch (eventType) {
     case "PURCHASE_APPROVED":
     case "PURCHASE_COMPLETE": {
-      const { error } = await supabase
+      const { data: upserted, error } = await supabase
         .from("subscriptions")
         .upsert(
           {
@@ -175,11 +177,22 @@ async function processEvent(
             updated_at: now,
           },
           { onConflict: "tenant_id" },
-        );
+        )
+        .select("id")
+        .maybeSingle();
       if (error) {
         Sentry.captureException(error);
         return { ok: false, error: error.message };
       }
+      // Atribuir afiliado (cupom ou Hotmart nativo) — não bloqueia fluxo
+      await attributeAffiliateSale({
+        supabase,
+        payload,
+        subscriptionId: upserted?.id ?? null,
+        eventId,
+      }).catch((err) => {
+        console.error("[hotmart] Falha ao atribuir afiliado:", err);
+      });
       // Emitir NF-e (não bloqueia o fluxo se falhar)
       await emitirNFEFromPayload(payload, tenantId, supabase).catch((err) => {
         console.error("[hotmart] Falha ao emitir NFE:", err);
@@ -199,6 +212,10 @@ async function processEvent(
         })
         .eq("tenant_id", tenantId);
       if (error) return { ok: false, error: error.message };
+      // Marca venda do afiliado como reembolsada (não bloqueia)
+      if (hotmartTransaction) {
+        await refundAffiliateSale({ supabase, hotmartTransaction }).catch(() => {});
+      }
       await notifyRefund(supabase, tenantId);
       return { ok: true };
     }
@@ -212,6 +229,9 @@ async function processEvent(
         })
         .eq("tenant_id", tenantId);
       if (error) return { ok: false, error: error.message };
+      if (hotmartTransaction) {
+        await refundAffiliateSale({ supabase, hotmartTransaction }).catch(() => {});
+      }
       return { ok: true };
     }
 

@@ -94,6 +94,149 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_sales: {
+        Row: {
+          affiliate_id: string
+          attribution_source: string
+          commission_amount_cents: number
+          commission_rate_applied: number
+          coupon_code: string | null
+          created_at: string | null
+          hotmart_event_id: string | null
+          hotmart_transaction: string | null
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          paid_method: string | null
+          paid_notes: string | null
+          refunded_at: string | null
+          sale_amount_cents: number
+          status: string
+          subscription_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          attribution_source: string
+          commission_amount_cents: number
+          commission_rate_applied: number
+          coupon_code?: string | null
+          created_at?: string | null
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          paid_method?: string | null
+          paid_notes?: string | null
+          refunded_at?: string | null
+          sale_amount_cents: number
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          attribution_source?: string
+          commission_amount_cents?: number
+          commission_rate_applied?: number
+          coupon_code?: string | null
+          created_at?: string | null
+          hotmart_event_id?: string | null
+          hotmart_transaction?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          paid_method?: string | null
+          paid_notes?: string | null
+          refunded_at?: string | null
+          sale_amount_cents?: number
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_sales_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_coupon_code_fkey"
+            columns: ["coupon_code"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_hotmart_event_id_fkey"
+            columns: ["hotmart_event_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          commission_rate: number
+          cpf_cnpj: string | null
+          created_at: string | null
+          email: string
+          hotmart_affiliate_code: string | null
+          hotmart_email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          pix_key: string | null
+          status: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          commission_rate?: number
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          email: string
+          hotmart_affiliate_code?: string | null
+          hotmart_email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          commission_rate?: number
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          email?: string
+          hotmart_affiliate_code?: string | null
+          hotmart_email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
           audio_seconds: number | null
@@ -175,6 +318,53 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          affiliate_id: string | null
+          code: string
+          created_at: string | null
+          description: string | null
+          discount_pct: number
+          max_uses: number | null
+          updated_at: string | null
+          uses_count: number
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          affiliate_id?: string | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          discount_pct?: number
+          max_uses?: number | null
+          updated_at?: string | null
+          uses_count?: number
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          affiliate_id?: string | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          discount_pct?: number
+          max_uses?: number | null
+          updated_at?: string | null
+          uses_count?: number
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
             referencedColumns: ["id"]
           },
         ]
