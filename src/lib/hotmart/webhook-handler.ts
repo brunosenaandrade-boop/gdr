@@ -5,6 +5,7 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
 import { logConversation } from "@/lib/whatsapp/conversation-log";
 import { emitirNFE } from "@/lib/nfe/enotas";
 import { attributeAffiliateSale, refundAffiliateSale } from "@/lib/affiliates/webhook-attribution";
+import { registerBumpsFromPayload, deliverBumpToCustomer } from "@/lib/delivery/bump-delivery";
 
 // Eventos Hotmart que processamos
 export type HotmartEventType =
@@ -193,6 +194,25 @@ async function processEvent(
       }).catch((err) => {
         console.error("[hotmart] Falha ao atribuir afiliado:", err);
       });
+      // Registrar order bumps (se tiver) e entregar
+      try {
+        const bumpIds = await registerBumpsFromPayload({
+          supabase,
+          payload,
+          subscriptionId: upserted?.id ?? null,
+          tenantId,
+          hotmartTransaction,
+          eventId,
+        });
+        // Entregar cada bump via WhatsApp (não bloqueia se falhar)
+        for (const bumpId of bumpIds) {
+          await deliverBumpToCustomer({ purchaseBumpId: bumpId }).catch((err) => {
+            console.error(`[hotmart] Falha ao entregar bump ${bumpId}:`, err);
+          });
+        }
+      } catch (err) {
+        console.error("[hotmart] Falha ao processar bumps:", err);
+      }
       // Emitir NF-e (não bloqueia o fluxo se falhar)
       await emitirNFEFromPayload(payload, tenantId, supabase).catch((err) => {
         console.error("[hotmart] Falha ao emitir NFE:", err);

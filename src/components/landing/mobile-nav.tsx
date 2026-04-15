@@ -80,11 +80,11 @@ export default function MobileNav() {
                 Entrar
               </Link>
               <a
-                href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+                href="/planos"
                 onClick={close}
                 className="mt-1 flex h-9 items-center justify-center rounded-full bg-emerald-500/90 text-sm font-medium text-black transition-all hover:bg-emerald-400"
               >
-                Cadastre-se pelo WhatsApp
+                Ver planos
               </a>
             </div>
           </div>

@@ -390,6 +390,24 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
   }
 
+  // ===== FLUXO 2.6: Reenviar bônus (order bumps) =====
+  if (message.type === "text" && message.text) {
+    const text = (message.text?.body ?? "").toLowerCase().trim();
+    if (/^reenviar\s+(b[ôo]nus|produto|b[uú]mp|materi)/i.test(text) ||
+        /^(manda|envia|me envia|quero).*(b[ôo]nus|materi|produto|arquivos?)/i.test(text)) {
+      const { resendBumpLinks } = await import("@/lib/delivery/bump-delivery");
+      const result = await resendBumpLinks({ tenantId });
+      if (!result.ok) {
+        await respond(
+          "Hmm, não encontrei nenhum bônus pra reenviar. 🤔\n\n" +
+          "Se você comprou um bônus recentemente e não recebeu, fale com o suporte.",
+        );
+      }
+      // Se ok, a função já envia os links — não precisa responder mais nada
+      return;
+    }
+  }
+
   // ===== FLUXO 2.5: Consulta livre ("quanto gastei?", "qual meu saldo?") =====
   if (message.type === "text" && message.text) {
     const text = message.text?.body ?? "";

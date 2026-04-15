@@ -284,6 +284,42 @@ export type Database = {
           },
         ]
       }
+      bump_products: {
+        Row: {
+          active: boolean
+          amount_cents: number
+          created_at: string | null
+          description: string | null
+          files: Json
+          hotmart_product_id: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          amount_cents: number
+          created_at?: string | null
+          description?: string | null
+          files?: Json
+          hotmart_product_id: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          amount_cents?: number
+          created_at?: string | null
+          description?: string | null
+          files?: Json
+          hotmart_product_id?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
@@ -368,6 +404,89 @@ export type Database = {
             columns: ["affiliate_id"]
             isOneToOne: false
             referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_bumps: {
+        Row: {
+          amount_cents: number
+          bump_name: string
+          bump_product_id: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivery_error: string | null
+          delivery_status: string
+          hotmart_event_id: string | null
+          hotmart_product_id: string
+          hotmart_transaction: string | null
+          id: string
+          last_resend_at: string | null
+          resend_count: number
+          subscription_id: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          bump_name: string
+          bump_product_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_error?: string | null
+          delivery_status?: string
+          hotmart_event_id?: string | null
+          hotmart_product_id: string
+          hotmart_transaction?: string | null
+          id?: string
+          last_resend_at?: string | null
+          resend_count?: number
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          bump_name?: string
+          bump_product_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_error?: string | null
+          delivery_status?: string
+          hotmart_event_id?: string | null
+          hotmart_product_id?: string
+          hotmart_transaction?: string | null
+          id?: string
+          last_resend_at?: string | null
+          resend_count?: number
+          subscription_id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_bumps_bump_product_id_fkey"
+            columns: ["bump_product_id"]
+            isOneToOne: false
+            referencedRelation: "bump_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_bumps_hotmart_event_id_fkey"
+            columns: ["hotmart_event_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_bumps_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_bumps_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

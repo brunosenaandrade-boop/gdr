@@ -42,7 +42,7 @@ export default function LandingPage() {
               Entrar
             </Link>
             <Link
-              href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+              href="/planos"
               className="inline-flex h-7 items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 text-xs font-medium text-black transition-all hover:bg-emerald-400 hover:scale-105"
             >
               Criar conta
@@ -85,7 +85,7 @@ export default function LandingPage() {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
-                href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+                href="/planos"
                 className="group relative inline-flex h-10 min-w-[140px] items-center justify-center gap-2 overflow-hidden rounded-full px-5 text-sm font-medium tracking-tight text-white aura-button-green-beam transition-all hover:scale-105 active:scale-95"
               >
                 <div className="points_wrapper">
@@ -185,7 +185,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <Link
-                    href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+                    href="/planos"
                     className="inline-flex items-center gap-2 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-normal tracking-tight text-black shadow-lg shadow-emerald-500/40 transition-all hover:bg-emerald-400 hover:scale-105 hover:shadow-emerald-500/60"
                     style={{ animation: "pulse-glow 3s infinite" }}
                   >
@@ -511,7 +511,7 @@ export default function LandingPage() {
                   Nossa IA monitora seus lançamentos, categoriza automaticamente e gera insights sobre seus gastos. Tudo via WhatsApp ou painel web.
                 </p>
                 <Link
-                  href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+                  href="/planos"
                   className="group mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-sm font-medium tracking-tight text-black transition-all hover:scale-105 hover:bg-slate-200 active:scale-95"
                 >
                   <span>Começar agora</span>
@@ -583,7 +583,7 @@ export default function LandingPage() {
             <p className="mt-2 text-sm text-slate-400">Controles avançados para sua gestão financeira.</p>
           </div>
           <Link
-            href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+            href="/planos"
             className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
           >
             <span>Criar conta</span>
@@ -792,7 +792,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
               <Link
-                href="https://wa.me/554820270106?text=Quero+me+cadastrar"
+                href="/planos"
                 className="group flex h-12 items-center gap-2 rounded-full bg-white px-8 text-sm font-medium text-black transition-transform hover:scale-105 active:scale-95"
               >
                 <span>Criar conta grátis</span>
@@ -856,7 +856,7 @@ export default function LandingPage() {
                 <div>
                   <h4 className="text-xs font-medium text-white">Conta</h4>
                   <ul className="mt-4 space-y-2.5 text-xs text-slate-500">
-                    <li><Link href="https://wa.me/554820270106?text=Quero+me+cadastrar" className="transition-colors hover:text-emerald-400">Criar conta</Link></li>
+                    <li><Link href="/planos" className="transition-colors hover:text-emerald-400">Criar conta</Link></li>
                     <li><Link href="/login" className="transition-colors hover:text-emerald-400">Entrar</Link></li>
                   </ul>
                 </div>
