@@ -2,31 +2,40 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
 
-const HOTMART_CHECKOUT = process.env.HOTMART_CHECKOUT_URL ?? "https://pay.hotmart.com/V105379736J";
+const HOTMART_CHECKOUT_ANUAL = process.env.HOTMART_CHECKOUT_URL ?? "https://pay.hotmart.com/V105379736J";
+const HOTMART_CHECKOUT_MENSAL = process.env.HOTMART_CHECKOUT_MENSAL_URL ?? HOTMART_CHECKOUT_ANUAL;
 
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
   description:
-    "Assinatura anual do Guarda Dinheiro. Assistente financeiro no WhatsApp com IA. R$ 29,90/mês em 12x. Garantia de 7 dias.",
+    "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 49,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
 };
 
-async function getCheckoutUrl(): Promise<string> {
+async function getCheckoutUrls(): Promise<{ anual: string; mensal: string }> {
+  let email: string | undefined;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) {
-      const url = new URL(HOTMART_CHECKOUT);
-      url.searchParams.set("email", user.email);
-      return url.toString();
-    }
+    email = user?.email ?? undefined;
   } catch {
-    // Usuário não logado, segue com URL base
+    // Usuário não logado
   }
-  return HOTMART_CHECKOUT;
+
+  function withEmail(base: string): string {
+    if (!email) return base;
+    const url = new URL(base);
+    url.searchParams.set("email", email);
+    return url.toString();
+  }
+
+  return {
+    anual: withEmail(HOTMART_CHECKOUT_ANUAL),
+    mensal: withEmail(HOTMART_CHECKOUT_MENSAL),
+  };
 }
 
 export default async function PlanosPage() {
-  const checkoutUrl = await getCheckoutUrl();
+  const checkoutUrl = await getCheckoutUrls();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -56,7 +65,7 @@ export default async function PlanosPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-xs tracking-tight text-emerald-300">Plano anual — 12x no cartão</span>
+            <span className="text-xs tracking-tight text-emerald-300">Escolha seu plano — garantia de 7 dias</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-normal tracking-tight">
@@ -72,53 +81,88 @@ export default async function PlanosPage() {
           </p>
         </section>
 
-        {/* Pricing Card */}
+        {/* Pricing Cards */}
         <section className="mb-16">
-          <div className="relative rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 p-8 md:p-12 overflow-hidden">
-            {/* Glow effect */}
-            <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-emerald-500/10 blur-[100px] opacity-80" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Plano Anual — Destaque */}
+            <div className="relative rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 p-8 overflow-hidden">
+              <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-emerald-500/10 blur-[100px] opacity-80" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1">
+                    <Shield className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-xs font-semibold text-emerald-300">Melhor custo-benefício</span>
+                  </div>
+                  <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider">
+                    -40% vs mensal
+                  </span>
+                </div>
 
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 mb-6">
-                <Shield className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs font-semibold text-emerald-300">
-                  Garantia incondicional de 7 dias
-                </span>
+                <h2 className="text-2xl font-semibold">Plano Anual</h2>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-5xl font-bold">R$ 29,90</span>
+                  <span className="text-lg text-slate-400">/mês</span>
+                </div>
+                <p className="text-sm text-slate-400 mt-1">
+                  12x sem juros · Total: <span className="text-emerald-300 font-semibold">R$ 358,80/ano</span>
+                </p>
+
+                <div className="mt-6 space-y-2 text-sm">
+                  <Feature text="Tudo do plano mensal incluído" />
+                  <Feature text="Economia de R$ 240/ano vs mensal" />
+                  <Feature text="Score financeiro + agenda" />
+                  <Feature text="Bônus exclusivos no checkout" />
+                </div>
+
+                <a
+                  href={checkoutUrl.anual}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full text-center transition-all hover:scale-[1.02]"
+                >
+                  Assinar anual por R$ 29,90/mês
+                </a>
+                <p className="text-center text-xs text-slate-500 mt-3">Garantia de 7 dias · Cartão, PIX ou Boleto</p>
               </div>
+            </div>
 
-              <h2 className="text-2xl font-semibold">Plano Anual</h2>
+            {/* Plano Mensal */}
+            <div className="relative rounded-3xl border border-white/10 bg-white/[0.02] p-8 overflow-hidden">
+              <div className="relative z-10">
+                <div className="mb-6">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-slate-400">
+                    Flexibilidade
+                  </span>
+                </div>
 
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-5xl font-bold">R$ 29,90</span>
-                <span className="text-lg text-slate-400">/mês</span>
+                <h2 className="text-2xl font-semibold">Plano Mensal</h2>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-5xl font-bold">R$ 49,90</span>
+                  <span className="text-lg text-slate-400">/mês</span>
+                </div>
+                <p className="text-sm text-slate-400 mt-1">
+                  Cobrado mensalmente · Cancele quando quiser
+                </p>
+
+                <div className="mt-6 space-y-2 text-sm">
+                  <Feature text="WhatsApp 24/7 com IA" />
+                  <Feature text="Lançamentos por texto ou áudio" />
+                  <Feature text="Consultas: saldo, gastos, categorias" />
+                  <Feature text="Lembretes diários" />
+                  <Feature text="Dashboard web completo" />
+                  <Feature text="PF e PJ num só plano" />
+                </div>
+
+                <a
+                  href={checkoutUrl.mensal}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 block w-full py-4 bg-white/10 hover:bg-white/15 text-white font-bold text-base rounded-full text-center transition-all hover:scale-[1.02] border border-white/10"
+                >
+                  Assinar mensal por R$ 49,90/mês
+                </a>
+                <p className="text-center text-xs text-slate-500 mt-3">Garantia de 7 dias · Cartão, PIX ou Boleto</p>
               </div>
-              <p className="text-sm text-slate-400 mt-1">
-                12x sem juros no cartão · Total: <span className="text-emerald-300 font-semibold">R$ 358,80/ano</span>
-              </p>
-
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <Feature text="WhatsApp 24/7 com IA" />
-                <Feature text="Lançamentos por texto ou áudio" />
-                <Feature text="Consultas: saldo, gastos, categorias" />
-                <Feature text="Lembretes diários de vencimentos" />
-                <Feature text="Categorização automática" />
-                <Feature text="Dashboard web completo" />
-                <Feature text="Transações recorrentes" />
-                <Feature text="PF e PJ num só plano" />
-              </div>
-
-              <a
-                href={checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full text-center transition-all hover:scale-[1.02]"
-              >
-                🚀 Começar agora
-              </a>
-
-              <p className="text-center text-xs text-slate-500 mt-4">
-                Pagamento seguro via Hotmart · Cartão, PIX ou Boleto
-              </p>
             </div>
           </div>
         </section>
@@ -223,7 +267,7 @@ export default async function PlanosPage() {
             />
             <FAQ
               q="Posso mudar de plano depois?"
-              a="Temos apenas um plano (anual) por enquanto. Se no futuro lançarmos planos diferentes, você pode trocar a qualquer momento."
+              a="Sim! Comece no mensal e migre pro anual quando quiser (ou vice-versa). A mudança é feita pela área do assinante na Hotmart."
             />
           </div>
         </section>
@@ -234,16 +278,26 @@ export default async function PlanosPage() {
             Começa hoje. Cancela a qualquer momento.
           </h2>
           <p className="text-slate-400 mb-8">
-            R$ 29,90/mês (12x) · Garantia de 7 dias · Ativação imediata
+            Garantia de 7 dias · Ativação imediata · Cartão, PIX ou Boleto
           </p>
-          <a
-            href={checkoutUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full transition-all hover:scale-105"
-          >
-            🚀 Quero começar agora
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href={checkoutUrl.anual}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full transition-all hover:scale-105"
+            >
+              Anual — R$ 29,90/mês
+            </a>
+            <a
+              href={checkoutUrl.mensal}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-medium text-base rounded-full transition-all hover:scale-105 border border-white/10"
+            >
+              Mensal — R$ 49,90/mês
+            </a>
+          </div>
         </section>
       </div>
 

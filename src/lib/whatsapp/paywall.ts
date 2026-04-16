@@ -1,8 +1,7 @@
 import { sendWhatsAppCTA } from "./meta-api";
 import type { AccessDenialReason } from "@/lib/subscriptions/access";
 
-const CHECKOUT_URL =
-  process.env.HOTMART_CHECKOUT_URL ?? "https://www.guardadinheiro.com.br/planos";
+const PLANOS_URL = "https://www.guardadinheiro.com.br/planos";
 
 type PaywallMessage = {
   body: string;
@@ -16,14 +15,15 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
       return {
         body:
           "Opa! Pra eu registrar seus lançamentos e te mandar lembretes, precisa ter um plano ativo.\n\n" +
-          "📋 *Plano Guarda Dinheiro*\n" +
-          "💰 *R$ 29,90/mês* (12x no cartão, PIX ou boleto)\n\n" +
+          "📋 *Escolha seu plano:*\n" +
+          "💚 *Anual* — R$ 29,90/mês (12x) ← economiza 40%\n" +
+          "💙 *Mensal* — R$ 49,90/mês\n\n" +
           "✅ Assistente 24h no WhatsApp (texto e áudio)\n" +
           "✅ Painel web completo\n" +
           "✅ Score financeiro + agenda\n" +
-          "✅ *Garantia de 7 dias* — devolvemos 100% se não gostar\n\n" +
-          "Fique tranquilo: suas consultas (saldo, extrato) continuam funcionando normalmente. Seus dados ficam guardados por 90 dias.",
-        displayText: "ASSINAR POR R$ 29,90/MÊS",
+          "✅ *Garantia de 7 dias* — devolvemos 100%\n\n" +
+          "Fique tranquilo: suas consultas (saldo, extrato) continuam funcionando. Seus dados ficam guardados por 90 dias.",
+        displayText: "VER PLANOS E ASSINAR",
         footer: "Cancele quando quiser, sem burocracia.",
       };
 
@@ -32,11 +32,12 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
       return {
         body:
           "Sua assinatura expirou, mas seus dados estão todos aqui! 🛡️\n\n" +
-          "Pra voltar a lançar e receber lembretes, é só reativar:\n\n" +
-          "💰 *R$ 29,90/mês* — garantia de 7 dias\n\n" +
-          "Fique tranquilo: seus dados ficam guardados por 90 dias. Você pode consultar saldo e extrato normalmente.",
-        displayText: "REATIVAR POR R$ 29,90/MÊS",
-        footer: "Cancele quando quiser.",
+          "Pra voltar a lançar e receber lembretes:\n\n" +
+          "💚 *Anual* — R$ 29,90/mês (12x) ← melhor custo\n" +
+          "💙 *Mensal* — R$ 49,90/mês\n\n" +
+          "Seus dados ficam guardados por 90 dias. Consultas de saldo e extrato continuam funcionando.",
+        displayText: "VER PLANOS E REATIVAR",
+        footer: "Garantia de 7 dias. Cancele quando quiser.",
       };
 
     case "past_due":
@@ -73,7 +74,7 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
 export async function sendPaywallCTA(phone: string, reason: AccessDenialReason): Promise<void> {
   const msg = messageForReason(reason);
 
-  const url = new URL(CHECKOUT_URL);
+  const url = new URL(PLANOS_URL);
   // Pré-preenche email quando possível (será feito em contexto logado, aqui não)
 
   await sendWhatsAppCTA(
