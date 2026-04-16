@@ -15,47 +15,53 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
     case "no_subscription":
       return {
         body:
-          "Pra lançar, organizar e receber lembretes, você precisa ativar sua assinatura. 🛡️\n\n" +
-          "Plano Guarda Dinheiro: *R$ 29,90/mês* (12x no cartão)\n" +
-          "✅ Garantia de 7 dias — devolvemos 100%\n" +
-          "✅ Assistente 24h no WhatsApp\n" +
-          "✅ Sem cartão? Paga no PIX!",
-        displayText: "🎯 QUERO ASSINAR AGORA",
-        footer: "Cancele quando quiser.",
+          "Opa! Pra eu registrar seus lançamentos e te mandar lembretes, precisa ter um plano ativo.\n\n" +
+          "📋 *Plano Guarda Dinheiro*\n" +
+          "💰 *R$ 29,90/mês* (12x no cartão, PIX ou boleto)\n\n" +
+          "✅ Assistente 24h no WhatsApp (texto e áudio)\n" +
+          "✅ Painel web completo\n" +
+          "✅ Score financeiro + agenda\n" +
+          "✅ *Garantia de 7 dias* — devolvemos 100% se não gostar\n\n" +
+          "Fique tranquilo: suas consultas (saldo, extrato) continuam funcionando normalmente. Seus dados ficam guardados por 90 dias.",
+        displayText: "ASSINAR POR R$ 29,90/MÊS",
+        footer: "Cancele quando quiser, sem burocracia.",
       };
 
     case "expired":
     case "canceled_expired":
       return {
         body:
-          "Sua assinatura do Guarda Dinheiro expirou. 😢\n\n" +
-          "Reative agora pra continuar organizando suas finanças com o Guardinha!\n\n" +
-          "*R$ 29,90/mês* — garantia de 7 dias.",
-        displayText: "🔄 REATIVAR ASSINATURA",
+          "Sua assinatura expirou, mas seus dados estão todos aqui! 🛡️\n\n" +
+          "Pra voltar a lançar e receber lembretes, é só reativar:\n\n" +
+          "💰 *R$ 29,90/mês* — garantia de 7 dias\n\n" +
+          "Fique tranquilo: seus dados ficam guardados por 90 dias. Você pode consultar saldo e extrato normalmente.",
+        displayText: "REATIVAR POR R$ 29,90/MÊS",
+        footer: "Cancele quando quiser.",
       };
 
     case "past_due":
       return {
         body:
-          "⚠️ Sua última cobrança não foi aprovada. Seu acesso será pausado em breve!\n\n" +
-          "Atualize seu cartão pra continuar sem interrupção:",
-        displayText: "💳 ATUALIZAR PAGAMENTO",
+          "⚠️ Sua última cobrança não foi aprovada.\n\n" +
+          "Seu acesso de escrita será pausado em breve, mas seus dados estão seguros.\n\n" +
+          "Atualize seu pagamento pra continuar sem interrupção:",
+        displayText: "ATUALIZAR PAGAMENTO",
       };
 
     case "refunded":
       return {
         body:
-          "Sua assinatura foi reembolsada. 💚\n\n" +
-          "Se mudou de ideia e quer voltar, estou aqui! Basta assinar novamente:",
-        displayText: "🎯 ASSINAR DE NOVO",
+          "Seu reembolso foi processado com sucesso. 💚\n\n" +
+          "Seus dados ficam guardados por 90 dias. Se quiser voltar, é só assinar novamente — sem perder nada.",
+        displayText: "ASSINAR NOVAMENTE",
       };
 
     case "chargeback":
       return {
         body:
           "Sua assinatura foi cancelada após contestação no cartão.\n\n" +
-          "Se foi um engano, regularize e assine novamente:",
-        displayText: "🎯 ASSINAR",
+          "Se foi um engano, regularize e assine novamente. Seus dados ficam guardados por 90 dias.",
+        displayText: "ASSINAR NOVAMENTE",
       };
   }
 }
