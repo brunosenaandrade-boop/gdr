@@ -75,6 +75,19 @@ export async function GET(request: NextRequest) {
           .order("due_date", { ascending: true })
           .limit(5);
 
+        // Compromissos de hoje
+        const startOfToday = `${today}T00:00:00-03:00`;
+        const endOfToday = `${today}T23:59:59-03:00`;
+        const { data: compromissosHoje } = await supabase
+          .from("appointments")
+          .select("title, scheduled_at, notes")
+          .eq("tenant_id", link.tenant_id)
+          .eq("status", "pendente")
+          .gte("scheduled_at", startOfToday)
+          .lte("scheduled_at", endOfToday)
+          .order("scheduled_at", { ascending: true })
+          .limit(10);
+
         // Montar mensagem
         const pagar = contasPagar && contasPagar.length > 0
           ? contasPagar.map((t) => `  • ${t.description} — ${formatCurrency(t.amount)}`).join("\n")
@@ -93,11 +106,23 @@ export async function GET(request: NextRequest) {
           atrasadasBlock = `\n\n⚠️ *Contas atrasadas:*\n${items}`;
         }
 
+        let compromissosBlock = "";
+        if (compromissosHoje && compromissosHoje.length > 0) {
+          const items = compromissosHoje.map((c) => {
+            const dt = new Date(c.scheduled_at);
+            const hh = String(dt.getHours()).padStart(2, "0");
+            const mi = String(dt.getMinutes()).padStart(2, "0");
+            return `  • ${hh}h${mi} — ${c.title}`;
+          }).join("\n");
+          compromissosBlock = `\n\n📅 *Compromissos de hoje:*\n${items}`;
+        }
+
         const message =
           `☀️ Bom dia, ${nome}! Aqui está seu resumo do dia:\n\n` +
           `💸 *Contas a pagar hoje:*\n${pagar}\n\n` +
           `💰 *Contas a receber hoje:*\n${receber}` +
           atrasadasBlock +
+          compromissosBlock +
           `\n\n⏰ *Lembre-se:* registre todos os seus gastos por aqui para manter o controle! 💚`;
 
         const result = await sendWhatsAppMessage(link.phone_number, message);

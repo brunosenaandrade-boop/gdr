@@ -284,6 +284,53 @@ export type Database = {
           },
         ]
       }
+      appointments: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          reminder_sent_at: string | null
+          scheduled_at: string
+          source: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reminder_sent_at?: string | null
+          scheduled_at: string
+          source?: string
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reminder_sent_at?: string | null
+          scheduled_at?: string
+          source?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bump_products: {
         Row: {
           active: boolean
@@ -404,6 +451,38 @@ export type Database = {
             columns: ["affiliate_id"]
             isOneToOne: false
             referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_scores: {
+        Row: {
+          breakdown: Json
+          calculated_at: string
+          id: string
+          score: number
+          tenant_id: string
+        }
+        Insert: {
+          breakdown: Json
+          calculated_at?: string
+          id?: string
+          score: number
+          tenant_id: string
+        }
+        Update: {
+          breakdown?: Json
+          calculated_at?: string
+          id?: string
+          score?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_scores_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

@@ -14,6 +14,9 @@ import { sendSignupFlow, handleFlowResponse } from "./onboarding-flow";
 import { hasActiveAccess, type AccessResult } from "@/lib/subscriptions/access";
 import { sendPaywallCTA } from "./paywall";
 import { checkTenantRateLimit, getRateLimitMessage } from "./rate-limiter";
+import { isAppointment, isAgendaQuery } from "./appointment-intent";
+import { parseAppointment } from "@/lib/openai/parse-appointment";
+import { handleAgendaQuery } from "./agenda-query";
 import type { Category } from "@/types";
 
 type WhatsAppMessage = {
@@ -304,6 +307,48 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       }
       return;
     }
+
+    if (buttonId === "ver_agenda") {
+      const answer = await handleAgendaQuery(tenantId, "próximos compromissos", supabase);
+      await respond(answer);
+      return;
+    }
+
+    if (buttonId.startsWith("cancelar_apt_")) {
+      if (!canWrite) { await blockWithPaywall(); return; }
+      const aptId = buttonId.replace("cancelar_apt_", "");
+      const { error: delErr } = await supabase
+        .from("appointments")
+        .update({ status: "cancelado" })
+        .eq("id", aptId)
+        .eq("tenant_id", tenantId);
+
+      if (delErr) {
+        console.error("Erro ao cancelar compromisso:", delErr.message);
+        await respond("Erro ao cancelar. Tente novamente.");
+      } else {
+        await respond("Compromisso cancelado. 🗑️");
+      }
+      return;
+    }
+
+    if (buttonId.startsWith("completar_apt_")) {
+      if (!canWrite) { await blockWithPaywall(); return; }
+      const aptId = buttonId.replace("completar_apt_", "");
+      const { error: updErr } = await supabase
+        .from("appointments")
+        .update({ status: "realizado" })
+        .eq("id", aptId)
+        .eq("tenant_id", tenantId);
+
+      if (updErr) {
+        console.error("Erro ao marcar compromisso:", updErr.message);
+        await respond("Erro ao atualizar. Tente novamente.");
+      } else {
+        await respond("Compromisso marcado como realizado. ✅");
+      }
+      return;
+    }
   }
 
   // ===== FLUXO 1.6: Edição de transação em andamento =====
@@ -411,6 +456,15 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   // ===== FLUXO 2.5: Consulta livre ("quanto gastei?", "qual meu saldo?") =====
   if (message.type === "text" && message.text) {
     const text = message.text?.body ?? "";
+
+    // 2.5a — Consulta de agenda ("o que tenho hoje?", "minha agenda")
+    if (isAgendaQuery(text)) {
+      const answer = await handleAgendaQuery(tenantId, text, supabase);
+      await respond(answer);
+      return;
+    }
+
+    // 2.5b — Consulta financeira
     if (isQuery(text)) {
       const answer = await handleQuery(tenantId, text, supabase);
       await respond(answer);
@@ -475,6 +529,75 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   } else {
     await respond("Envie uma mensagem de texto ou áudio com seu lançamento financeiro.");
     return;
+  }
+
+  // ===== FLUXO 2.7: Criação de compromisso (antes do parser de lançamento) =====
+  // Compromisso tem precedência: "médico amanhã às 16h" não deve virar despesa.
+  if (isAppointment(textContent)) {
+    const aptResult = await parseAppointment(textContent, { tenantId });
+
+    if (aptResult.ok) {
+      const { data: newApt, error: aptErr } = await supabase
+        .from("appointments")
+        .insert({
+          tenant_id: tenantId,
+          title: aptResult.data.title,
+          scheduled_at: aptResult.data.scheduled_at,
+          notes: aptResult.data.notes ?? null,
+          source: "whatsapp",
+        })
+        .select("id, title, scheduled_at, notes")
+        .maybeSingle();
+
+      if (aptErr || !newApt) {
+        Sentry.captureException(aptErr ?? new Error("Falha ao criar compromisso"));
+        console.error("Erro ao inserir compromisso:", aptErr?.message);
+        await respond("Erro ao salvar o compromisso. Tente novamente.");
+        return;
+      }
+
+      const scheduledDate = new Date(newApt.scheduled_at);
+      const when = scheduledDate.toLocaleString("pt-BR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "America/Sao_Paulo",
+      });
+
+      const notesLine = newApt.notes ? `\n📝 ${newApt.notes}` : "";
+      const summary =
+        `📅 *Compromisso agendado!*\n\n` +
+        `*${newApt.title}*\n` +
+        `🕐 ${when}${notesLine}\n\n` +
+        `⏰ Vou te lembrar 30 minutos antes.`;
+
+      await sendWhatsAppButtons(message.from, summary, [
+        { id: `cancelar_apt_${newApt.id}`, title: "🗑️ Cancelar" },
+        { id: `completar_apt_${newApt.id}`, title: "✅ Já fui" },
+        { id: "ver_agenda", title: "📅 Ver agenda" },
+      ]);
+
+      await logConversation(supabase, {
+        tenantId: currentTenantId,
+        phoneNumber: message.from,
+        direction: "out",
+        messageType: "text",
+        content: summary + " [botões: cancelar/completar/ver_agenda]",
+      });
+      return;
+    }
+
+    // Se a IA falhou em extrair data, pedir clarificação
+    if (aptResult.error === "Data no passado" || aptResult.error === "Data inválida") {
+      await respond(
+        "Não consegui identificar a data do compromisso. Pode me dizer quando é?\n\n" +
+          "Exemplo: \"amanhã às 16h\" ou \"sexta às 10 da manhã\".",
+      );
+      return;
+    }
+    // Para erros genéricos, cai no parser de lançamento (pode não ser compromisso mesmo)
   }
 
   // #3: Montar contexto multi-turn (se há pending ativo)
