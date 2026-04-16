@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatCurrency } from "@/lib/utils";
 import { generateResponse } from "@/lib/openai/generate-response";
+import { calculateTenantScore } from "@/lib/score/calculate";
 
 /**
  * Detecta se a mensagem é uma consulta financeira (não um lançamento).
@@ -13,7 +14,7 @@ export function isQuery(text: string): boolean {
 
 const QUERY_PATTERNS: RegExp[] = [
   /^quanto\s+(gastei|recebi|paguei|tenho|devo|sobr)/i,
-  /^qual\s+(meu\s+saldo|o\s+saldo|o\s+total)/i,
+  /^qual\s+(meu\s+saldo|o\s+saldo|o\s+total|meu\s+score)/i,
   /^tenho\s+contas?\s+(a\s+pagar|vencid|pendent)/i,
   /^(me\s+)?mostr[ae]\s+(meu|minha|o|a|os|as)/i,
   /^(me\s+)?pass[ae]\s+(meu|o|a|um)/i,
@@ -21,10 +22,13 @@ const QUERY_PATTERNS: RegExp[] = [
   /^relat[oó]rio/i,
   /^resumo/i,
   /^como\s+(est[aá]|anda|t[aá])\s+(meu|minha)/i,
+  /^como\s+(melhor(ar|o)|subir|aumentar)\s+(meu\s+)?score/i,
   /^estou\s+no\s+(positivo|negativo|vermelho|azul)/i,
   /^onde\s+(est[oó]u|eu)\s+(gastando|perdendo)/i,
   /^quanto\s+falta/i,
   /saldo\s*(atual|total|do\s*m[eê]s)?[\s?]*$/i,
+  /\bmeu\s+score\b/i,
+  /\bscore\s+financeiro\b/i,
   /\?([\s]*)$/,  // qualquer frase terminando em ?
 ];
 
@@ -36,11 +40,17 @@ type QueryType =
   | "contas_pagar"
   | "contas_vencidas"
   | "categoria"
+  | "score"
+  | "score_melhorar"
   | "geral";
 
 function classifyQuery(text: string): { type: QueryType; categoryFilter?: string } {
   const lower = text.trim().toLowerCase();
 
+  if (/como\s+(melhor|subir|aumentar)/i.test(lower) && /score/i.test(lower)) {
+    return { type: "score_melhorar" };
+  }
+  if (/\bscore\b/i.test(lower)) return { type: "score" };
   if (/saldo/i.test(lower)) return { type: "saldo" };
   if (/contas?\s*(a\s+pagar|pendent)/i.test(lower)) return { type: "contas_pagar" };
   if (/contas?\s*vencid/i.test(lower)) return { type: "contas_vencidas" };
@@ -153,6 +163,48 @@ async function buildQueryData(
       });
 
       return `Contas vencidas (${data.length}):\n${lines.join("\n")}`;
+    }
+
+    case "score": {
+      const result = await calculateTenantScore(supabase, tenantId);
+      return (
+        `Score financeiro: ${result.score} (0 a 1000)\n` +
+        `Faixa: ${result.label} ${result.emoji}\n` +
+        `Dica: pergunte "como melhorar meu score" pra ver o detalhamento.`
+      );
+    }
+
+    case "score_melhorar": {
+      const result = await calculateTenantScore(supabase, tenantId);
+      const max: Record<string, number> = {
+        saldo_positivo: 250,
+        pontualidade: 200,
+        constancia: 150,
+        recorrencias: 100,
+        diversidade: 100,
+        historico_positivo: 150,
+        maturidade: 50,
+      };
+      const gaps = Object.entries(result.breakdown)
+        .map(([key, val]) => ({ key, val, max: max[key] ?? 100, gap: (max[key] ?? 100) - val }))
+        .sort((a, b) => b.gap - a.gap)
+        .slice(0, 3);
+
+      const labels: Record<string, string> = {
+        saldo_positivo: "Poupe ao menos 30% da sua renda mensal",
+        pontualidade: "Pague as contas no prazo (quitar atrasados)",
+        constancia: "Lance suas movimentações regularmente (meta: 1/dia)",
+        recorrencias: "Cadastre suas contas recorrentes (aluguel, salário, etc.)",
+        diversidade: "Use categorias diferentes pra organizar melhor",
+        historico_positivo: "Mantenha saldo positivo em mais meses",
+        maturidade: "Use o app consistentemente — maturidade aumenta com o tempo",
+      };
+
+      return (
+        `Seu score: ${result.score} ${result.emoji} (${result.label})\n\n` +
+        `Oportunidades de melhoria:\n` +
+        gaps.map((g, i) => `${i + 1}. ${labels[g.key] ?? g.key} (+${g.gap} possíveis)`).join("\n")
+      );
     }
 
     case "categoria": {
