@@ -401,6 +401,21 @@ async function emitirNFEFromPayload(
   const purchase = payload.data?.purchase;
   if (!buyer?.email || !buyer?.name) return;
 
+  // Gate por volume: NF-e só é emitida a partir do threshold (padrão 100).
+  // Enquanto MEI não ultrapassa faturamento não precisa emitir, e evita
+  // custo de eNotas nas primeiras compras de teste/validação.
+  const threshold = parseInt(process.env.NFE_MIN_PURCHASES ?? "100", 10);
+  const { count: approvedCount } = await supabase
+    .from("subscriptions")
+    .select("id", { count: "exact", head: true })
+    .in("status", ["active", "canceled", "refunded", "chargeback"]);
+  if ((approvedCount ?? 0) < threshold) {
+    console.log(
+      `[hotmart] NFE suspensa: ${approvedCount ?? 0}/${threshold} compras até agora`,
+    );
+    return;
+  }
+
   // Buscar documento (CPF/CNPJ) do tenant
   const { data: tenant } = await supabase
     .from("tenants")
