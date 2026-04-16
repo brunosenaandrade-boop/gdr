@@ -72,15 +72,15 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-5xl font-normal tracking-tight text-white sm:text-6xl">
-              <span className="block text-slate-400">Controle financeiro</span>
+              <span className="block text-slate-400">Lança gasto</span>
               <span className="block bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-100 bg-clip-text text-transparent animate-gradient-text">
-                inteligente.
+                falando no WhatsApp.
               </span>
             </h1>
 
             <p className="mt-6 max-w-lg text-lg font-light leading-relaxed text-slate-400">
-              Gerencie receitas e despesas da sua empresa ou vida pessoal.
-              Lance por texto, áudio no WhatsApp, ou pelo painel. A IA cuida do resto.
+              Manda um áudio ou texto pro Guardinha e ele registra tudo pra você.
+              Receitas, despesas, contas a pagar — organizadas com IA, 24h por dia.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -93,7 +93,7 @@ export default function LandingPage() {
                   <i className="point" /><i className="point" /><i className="point" /><i className="point" /><i className="point" />
                 </div>
                 <span className="relative z-10 flex items-center gap-2">
-                  Criar conta grátis
+                  Assinar por R$ 29,90/mês
                   <ArrowRight className="h-4 w-4 text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                 </span>
               </Link>
@@ -184,14 +184,10 @@ export default function LandingPage() {
                   <p className="mt-1 text-xs text-slate-400">Últimos 30 dias • PF e PJ</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <Link
-                    href="/planos"
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-normal tracking-tight text-black shadow-lg shadow-emerald-500/40 transition-all hover:bg-emerald-400 hover:scale-105 hover:shadow-emerald-500/60"
-                    style={{ animation: "pulse-glow 3s infinite" }}
-                  >
+                  <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1.5 text-xs font-normal tracking-tight text-emerald-300 border border-emerald-500/20">
                     <Zap className="h-3.5 w-3.5" />
-                    Novo Lançamento
-                  </Link>
+                    Via WhatsApp ou Web
+                  </div>
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -510,13 +506,7 @@ export default function LandingPage() {
                 <p className="text-base font-light leading-relaxed text-slate-400">
                   Nossa IA monitora seus lançamentos, categoriza automaticamente e gera insights sobre seus gastos. Tudo via WhatsApp ou painel web.
                 </p>
-                <Link
-                  href="/planos"
-                  className="group mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-sm font-medium tracking-tight text-black transition-all hover:scale-105 hover:bg-slate-200 active:scale-95"
-                >
-                  <span>Começar agora</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <p className="mt-4 text-xs text-emerald-300/60">R$ 29,90/mês com garantia de 7 dias</p>
               </div>
               <div className="hidden border-l border-white/5 pl-8 sm:block">
                 <div className="flex flex-col gap-4">
@@ -582,13 +572,9 @@ export default function LandingPage() {
             <h2 className="text-2xl font-semibold tracking-tight text-white">Inteligência Operacional</h2>
             <p className="mt-2 text-sm text-slate-400">Controles avançados para sua gestão financeira.</p>
           </div>
-          <Link
-            href="/planos"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <span>Criar conta</span>
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </Link>
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5">
+            <span className="text-xs text-emerald-300">PF e PJ</span>
+          </div>
         </div>
 
         {/* Feature Grid */}
@@ -788,14 +774,14 @@ export default function LandingPage() {
               <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">dinheiro?</span>
             </h2>
             <p className="mt-6 max-w-md text-lg font-light text-slate-400">
-              Comece agora gratuitamente. Sem cartão de crédito. Lance pelo WhatsApp ou painel web.
+              R$ 29,90/mês — garantia incondicional de 7 dias. Cancele quando quiser.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
               <Link
                 href="/planos"
                 className="group flex h-12 items-center gap-2 rounded-full bg-white px-8 text-sm font-medium text-black transition-transform hover:scale-105 active:scale-95"
               >
-                <span>Criar conta grátis</span>
+                <span>Quero assinar agora</span>
                 <ArrowRight className="h-4 w-4 text-black/50 transition-transform group-hover:translate-x-1 group-hover:text-black" />
               </Link>
               <Link
@@ -808,11 +794,15 @@ export default function LandingPage() {
             <div className="mt-8 flex items-center gap-6 text-[10px] text-slate-500">
               <div className="flex items-center gap-1.5">
                 <Check className="h-3 w-3 text-emerald-500" />
-                <span>100% gratuito</span>
+                <span>Garantia 7 dias</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3 w-3 text-emerald-500" />
                 <span>WhatsApp + Web</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="h-3 w-3 text-emerald-500" />
+                <span>Cancele quando quiser</span>
               </div>
             </div>
           </div>

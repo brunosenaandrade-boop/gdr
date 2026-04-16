@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getAdminMetrics } from "@/lib/admin/queries";
 import { getCurrentAdmin } from "@/lib/admin/auth";
 import { AdminShell } from "./layout";
-import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus, ShieldAlert } from "lucide-react";
+import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus, ShieldAlert, Brain } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -155,6 +155,32 @@ export default async function AdminOverviewPage() {
               value={m.pastDueCount.toString()}
               icon={AlertCircle}
               accent="red"
+            />
+          </div>
+        </div>
+        {/* AI Cost */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Custo de IA</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card
+              title="Custo hoje"
+              value={formatCurrency(m.aiCostTodayCents)}
+              subtitle={`${m.aiCallsToday} chamadas`}
+              icon={Brain}
+              accent="amber"
+            />
+            <Card
+              title="Custo do mês"
+              value={formatCurrency(m.aiCostMonthCents)}
+              icon={Brain}
+              accent="amber"
+            />
+            <Card
+              title="Custo/assinante"
+              value={m.activeSubscriptions > 0 ? formatCurrency(Math.round(m.aiCostMonthCents / m.activeSubscriptions)) : "N/A"}
+              subtitle={m.activeSubscriptions > 0 ? "por assinante ativo" : "sem assinantes"}
+              icon={Brain}
+              accent={m.activeSubscriptions > 0 && m.aiCostMonthCents / m.activeSubscriptions > 500 ? "red" : "emerald"}
             />
           </div>
         </div>

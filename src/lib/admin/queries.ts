@@ -11,6 +11,9 @@ export type AdminMetrics = {
   churnRateMonth: number;   // percentual
   expiredCount: number;
   pastDueCount: number;
+  aiCostTodayCents: number;
+  aiCostMonthCents: number;
+  aiCallsToday: number;
 };
 
 const PLAN_PRICE_CENTS = 29_90; // R$ 29,90/mês em centavos
@@ -70,6 +73,20 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   const churnBase = active.length + canceledInMonth;
   const churnRateMonth = churnBase > 0 ? (canceledInMonth / churnBase) * 100 : 0;
 
+  // AI usage
+  const { data: aiToday } = await supabase
+    .from("ai_usage")
+    .select("estimated_cost_cents")
+    .gte("created_at", startOfDay);
+
+  const { data: aiMonth } = await supabase
+    .from("ai_usage")
+    .select("estimated_cost_cents")
+    .gte("created_at", startOfMonth);
+
+  const aiCostTodayCents = (aiToday ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
+  const aiCostMonthCents = (aiMonth ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
+
   return {
     mrr,
     arr,
@@ -81,6 +98,9 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
     churnRateMonth,
     expiredCount,
     pastDueCount,
+    aiCostTodayCents,
+    aiCostMonthCents,
+    aiCallsToday: (aiToday ?? []).length,
   };
 }
 
