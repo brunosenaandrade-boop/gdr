@@ -762,6 +762,55 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* Security Section */}
+        <section className="mt-20 mb-20">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Seus dados estão seguros</h2>
+            <p className="mt-2 text-sm text-slate-400">Privacidade e segurança são prioridade no Guarda Dinheiro.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: Lock, title: "Criptografia", desc: "Seus dados são protegidos com criptografia em trânsito e em repouso, o mesmo padrão usado por bancos." },
+              { icon: Shield, title: "LGPD Compliant", desc: "Seguimos a Lei Geral de Proteção de Dados. Você pode solicitar exclusão dos seus dados a qualquer momento." },
+              { icon: Brain, title: "IA Segura", desc: "Seus dados financeiros são processados pela IA mas nunca armazenados por terceiros. Usamos apenas pra categorizar seus lançamentos." },
+              { icon: Lock, title: "Somente leitura", desc: "O Guardinha apenas registra o que você manda. Não temos acesso às suas contas bancárias nem fazemos transações." },
+            ].map((item) => (
+              <div key={item.title} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-4">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-white mb-1">{item.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="mb-20">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Perguntas frequentes</h2>
+          </div>
+          <div className="max-w-2xl mx-auto space-y-3">
+            {[
+              { q: "Como funciona o Guardinha?", a: "Você manda uma mensagem de texto ou áudio pelo WhatsApp (ex: \"Gastei 50 no mercado\") e a IA registra automaticamente, categoriza e organiza pra você. Também pode consultar saldo, agendar compromissos e receber lembretes." },
+              { q: "Preciso baixar algum app?", a: "Não. O Guardinha funciona 100% dentro do WhatsApp que você já usa. Tem também um painel web pra ver gráficos e relatórios." },
+              { q: "Como funciona a garantia de 7 dias?", a: "Você assina, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Hotmart. Nenhuma pergunta, nenhuma burocracia." },
+              { q: "E se eu cancelar?", a: "Cancela quando quiser pela área do assinante da Hotmart. Sem multa, sem burocracia. Mantém acesso até o fim do período pago." },
+              { q: "A IA é precisa?", a: "Usamos IA de última geração pra categorizar seus lançamentos. Precisão média acima de 95% em testes reais. E você sempre pode corrigir se a IA errar." },
+              { q: "Funciona pra empresa (PJ)?", a: "Sim! No cadastro você escolhe PF ou PJ. As categorias e o contexto da IA se adaptam automaticamente." },
+            ].map((item) => (
+              <details key={item.q} className="group rounded-xl border border-white/5 bg-white/[0.02] p-5">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <span className="text-sm font-semibold pr-4">{item.q}</span>
+                  <span className="text-emerald-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="text-sm text-slate-400 mt-3 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* CTA Section */}
         <div id="cta" className="relative mt-20 overflow-hidden rounded-[2rem] border border-white/10">
           {/* Background glows */}

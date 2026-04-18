@@ -14,6 +14,7 @@ export type AdminMetrics = {
   aiCostTodayCents: number;
   aiCostMonthCents: number;
   aiCallsToday: number;
+  botFailuresToday: number;
 };
 
 const PLAN_PRICE_CENTS = 29_90; // R$ 29,90/mês em centavos
@@ -87,6 +88,14 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   const aiCostTodayCents = (aiToday ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
   const aiCostMonthCents = (aiMonth ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
 
+  // Bot failures today (fallback responses)
+  const { count: botFailuresToday = 0 } = await supabase
+    .from("whatsapp_conversation_log")
+    .select("id", { count: "exact", head: true })
+    .eq("direction", "out")
+    .gte("created_at", startOfDay)
+    .like("content", "%Não consegui identificar%");
+
   return {
     mrr,
     arr,
@@ -101,6 +110,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
     aiCostTodayCents,
     aiCostMonthCents,
     aiCallsToday: (aiToday ?? []).length,
+    botFailuresToday: botFailuresToday ?? 0,
   };
 }
 
@@ -134,6 +144,24 @@ export async function getAdminUsers(opts: {
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
 
+  // Buscar email + WhatsApp pra poder filtrar por qualquer campo
+  const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  const emailByUserId = new Map<string, string>();
+  const userIdByEmail = new Map<string, string>();
+  for (const u of authData?.users ?? []) {
+    if (u.id && u.email) {
+      emailByUserId.set(u.id, u.email);
+      userIdByEmail.set(u.email.toLowerCase(), u.id);
+    }
+  }
+
+  const { data: allLinks } = await supabase
+    .from("whatsapp_links")
+    .select("tenant_id, phone_number")
+    .eq("verified", true);
+  const phoneByTenant = new Map<string, string>();
+  for (const l of allLinks ?? []) phoneByTenant.set(l.tenant_id, l.phone_number);
+
   let query = supabase
     .from("tenants")
     .select(`
@@ -144,18 +172,16 @@ export async function getAdminUsers(opts: {
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (opts.search) {
+  // Busca por nome (padrão) — busca por email/telefone é feita client-side após query
+  const searchDigitsOnly = opts.search?.replace(/\D/g, "");
+  const isPhoneSearch = searchDigitsOnly && searchDigitsOnly.length >= 8;
+  const isEmailSearch = opts.search?.includes("@");
+
+  if (opts.search && !isPhoneSearch && !isEmailSearch) {
     query = query.ilike("name", `%${opts.search}%`);
   }
 
   const { data, count } = await query;
-
-  // Buscar email de cada user via auth.admin.listUsers
-  const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-  const emailByUserId = new Map<string, string>();
-  for (const u of authData?.users ?? []) {
-    if (u.id && u.email) emailByUserId.set(u.id, u.email);
-  }
 
   // Agregar custo de IA últimos 30d por tenant
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -170,7 +196,7 @@ export async function getAdminUsers(opts: {
     costByTenant.set(u.tenant_id, (costByTenant.get(u.tenant_id) ?? 0) + u.estimated_cost_cents);
   }
 
-  const rows: AdminUserRow[] = (data ?? []).map((t: {
+  let rows: AdminUserRow[] = (data ?? []).map((t: {
     id: string;
     user_id: string;
     name: string;
@@ -187,7 +213,7 @@ export async function getAdminUsers(opts: {
       userId: t.user_id,
       name: t.name,
       email: emailByUserId.get(t.user_id) ?? null,
-      phone: t.phone,
+      phone: phoneByTenant.get(t.id) ?? t.phone,
       type: t.type as "pf" | "pj",
       createdAt: t.created_at ?? "",
       subscriptionStatus: sub?.status ?? "no_subscription",
@@ -196,6 +222,14 @@ export async function getAdminUsers(opts: {
       aiCostLast30dCents: costByTenant.get(t.id) ?? 0,
     };
   });
+
+  // Filtro client-side por telefone ou email (quando Supabase query não filtrou)
+  if (isPhoneSearch && searchDigitsOnly) {
+    rows = rows.filter((r) => r.phone?.includes(searchDigitsOnly));
+  } else if (isEmailSearch && opts.search) {
+    const emailSearch = opts.search.toLowerCase();
+    rows = rows.filter((r) => r.email?.toLowerCase().includes(emailSearch));
+  }
 
   // Filtros client-side (RLS + joins dificultam fazer server-side)
   let filtered = rows;

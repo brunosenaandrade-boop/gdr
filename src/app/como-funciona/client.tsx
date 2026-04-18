@@ -336,7 +336,7 @@ export function ComoFuncionaClient() {
     if (isLast) {
       // Redirecionar para o WhatsApp do Guarda Dinheiro
       window.location.href =
-        "https://wa.me/5511999999999?text=Pronto%20para%20come%C3%A7ar!";
+        "https://wa.me/554820270106?text=Pronto%20para%20come%C3%A7ar!";
       return;
     }
     setCurrent((prev) => prev + 1);

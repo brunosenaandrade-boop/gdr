@@ -161,7 +161,7 @@ export default async function AdminOverviewPage() {
         {/* AI Cost */}
         <div>
           <h2 className="text-sm font-medium text-zinc-300 mb-3">Custo de IA</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card
               title="Custo hoje"
               value={formatCurrency(m.aiCostTodayCents)}
@@ -174,6 +174,13 @@ export default async function AdminOverviewPage() {
               value={formatCurrency(m.aiCostMonthCents)}
               icon={Brain}
               accent="amber"
+            />
+            <Card
+              title="Falhas do bot hoje"
+              value={m.botFailuresToday.toString()}
+              subtitle="msgs não compreendidas"
+              icon={Brain}
+              accent={m.botFailuresToday > 5 ? "red" : m.botFailuresToday > 0 ? "amber" : "emerald"}
             />
             <Card
               title="Custo/assinante"

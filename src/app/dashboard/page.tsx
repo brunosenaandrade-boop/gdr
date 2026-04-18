@@ -11,7 +11,7 @@ import {
   getCategoryBreakdown,
 } from "@/lib/supabase/queries";
 import { getDashboardScore } from "@/lib/supabase/score-actions";
-import { Wallet, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, AlertTriangle, MessageSquare } from "lucide-react";
 
 export default async function DashboardPage() {
   const [stats, transactions, cashFlow, categoryData, score] = await Promise.all([
@@ -27,6 +27,19 @@ export default async function DashboardPage() {
       <AppHeader title="Dashboard" description="Visão geral do mês atual" />
 
       <div className="p-6 space-y-6">
+        {stats.saldo === 0 && stats.total_receitas === 0 && stats.total_despesas === 0 && (
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center">
+            <MessageSquare className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
+            <h2 className="text-lg font-semibold text-white">Bem-vindo ao Guarda Dinheiro!</h2>
+            <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto">
+              Seu painel está pronto. Mande seu primeiro lançamento pelo WhatsApp pra começar a ver seus dados aqui.
+            </p>
+            <p className="mt-3 text-xs text-emerald-300">
+              Exemplo: &quot;Gastei 50 no mercado&quot; ou &quot;Recebi 1500 do cliente&quot;
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Saldo" value={stats.saldo} icon={Wallet} glow />
           <StatCard title="Receitas" value={stats.total_receitas} icon={TrendingUp} />

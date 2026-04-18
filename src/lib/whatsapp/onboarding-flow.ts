@@ -148,7 +148,8 @@ export async function handleFlowResponse(
       `*Seus dados de acesso ao painel:*\n` +
       `📧 E-mail: ${email.toLowerCase()}\n` +
       `🔑 Senha: a que você escolheu no cadastro\n\n` +
-      `Seu WhatsApp já está vinculado. Pode começar a lançar agora mesmo! 💚`,
+      `Seu WhatsApp já está vinculado. Pode começar a lançar agora mesmo! 💚\n\n` +
+      `_Ao usar o Guardinha, você concorda com nossos Termos de Uso e Política de Privacidade: guardadinheiro.com.br/termos_`,
     );
   } else {
     // VAR 5: Sem compra encontrada — informar que acesso depende de assinatura
@@ -160,7 +161,8 @@ export async function handleFlowResponse(
       `🔑 Senha: a que você escolheu no cadastro\n\n` +
       `Seu WhatsApp já está vinculado automaticamente.\n\n` +
       `Se você já fez a compra no Hotmart, seu acesso será ativado automaticamente em alguns minutos.\n` +
-      `Se ainda não assinou: guardadinheiro.com.br/planos`,
+      `Se ainda não assinou: guardadinheiro.com.br/planos\n\n` +
+      `_Ao usar o Guardinha, você concorda com nossos Termos de Uso e Política de Privacidade: guardadinheiro.com.br/termos_`,
     );
   }
   await logConversation(supabase, {

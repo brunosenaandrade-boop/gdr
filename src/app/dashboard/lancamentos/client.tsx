@@ -149,6 +149,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -227,6 +228,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
                   })}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

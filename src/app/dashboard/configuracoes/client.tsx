@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { updateTenant, changePassword } from "@/lib/supabase/actions";
+import { updateTenant, changePassword, deleteAccount } from "@/lib/supabase/actions";
 import { maskCPF, maskCNPJ, maskPhone } from "@/lib/utils";
 import type { Tenant } from "@/types";
-import { User, Building2, Save, Lock, KeyRound } from "lucide-react";
+import { User, Building2, Save, Lock, KeyRound, Trash2 } from "lucide-react";
 
 type Props = {
   tenant: Tenant;
@@ -28,6 +28,11 @@ export function ConfiguracoesClient({ tenant }: Props) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState("");
   const [passwordErr, setPasswordErr] = useState("");
 
@@ -209,6 +214,64 @@ export function ConfiguracoesClient({ tenant }: Props) {
               Alterar senha
             </Button>
           </form>
+        </Card>
+
+        {/* Excluir conta */}
+        <Card>
+          <CardTitle className="text-red-400">Excluir minha conta</CardTitle>
+          <CardDescription className="mt-1">
+            Ao excluir sua conta, todos os seus dados serão removidos permanentemente em até 30 dias, conforme a LGPD.
+            Essa ação não pode ser desfeita.
+          </CardDescription>
+
+          {!showDeleteConfirm ? (
+            <Button
+              variant="secondary"
+              className="mt-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/20"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Quero excluir minha conta
+            </Button>
+          ) : (
+            <div className="mt-4 space-y-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+              <p className="text-sm text-red-300">
+                Digite <strong>EXCLUIR</strong> pra confirmar a exclusão permanente:
+              </p>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder='Digite "EXCLUIR"'
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                  disabled={deleteConfirmText !== "EXCLUIR" || deleting}
+                  loading={deleting}
+                  onClick={async () => {
+                    setDeleting(true);
+                    const result = await deleteAccount();
+                    if (result.ok) {
+                      window.location.href = "/login";
+                    } else {
+                      setMessage(result.error ?? "Erro ao excluir conta");
+                      setDeleting(false);
+                      setShowDeleteConfirm(false);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Confirmar exclusão
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </>

@@ -233,3 +233,44 @@ export async function changePassword(formData: {
 
   return { success: "Senha alterada com sucesso!" };
 }
+
+// ===== Delete Account (LGPD) =====
+
+export async function deleteAccount(): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "Não autenticado" };
+
+    const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+    if (!tenant) return { ok: false, error: "Tenant não encontrado" };
+
+    const { createServiceClient } = await import("./server");
+    const service = await createServiceClient();
+
+    // Deletar dados do tenant (CASCADE cuida das FKs)
+    await service.from("financial_scores").delete().eq("tenant_id", tenant.id);
+    await service.from("appointments").delete().eq("tenant_id", tenant.id);
+    await service.from("whatsapp_pending").delete().eq("tenant_id", tenant.id);
+    await service.from("whatsapp_conversation_log").delete().eq("tenant_id", tenant.id);
+    await service.from("whatsapp_links").delete().eq("tenant_id", tenant.id);
+    await service.from("transactions").delete().eq("tenant_id", tenant.id);
+    await service.from("recurring_transactions").delete().eq("tenant_id", tenant.id);
+    await service.from("categories").delete().eq("tenant_id", tenant.id);
+    await service.from("subscriptions").delete().eq("tenant_id", tenant.id);
+    await service.from("user_rate_limits").delete().eq("tenant_id", tenant.id);
+    await service.from("ai_usage").delete().eq("tenant_id", tenant.id);
+    await service.from("tenants").delete().eq("id", tenant.id);
+
+    // Deletar auth user
+    await service.auth.admin.deleteUser(user.id);
+
+    // Logout
+    await supabase.auth.signOut();
+
+    return { ok: true };
+  } catch (err) {
+    Sentry.captureException(err);
+    return { ok: false, error: "Erro ao excluir conta. Entre em contato com o suporte." };
+  }
+}
