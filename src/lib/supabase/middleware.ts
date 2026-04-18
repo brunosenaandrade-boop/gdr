@@ -89,6 +89,43 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // ============================================================
+  // Segurança: validar que auth user ainda existe no banco
+  // Se user foi deletado mas JWT ainda válido → força logout
+  // ============================================================
+  if (user && !path.startsWith("/api/") && !path.startsWith("/_next")) {
+    const isDashboardRoute = path.startsWith("/dashboard");
+    if (isDashboardRoute) {
+      const { createServiceClient } = await import("./server");
+      const service = await createServiceClient();
+
+      // Verificar se auth user ainda existe
+      const { data: authCheck } = await service.auth.admin.getUserById(user.id);
+      if (!authCheck?.user) {
+        // User deletado → limpar sessão e redirecionar
+        await supabase.auth.signOut();
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
+
+      // Verificar se tenant existe
+      const { data: tenantCheck } = await service
+        .from("tenants")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!tenantCheck) {
+        // Tenant deletado → limpar sessão e redirecionar
+        await supabase.auth.signOut();
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
+  // ============================================================
   // Admin subdomain: só permite /admin/login se não autenticado
   // ============================================================
   if (isAdmin) {
@@ -136,6 +173,7 @@ export async function updateSession(request: NextRequest) {
     "/verificar-email",
     "/planos",
     "/como-funciona",
+    "/compra-concluida",
   ];
   const isPublicRoute = publicRoutes.includes(path);
   const isApiRoute = path.startsWith("/api/");
