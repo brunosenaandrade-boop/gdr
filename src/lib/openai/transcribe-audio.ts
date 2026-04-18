@@ -28,6 +28,7 @@ export async function transcribeAudio(
       file,
       language: "pt",
       response_format: "text",
+      prompt: "Lançamento financeiro pessoal em reais. Exemplos: gastei, paguei, recebi, conta de luz, mercado, aluguel, salário, médico, reunião, compromisso.",
     });
 
     const text = typeof transcription === "string" ? transcription : String(transcription);

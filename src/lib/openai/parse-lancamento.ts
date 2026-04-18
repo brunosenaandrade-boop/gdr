@@ -8,6 +8,41 @@ function getClient() {
 }
 
 /**
+ * Exemplos de cada categoria padrão para enriquecer o prompt da IA.
+ * Chave: nome da categoria normalizado (sem acentos, lowercase).
+ */
+const CATEGORY_HINTS: Record<string, string> = {
+  // PF — despesa
+  alimentacao: "supermercado, restaurante, lanche, café, delivery, padaria, mercado",
+  assinaturas: "Netflix, Spotify, apps, ferramentas online, internet, streaming, software, SaaS",
+  moradia: "aluguel, condomínio, IPTU, conta de luz, água, gás, reforma",
+  transporte: "gasolina, Uber, ônibus, estacionamento, pedágio, manutenção carro",
+  saude: "farmácia, médico, dentista, plano de saúde, exame, terapia",
+  educacao: "curso, livro, escola, faculdade, mensalidade, treinamento",
+  lazer: "cinema, viagem, bar, show, jogo, hobby, passeio",
+  compras: "roupa, eletrônico, móvel, presente, acessório, decoração",
+  // PF — receita
+  salario: "salário, holerite, décimo terceiro, férias, adiantamento",
+  freelance: "freela, serviço, job, projeto, consultoria, bico",
+  investimentos: "dividendos, rendimentos, juros, resgate, FII",
+  "outros ganhos": "transferência recebida, presente, reembolso, prêmio, cashback",
+  // PJ — despesa
+  tecnologia: "software, servidor, domínio, hospedagem, API, ferramentas, SaaS",
+  "servicos terceiros": "contador, advogado, consultoria, freelancer externo",
+  marketing: "anúncio, tráfego pago, designer, social media, branding",
+  fornecedores: "material, estoque, matéria-prima, insumo, mercadoria",
+  "folha de pagamento": "salário funcionário, FGTS, INSS, benefício, VR, VT",
+  "aluguel/sede": "aluguel escritório, condomínio, energia, internet do escritório",
+  impostos: "DAS, IRPJ, ISS, ICMS, nota fiscal, tributo",
+  "despesas operacionais": "frete, correio, embalagem, manutenção, limpeza",
+  // PJ — receita
+  vendas: "venda de produto, nota fiscal emitida, e-commerce",
+  servicos: "prestação de serviço, contrato, projeto entregue",
+  comissoes: "comissão, indicação, afiliado, bônus",
+  "outros recebimentos": "transferência recebida, reembolso, bonificação, estorno",
+};
+
+/**
  * Regex para detectar descrições genéricas que precisam de enriquecimento.
  * Casos como "Recebimento", "Pagamento", "Despesa", "Receita" sem contexto.
  */
@@ -85,8 +120,11 @@ export async function parseLancamento(
   context: ParseContext = {},
 ): Promise<{ ok: true; data: AIParsedTransaction & { is_update_to_pending?: boolean } } | { ok: false; error: string }> {
   const categoryList = categories
-    .map((c) => `${c.name} (${c.type})`)
-    .join(", ");
+    .map((c) => {
+      const hint = CATEGORY_HINTS[c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] ?? "";
+      return hint ? `${c.name} (${c.type}): ${hint}` : `${c.name} (${c.type})`;
+    })
+    .join("\n");
 
   const today = new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",

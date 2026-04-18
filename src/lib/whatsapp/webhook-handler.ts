@@ -103,7 +103,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (pendingLinkError) {
         console.error("Erro ao buscar código de vinculação:", pendingLinkError.message);
-        await respond("Erro ao vincular. Tente novamente em alguns minutos.");
+        await respond("Erro ao vincular. Tente novamente em alguns minutos. Se persistir, diga _\"quero suporte\"_.");
         return;
       }
 
@@ -132,7 +132,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       if (updateError) {
         Sentry.captureException(updateError);
         console.error("Erro ao vincular número:", updateError.message);
-        await respond("Erro ao vincular. Tente novamente.");
+        await respond("Erro ao vincular. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
         return;
       }
 
@@ -301,7 +301,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (delErr) {
         console.error("Erro ao excluir transação:", delErr.message);
-        await respond("Erro ao excluir. Tente novamente.");
+        await respond("Erro ao excluir. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       } else {
         await respond("Lançamento excluído com sucesso.");
       }
@@ -325,7 +325,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (delErr) {
         console.error("Erro ao cancelar compromisso:", delErr.message);
-        await respond("Erro ao cancelar. Tente novamente.");
+        await respond("Erro ao cancelar. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       } else {
         await respond("Compromisso cancelado. 🗑️");
       }
@@ -343,7 +343,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
       if (updErr) {
         console.error("Erro ao marcar compromisso:", updErr.message);
-        await respond("Erro ao atualizar. Tente novamente.");
+        await respond("Erro ao atualizar. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       } else {
         await respond("Compromisso marcado como realizado. ✅");
       }
@@ -453,6 +453,60 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
   }
 
+  // ===== FLUXO 2.56: Conversa casual / suporte / agradecimento =====
+  if (message.type === "text" && message.text) {
+    const text = (message.text?.body ?? "").trim();
+    const lower = text.toLowerCase();
+
+    // Agradecimento
+    if (/^(obrigad[oa]|valeu|brigad[oa]|thanks|vlw|tmj|gratid[aã]o)\s*[!.]*$/i.test(text)) {
+      await respond("De nada! Tô aqui sempre que precisar 😊");
+      return;
+    }
+
+    // Ajuda / como funciona
+    if (/^(me\s*ajud|como\s*(funciona|us[oa]|faz)|ajuda|help|socorro|o\s*que\s*voc[eê]\s*faz)/i.test(lower)) {
+      await respond(
+        "Sou o *Guardinha*, seu assistente financeiro! Veja o que eu faço:\n\n" +
+        "💰 *Lançamentos* — me manda: _\"Gastei 50 no mercado\"_\n" +
+        "🎙️ *Áudio* — grava um áudio que eu transcrevo e lanço\n" +
+        "📊 *Consultas* — _\"Qual meu saldo?\"_, _\"Quanto gastei de alimentação?\"_\n" +
+        "📅 *Agenda* — _\"Tenho médico amanhã às 16h\"_\n" +
+        "🏆 *Score* — _\"Qual meu score?\"_\n\n" +
+        "Acesse o painel: guardadinheiro.com.br/dashboard",
+      );
+      return;
+    }
+
+    // Cancelamento
+    if (/^(quero\s*cancelar|cancelar\s*(assinatura|plano|conta)|cancela\s*minha)/i.test(lower)) {
+      await respond(
+        "Pra cancelar sua assinatura, acesse a área do assinante na Hotmart:\n\n" +
+        "1. Abra o email de confirmação de compra da Hotmart\n" +
+        "2. Clique em \"Área do assinante\"\n" +
+        "3. Cancele quando quiser — sem multa, sem burocracia\n\n" +
+        "Se precisar de ajuda, diga _\"quero suporte\"_.",
+      );
+      return;
+    }
+
+    // Suporte humano
+    if (/^(quero\s*(falar|suporte)|suporte|humano|atendente|falar\s*com\s*(algu[eé]m|gente|pessoa))/i.test(lower)) {
+      await respond(
+        "Nosso suporte funciona por email:\n\n" +
+        "📧 *brunoeducafinancas@gmail.com*\n\n" +
+        "Descreva seu problema que a equipe responde em até 24h.",
+      );
+      return;
+    }
+
+    // Confirmação avulsa sem pending ativo
+    if (!activePending && /^(ok|tudo\s*bem|certo|beleza|entendi|perfeito|massa|show|top|legal)\s*[!.]*$/i.test(text)) {
+      await respond("Precisa de mais alguma coisa? Me manda um lançamento ou pergunta! 😊");
+      return;
+    }
+  }
+
   // ===== FLUXO 2.6: Reenviar bônus (order bumps) =====
   if (message.type === "text" && message.text) {
     const text = (message.text?.body ?? "").toLowerCase().trim();
@@ -490,6 +544,29 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
   }
 
+  // ===== FLUXO 2.9: Validações de entrada antes de gastar IA =====
+  if (message.type === "text" && message.text) {
+    const rawText = (message.text?.body ?? "").trim();
+
+    // #10: Mensagem muito longa → rejeitar sem gastar IA
+    if (rawText.length > 500) {
+      await respond("Mensagem muito longa! Tenta resumir em uma frase:\n_\"Paguei 200 de conta de luz\"_");
+      return;
+    }
+
+    // #6: Emoji-only → rejeitar
+    if (/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u200d\ufe0f\s]+$/u.test(rawText) && !/\d/.test(rawText)) {
+      await respond("Não entendi 😅 Me manda um texto ou áudio com o seu lançamento!");
+      return;
+    }
+
+    // #7: Número-only sem contexto → pedir detalhes
+    if (/^[\d.,]+\s*$/.test(rawText) && !activePending) {
+      await respond(`R$ ${rawText}, mas de quê? Me conta o que foi:\n_\"Gastei ${rawText} no mercado\"_`);
+      return;
+    }
+  }
+
   // ===== FLUXO 3: Novo lançamento =====
   // Bloqueio antecipado: se não tem acesso, nem gasta IA chamando parser
   if (!canWrite) {
@@ -512,7 +589,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   if (catError) {
     Sentry.captureException(catError);
     console.error("Erro ao buscar categorias:", catError.message);
-    await respond("Erro interno. Tente novamente em alguns minutos.");
+    await respond("Erro interno. Tente novamente em alguns minutos. Se persistir, diga _\"quero suporte\"_.");
     return;
   }
 
@@ -522,7 +599,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   if (message.type === "audio" && message.audio) {
     const audioBuffer = await downloadWhatsAppMedia(message.audio.id);
     if (!audioBuffer) {
-      await respond("Não consegui baixar o áudio. Tente novamente.");
+      await respond("Não consegui baixar o áudio. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       return;
     }
 
@@ -570,7 +647,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       if (aptErr || !newApt) {
         Sentry.captureException(aptErr ?? new Error("Falha ao criar compromisso"));
         console.error("Erro ao inserir compromisso:", aptErr?.message);
-        await respond("Erro ao salvar o compromisso. Tente novamente.");
+        await respond("Erro ao salvar o compromisso. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
         return;
       }
 
@@ -741,6 +818,15 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       if (error) console.error("Erro ao limpar pendings ativos:", error.message);
     });
 
+  // #5: Rejeitar valor zero sem contexto (melhor perguntar do que criar lixo)
+  if (parsed.amount === 0) {
+    await respond(
+      "Não consegui identificar o valor. Me manda com mais detalhe:\n" +
+      "_\"Gastei 50 no mercado\"_ ou _\"Recebi 1500 do cliente\"_",
+    );
+    return;
+  }
+
   const typeLabel = parsed.type === "receita" ? "RECEITA" : "DESPESA";
   const categoryLabel = matched?.name ?? parsed.category_suggestion;
 
@@ -780,7 +866,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     if (insertError) {
       Sentry.captureException(insertError);
       console.error("Erro ao inserir transação direta:", insertError.message);
-      await respond("Erro ao salvar o lançamento. Tente novamente.");
+      await respond("Erro ao salvar o lançamento. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       return;
     }
 
@@ -826,7 +912,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   if (pendingError) {
     Sentry.captureException(pendingError);
     console.error("Erro ao salvar pendência:", pendingError.message);
-    await respond("Erro ao processar o lançamento. Tente novamente.");
+    await respond("Erro ao processar o lançamento. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
     return;
   }
 
@@ -881,7 +967,7 @@ async function handleConfirmation(
   if (insertError) {
     Sentry.captureException(insertError);
     console.error("Erro ao inserir transação:", insertError.message);
-    await respond("Erro ao salvar o lançamento. Tente novamente.");
+    await respond("Erro ao salvar o lançamento. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
     return;
   }
 

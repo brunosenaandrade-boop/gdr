@@ -63,10 +63,10 @@ describe("matchCategory", () => {
     expect(m?.id).toBe("outros-receita");
   });
 
-  it("usa primeira categoria do tipo se não tiver 'Outros'", () => {
+  it("retorna null se não tiver match nem 'Outros' (melhor sem categoria do que errada)", () => {
     const semOutros = categorias.filter((c) => c.name !== "Outros");
     const m = matchCategory("Inventada", "despesa", semOutros);
-    expect(m?.name).toBe("Moradia");
+    expect(m).toBeNull();
   });
 
   it("retorna null se não houver categorias do tipo", () => {

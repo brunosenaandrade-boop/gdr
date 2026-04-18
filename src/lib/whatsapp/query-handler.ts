@@ -29,7 +29,7 @@ const QUERY_PATTERNS: RegExp[] = [
   /saldo\s*(atual|total|do\s*m[eê]s)?[\s?]*$/i,
   /\bmeu\s+score\b/i,
   /\bscore\s+financeiro\b/i,
-  /\?([\s]*)$/,  // qualquer frase terminando em ?
+  // Removido: /\?([\s]*)$/ capturava TUDO com ? ("Qual seu nome?" virava query financeira)
 ];
 
 type QueryType =

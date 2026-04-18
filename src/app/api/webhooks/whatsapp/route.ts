@@ -111,7 +111,15 @@ export async function POST(request: NextRequest) {
       for (const message of messages) {
         // Validar campos obrigatorios
         if (!message.from || typeof message.from !== "string") continue;
-        if (!ALLOWED_MESSAGE_TYPES.has(message.type)) continue;
+        if (!ALLOWED_MESSAGE_TYPES.has(message.type)) {
+          // Responder ao usuário que só aceita texto e áudio
+          const { sendWhatsAppMessage } = await import("@/lib/whatsapp/meta-api");
+          await sendWhatsAppMessage(
+            message.from?.replace(/\D/g, "") ?? "",
+            "Por enquanto só entendo texto e áudio. Manda uma mensagem escrita ou grava um áudio que eu processo pra você! 🎙️",
+          ).catch(() => {}); // best-effort, não quebra o webhook
+          continue;
+        }
 
         // Sanitizar numero (so digitos, 10-15 chars)
         const cleanFrom = message.from.replace(/\D/g, "");

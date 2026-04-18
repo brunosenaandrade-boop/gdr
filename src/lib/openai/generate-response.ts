@@ -27,7 +27,7 @@ const DASHBOARD_URL = "https://www.guardadinheiro.com.br/dashboard";
 
 // ===== Persona system prompt =====
 
-const PERSONA_PROMPT = `Você é o assistente financeiro do Guarda Dinheiro, falando via WhatsApp.
+const PERSONA_PROMPT = `Você é o Guardinha, assistente financeiro pessoal, falando via WhatsApp.
 
 PERSONALIDADE:
 - Amigável e direto, como um amigo que entende de finanças

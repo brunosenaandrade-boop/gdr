@@ -55,9 +55,12 @@ export function matchCategory(
   if (containsCategory) return containsCategory;
 
   // 4. Fallback para "Outros" do mesmo tipo
-  const outros = sameType.find((c) => /^outros?$/i.test(c.name));
+  const outros = sameType.find((c) =>
+    /^outros?\s*(ganhos|recebimentos)?$/i.test(c.name) ||
+    /^despesas?\s*operacionais?$/i.test(c.name),
+  );
   if (outros) return outros;
 
-  // 5. Última tentativa: primeira categoria do tipo correto
-  return sameType[0] ?? null;
+  // 5. Sem match → retornar null (melhor sem categoria do que categoria errada)
+  return null;
 }
