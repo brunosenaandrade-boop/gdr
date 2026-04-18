@@ -58,7 +58,19 @@ export async function handleFlowResponse(
     return;
   }
 
-  // Verificar se email já existe
+  // VAR 4: Validação de senha (mínimo 8 caracteres)
+  if (senha.length < 8) {
+    const { sendWhatsAppMessage } = await import("./meta-api");
+    await sendWhatsAppMessage(
+      phone,
+      "Senha muito curta! Precisa ter pelo menos *8 caracteres*.\n\n" +
+      "Clique no botão abaixo pra tentar novamente:",
+    );
+    await sendSignupFlow(supabase, phone);
+    return;
+  }
+
+  // VAR 2: Verificar se email já existe
   const { data: existingUsers } = await supabase.auth.admin.listUsers();
   const emailExists = existingUsers?.users?.some(
     (u) => u.email?.toLowerCase() === email.toLowerCase(),
@@ -69,8 +81,10 @@ export async function handleFlowResponse(
     await sendWhatsAppMessage(
       phone,
       "Esse e-mail já tem uma conta no Guarda Dinheiro! 📧\n\n" +
-      "Se já tem conta, acesse o painel para vincular seu WhatsApp.\n" +
-      "Se esqueceu a senha: https://www.guardadinheiro.com.br/esqueci-senha",
+      "Se já tem conta, acesse o painel pra vincular seu WhatsApp:\n" +
+      "guardadinheiro.com.br/dashboard/whatsapp\n\n" +
+      "Se esqueceu a senha:\n" +
+      "guardadinheiro.com.br/esqueci-senha",
     );
     return;
   }
@@ -119,16 +133,36 @@ export async function handleFlowResponse(
     verified: true,
   });
 
+  // VAR 1: Reconciliar compra Hotmart pendente (webhook pode ter chegado antes)
+  const { reconcilePendingPurchase } = await import("@/lib/hotmart/reconcile");
+  const { reconciled } = await reconcilePendingPurchase(supabase, email, tenant.id);
+
   // Confirmar criação da conta
   const { sendWhatsAppMessage } = await import("./meta-api");
-  await sendWhatsAppMessage(
-    phone,
-    `Conta criada com sucesso! 🎉🛡️\n\n` +
-    `*Seus dados de acesso ao painel:*\n` +
-    `📧 E-mail: ${email.toLowerCase()}\n` +
-    `🔑 Senha: a que você escolheu no cadastro\n\n` +
-    `Seu WhatsApp já está vinculado automaticamente. Você já pode começar a lançar agora mesmo! 💚`,
-  );
+
+  if (reconciled) {
+    // Compra encontrada e subscription ativada!
+    await sendWhatsAppMessage(
+      phone,
+      `Conta criada e assinatura ativada com sucesso! 🎉🛡️\n\n` +
+      `*Seus dados de acesso ao painel:*\n` +
+      `📧 E-mail: ${email.toLowerCase()}\n` +
+      `🔑 Senha: a que você escolheu no cadastro\n\n` +
+      `Seu WhatsApp já está vinculado. Pode começar a lançar agora mesmo! 💚`,
+    );
+  } else {
+    // VAR 5: Sem compra encontrada — informar que acesso depende de assinatura
+    await sendWhatsAppMessage(
+      phone,
+      `Conta criada com sucesso! 🎉\n\n` +
+      `*Seus dados de acesso ao painel:*\n` +
+      `📧 E-mail: ${email.toLowerCase()}\n` +
+      `🔑 Senha: a que você escolheu no cadastro\n\n` +
+      `Seu WhatsApp já está vinculado automaticamente.\n\n` +
+      `Se você já fez a compra no Hotmart, seu acesso será ativado automaticamente em alguns minutos.\n` +
+      `Se ainda não assinou: guardadinheiro.com.br/planos`,
+    );
+  }
   await logConversation(supabase, {
     tenantId: tenant.id,
     phoneNumber: phone,
