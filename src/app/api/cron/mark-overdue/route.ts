@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await createServiceClient();
-    const today = new Date().toISOString().slice(0, 10);
+    const { todayBRT } = await import("@/lib/date/brt");
+    const today = todayBRT();
 
     const { data, error } = await supabase
       .from("transactions")

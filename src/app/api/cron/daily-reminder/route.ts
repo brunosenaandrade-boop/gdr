@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await createServiceClient();
-    const today = new Date().toISOString().split("T")[0];
+    const { todayBRT } = await import("@/lib/date/brt");
+    const today = todayBRT();
 
     // Buscar todos os tenants com WhatsApp vinculado
     const { data: links, error: linksError } = await supabase
@@ -108,11 +109,9 @@ export async function GET(request: NextRequest) {
 
         let compromissosBlock = "";
         if (compromissosHoje && compromissosHoje.length > 0) {
+          const { formatTimeBRT } = await import("@/lib/date/brt");
           const items = compromissosHoje.map((c) => {
-            const dt = new Date(c.scheduled_at);
-            const hh = String(dt.getHours()).padStart(2, "0");
-            const mi = String(dt.getMinutes()).padStart(2, "0");
-            return `  • ${hh}h${mi} — ${c.title}`;
+            return `  • ${formatTimeBRT(c.scheduled_at)} — ${c.title}`;
           }).join("\n");
           compromissosBlock = `\n\n📅 *Compromissos de hoje:*\n${items}`;
         }

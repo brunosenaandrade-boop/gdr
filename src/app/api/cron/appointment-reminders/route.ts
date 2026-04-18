@@ -64,15 +64,13 @@ export async function GET(request: NextRequest) {
       if (!phone) continue;
 
       try {
-        const scheduled = new Date(apt.scheduled_at);
-        const hh = String(scheduled.getHours()).padStart(2, "0");
-        const mi = String(scheduled.getMinutes()).padStart(2, "0");
+        const { formatTimeBRT } = await import("@/lib/date/brt");
         const notesLine = apt.notes ? `\n📝 ${apt.notes}` : "";
 
         const message =
           `⏰ *Lembrete em 30 minutos!*\n\n` +
           `*${apt.title}*\n` +
-          `🕐 ${hh}h${mi}${notesLine}`;
+          `🕐 ${formatTimeBRT(apt.scheduled_at)}${notesLine}`;
 
         const result = await sendWhatsAppMessage(phone, message);
         if (result.ok) {

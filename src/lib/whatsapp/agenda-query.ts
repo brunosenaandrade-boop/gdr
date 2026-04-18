@@ -1,24 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-/**
- * Formata data/hora para exibição brasileira (ex: "16/04 às 16h00").
- */
-function formatBRDateTime(iso: string): string {
-  const d = new Date(iso);
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  return `${dd}/${mm} às ${hh}h${mi}`;
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
+import { formatDateTimeBRT, todayBRT } from "@/lib/date/brt";
 
 type Scope = "hoje" | "amanha" | "semana" | "proximos";
 
@@ -46,15 +27,17 @@ export async function handleAgendaQuery(
   let endAt: Date;
   let scopeLabel: string;
 
+  const todayStr = todayBRT(now);
+
   if (scope === "hoje") {
-    startAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    endAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    startAt = new Date(`${todayStr}T00:00:00-03:00`);
+    endAt = new Date(`${todayStr}T23:59:59-03:00`);
     scopeLabel = "hoje";
   } else if (scope === "amanha") {
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    startAt = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 0, 0, 0);
-    endAt = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 23, 59, 59);
+    const tomorrow = new Date(new Date(`${todayStr}T12:00:00-03:00`).getTime() + 24 * 3600 * 1000);
+    const tomorrowStr = todayBRT(tomorrow);
+    startAt = new Date(`${tomorrowStr}T00:00:00-03:00`);
+    endAt = new Date(`${tomorrowStr}T23:59:59-03:00`);
     scopeLabel = "amanhã";
   } else if (scope === "semana") {
     startAt = now;
@@ -85,9 +68,11 @@ export async function handleAgendaQuery(
     return `Você não tem compromissos ${scopeLabel}. 🍃`;
   }
 
+  const todayDate = todayBRT(now);
   const lines = data.map((apt) => {
-    const when = formatBRDateTime(apt.scheduled_at);
-    const isToday = isSameDay(new Date(apt.scheduled_at), now);
+    const when = formatDateTimeBRT(apt.scheduled_at);
+    const aptDate = todayBRT(new Date(apt.scheduled_at));
+    const isToday = aptDate === todayDate;
     const prefix = isToday ? "📍" : "📅";
     const notesLine = apt.notes ? `\n   _${apt.notes}_` : "";
     return `${prefix} *${apt.title}* — ${when}${notesLine}`;

@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await createServiceClient();
-    const today = new Date().getDate(); // Dia do mês (1-31)
+    const { getDayOfMonthBRT } = await import("@/lib/date/brt");
+    const today = getDayOfMonthBRT(); // Dia do mês em BRT (1-31)
 
     // Buscar recorrências ativas para hoje
     const { data: recurrences, error } = await supabase
