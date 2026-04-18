@@ -431,8 +431,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return;
   }
 
-  // ===== FLUXO 2: Confirmação/Cancelamento =====
-  if (textContent) {
+  // ===== FLUXO 2: Confirmação/Cancelamento (só se tem pending ativo) =====
+  if (textContent && activePending) {
     const text = textContent;
 
     // Regex-based intent (rápido, sem custo)
@@ -562,7 +562,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     const text = textContent;
 
     // 2.5a — Consulta de agenda ("o que tenho hoje?", "minha agenda")
-    if (isAgendaQuery(text)) {
+    // Se também é appointment (keyword + temporal), prioriza criação no FLUXO 2.7
+    if (isAgendaQuery(text) && !isAppointment(text)) {
       const answer = await handleAgendaQuery(tenantId, text, supabase);
       await respond(answer);
       return;
@@ -588,7 +589,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
     // #6: Emoji-only → rejeitar
     if (/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u200d\ufe0f\s]+$/u.test(rawText) && !/\d/.test(rawText)) {
-      await respond("Não entendi 😅 Me manda um texto ou áudio com o seu lançamento!");
+      await respond("Precisa de mais alguma coisa? Me manda um texto ou áudio! 😊");
       return;
     }
 
