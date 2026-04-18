@@ -80,6 +80,9 @@ REGRAS CRÍTICAS para scheduled_at:
 8. "14h30" ou "14:30" = 14:30
 9. Se o usuário disser só "às 3h" e for de manhã, use 03:00 AM. Se contexto indicar tarde ("de tarde", "à tarde"), use 15:00
 10. NUNCA invente datas no passado — se ficar ambíguo, use próxima ocorrência futura
+11. "daqui a 30 minutos" = agora + 30 minutos. "daqui a 1 hora" = agora + 1 hora. "daqui a pouco" = agora + 30 minutos (padrão)
+12. "em 2 horas" = agora + 2 horas. "em 15 minutos" = agora + 15 minutos
+13. "à tarde" sem hora = 14:00. "à noite" sem hora = 19:00. "de manhã" sem hora = 09:00
 
 REGRAS para title:
 - Extraia o assunto do compromisso, não o dia/hora

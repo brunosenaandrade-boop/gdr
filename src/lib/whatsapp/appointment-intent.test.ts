@@ -40,6 +40,19 @@ describe("isAppointment", () => {
   it("aceita horário informal tipo meio-dia", () => {
     expect(isAppointment("Almoço amanhã meio-dia")).toBe(true);
   });
+
+  it("detecta tempos relativos (daqui a X minutos/horas)", () => {
+    expect(isAppointment("Me lembre daqui a 30 minutos de comprar lanche")).toBe(true);
+    expect(isAppointment("Reunião daqui a 1 hora")).toBe(true);
+    expect(isAppointment("Me lembre em 15 minutos")).toBe(true);
+    expect(isAppointment("Dentista daqui a pouco")).toBe(true);
+  });
+
+  it("detecta períodos do dia (à tarde, à noite, de manhã)", () => {
+    expect(isAppointment("Médico amanhã à tarde")).toBe(true);
+    expect(isAppointment("Reunião à noite")).toBe(true);
+    expect(isAppointment("Consulta de manhã")).toBe(true);
+  });
 });
 
 describe("isAgendaQuery", () => {

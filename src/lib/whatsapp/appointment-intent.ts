@@ -43,6 +43,12 @@ const TIME_INDICATORS = [
   /\b[àa]s\s+\d{1,2}/i, // às 14, às 14h
   /\bmeio[\s-]*dia\b/i,
   /\bmeia[\s-]*noite\b/i,
+  /\bdaqui\s+a?\s*\d+\s*(minutos?|min|horas?|h)\b/i, // daqui a 30 minutos, daqui 1 hora
+  /\bem\s+\d+\s*(minutos?|min|horas?|h)\b/i, // em 30 minutos, em 2 horas
+  /\bdaqui\s+a?\s*pouco\b/i, // daqui a pouco (vago mas com verbo de lembrete = compromisso)
+  /[àa]\s*tarde/i, // à tarde (sem \b por causa do acento)
+  /[àa]\s*noite/i, // à noite
+  /de\s*manh[aã]/i, // de manhã
 ];
 
 const DATE_INDICATORS = [
