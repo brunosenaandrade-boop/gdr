@@ -435,6 +435,24 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     }
   }
 
+  // ===== FLUXO 2.55: Saudação / conversa casual =====
+  if (message.type === "text" && message.text) {
+    const text = (message.text?.body ?? "").trim();
+    if (/^(oi|ol[aá]|hey|e\s*a[ií]|fala|salve|bom\s*dia|boa\s*(tarde|noite)|boa|hello|hi)\s*[!?.]*$/i.test(text)) {
+      await respond(
+        "Oi! Sou o *Guardinha*, seu assistente financeiro 🛡️\n\n" +
+        "Me manda seus gastos por texto ou áudio que eu organizo tudo pra você.\n\n" +
+        "Exemplos:\n" +
+        '• _"Gastei 50 no mercado"_\n' +
+        '• _"Recebi 1500 do cliente"_\n' +
+        '• _"Qual meu saldo?"_\n' +
+        '• _"Tenho médico amanhã às 16h"_\n\n' +
+        "Pode mandar! 😊",
+      );
+      return;
+    }
+  }
+
   // ===== FLUXO 2.6: Reenviar bônus (order bumps) =====
   if (message.type === "text" && message.text) {
     const text = (message.text?.body ?? "").toLowerCase().trim();
