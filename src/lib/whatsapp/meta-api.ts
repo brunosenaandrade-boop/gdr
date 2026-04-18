@@ -181,18 +181,19 @@ export async function sendWhatsAppFlow(
     footer?: string;
     ctaText?: string;
     screen?: string;
+    flowId?: string;
   },
 ): Promise<SendMessageResult> {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-  const flowId = process.env.WHATSAPP_FLOW_ID;
+  const resolvedFlowId = opts?.flowId ?? process.env.WHATSAPP_FLOW_ID;
   const flowToken = process.env.WHATSAPP_FLOW_TOKEN;
 
   if (!phoneNumberId || !accessToken) {
     return { ok: false, error: "WhatsApp API não configurada" };
   }
 
-  if (!flowId || !flowToken) {
+  if (!resolvedFlowId || !flowToken) {
     return { ok: false, error: "WhatsApp Flow não configurado (WHATSAPP_FLOW_ID / WHATSAPP_FLOW_TOKEN)" };
   }
 
@@ -204,8 +205,8 @@ export async function sendWhatsAppFlow(
       parameters: {
         flow_message_version: "3",
         flow_token: flowToken,
-        flow_id: flowId,
-        flow_cta: opts?.ctaText ?? "🎯 Criar minha conta grátis",
+        flow_id: resolvedFlowId,
+        flow_cta: opts?.ctaText ?? "FAÇA SEU CADASTRO AQUI",
         flow_action: "navigate",
         flow_action_payload: {
           screen: opts?.screen ?? "CADASTRO",

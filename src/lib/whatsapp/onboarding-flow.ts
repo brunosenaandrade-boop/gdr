@@ -137,13 +137,13 @@ export async function handleFlowResponse(
     content: "[onboarding] Conta criada com sucesso",
   });
 
-  // Disparar sequência de onboarding (tutorial passo a passo no WhatsApp)
-  await sendOnboardingSequence(supabase, phone, tenant.id, nome);
+  // Disparar tutorial via WhatsApp Flow (multi-tela)
+  await sendOnboardingTutorial(supabase, phone, tenant.id, nome);
 }
 
-const DELAY_MS = 2500;
+const TUTORIAL_FLOW_ID = process.env.WHATSAPP_TUTORIAL_FLOW_ID ?? "1319167250070584";
 
-async function sendOnboardingSequence(
+async function sendOnboardingTutorial(
   supabase: SupabaseClient,
   phone: string,
   tenantId: string,
@@ -151,112 +151,57 @@ async function sendOnboardingSequence(
 ): Promise<void> {
   const { sendWhatsAppMessage } = await import("./meta-api");
 
-  async function send(text: string): Promise<void> {
-    await sendWhatsAppMessage(phone, text);
-    await logConversation(supabase, {
-      tenantId,
-      phoneNumber: phone,
-      direction: "out",
-      messageType: "text",
-      content: text,
-    });
-    await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
-  }
-
-  // 1. Boas-vindas
-  await send(
+  // 1. Boas-vindas (mensagem normal — personalizada com nome)
+  await sendWhatsAppMessage(
+    phone,
     `A partir de agora, eu sou o *Guardinha*, seu assistente financeiro pessoal! 🛡️💚\n\n` +
     `${nome}, estou aqui 24 horas pra te ajudar a organizar sua vida financeira.\n\n` +
-    `Preparei um guia rápido pra você. Vamos lá! 👇`,
+    `Preparei um guia rápido pra você. Clique no botão abaixo! 👇`,
+  );
+  await logConversation(supabase, {
+    tenantId,
+    phoneNumber: phone,
+    direction: "out",
+    messageType: "text",
+    content: "[onboarding] Boas-vindas enviada",
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  // 2. Tutorial via Flow multi-tela (9 telas)
+  const flowToken = process.env.WHATSAPP_FLOW_TOKEN ?? "unused";
+  const result = await sendWhatsAppFlow(
+    phone,
+    "Veja como tirar o melhor do Guardinha — leva menos de 2 minutos:",
+    {
+      header: "Tutorial Guarda Dinheiro",
+      ctaText: "Entender como funciona",
+      screen: "BOAS_PRATICAS",
+      flowId: TUTORIAL_FLOW_ID,
+    },
   );
 
-  // 2. Registro de transações
-  await send(
-    `💰 *Registro de transações*\n\n` +
-    `Você pode me enviar mensagens de texto ou áudio, como ficar mais prático pra você!\n\n` +
-    `Veja alguns exemplos de uso:\n\n` +
-    `✅ _"Gastei 35 reais no mercado"_\n` +
-    `✅ _"Paguei 120 reais na conta de luz"_\n` +
-    `✅ _"Recebi 1500 do cliente João"_\n` +
-    `✅ _"Paguei 5 mil de aluguel hoje dia 5"_\n\n` +
-    `❌ _"Gastei"_, _"35 reais no mercado"_ (em duas mensagens separadas)\n` +
-    `❌ _"Paguei 10 reais"_ (sem informar do que é)\n\n` +
-    `⚠️ Sempre envie tudo em uma *única mensagem* com valor e descrição.`,
-  );
+  if (!result.ok) {
+    console.error("[onboarding] Falha ao enviar Flow tutorial:", result.error);
+    // Fallback: enviar mensagens separadas se Flow falhar
+    await sendFallbackMessages(supabase, phone, tenantId);
+    return;
+  }
 
-  // 3. Categorias
-  await send(
-    `🚀 *Categorias personalizadas*\n\n` +
-    `Já cadastramos categorias essenciais pra suas finanças (Alimentação, Moradia, Transporte, Saúde, etc.).\n\n` +
-    `Quer um controle mais detalhado? Crie categorias no painel web! Por exemplo, uma categoria "Café" pra saber quanto gasta de café no mês.\n\n` +
-    `Acesse: guardadinheiro.com.br/dashboard/categorias`,
-  );
+  await logConversation(supabase, {
+    tenantId,
+    phoneNumber: phone,
+    direction: "out",
+    messageType: "system",
+    content: "[onboarding] Tutorial Flow enviado",
+  });
 
-  // 4. Compromissos e lembretes
-  await send(
-    `📅 *Compromissos e lembretes*\n\n` +
-    `Registre compromissos e eu te lembro 30 minutos antes! Exemplos:\n\n` +
-    `✅ _"Tenho médico amanhã às 16 horas"_\n` +
-    `✅ _"Tenho que ir no dentista terça às 11 horas"_\n` +
-    `✅ _"Me lembre de buscar meu filho na escola hoje às 16:30"_\n` +
-    `✅ _"Tenho reunião amanhã às 14:30 com o cliente X"_\n\n` +
-    `❌ _"Tenho reunião amanhã"_ (sem horário)\n` +
-    `❌ _"Tenho reunião com a empresa X"_ (sem data e horário)\n\n` +
-    `⚠️ Sempre informe *data e horário* pro lembrete funcionar.`,
-  );
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  // 5. Receitas e gastos recorrentes
-  await send(
-    `🔄 *Receitas e gastos recorrentes*\n\n` +
-    `Registre transações que se repetem todo mês:\n\n` +
-    `✅ _"Tenho pra pagar 2 mil de aluguel todo dia 5"_\n` +
-    `✅ _"Tenho pra receber 5 mil de salário todo dia 6"_\n` +
-    `✅ _"Tenho pra pagar 25 reais de estacionamento toda quarta"_\n\n` +
-    `Eu registro automaticamente pra você no dia certo de cada mês!`,
-  );
-
-  // 6. Edição e exclusão
-  await send(
-    `✏️ *Edição e exclusão de registros*\n\n` +
-    `Depois de registrar um lançamento, aparecem botões pra:\n` +
-    `• ✏️ *Editar* — mudar valor, descrição ou categoria\n` +
-    `• 🗑️ *Excluir* — remover o lançamento\n\n` +
-    `Exemplos do que dizer ao editar:\n` +
-    `• _"O valor era 200"_\n` +
-    `• _"Coloca na categoria Transporte"_\n` +
-    `• _"A descrição é almoço com cliente"_`,
-  );
-
-  // 7. Consultas
-  await send(
-    `🔍 *Pergunte o que quiser*\n\n` +
-    `Você pode me perguntar sobre suas finanças a qualquer momento:\n\n` +
-    `• _"Quanto gastei esse mês?"_\n` +
-    `• _"Qual meu saldo?"_\n` +
-    `• _"Quanto gastei de alimentação?"_\n` +
-    `• _"Tenho conta atrasada?"_\n` +
-    `• _"Qual meu score?"_\n` +
-    `• _"O que eu tenho pra fazer amanhã?"_\n` +
-    `• _"Onde estou gastando mais?"_\n\n` +
-    `Pode perguntar do seu jeito que eu entendo! 😊`,
-  );
-
-  // 8. Lembretes diários
-  await send(
-    `🔔 *Lembretes diários*\n\n` +
-    `Todos os dias às 08:00 da manhã eu te envio um resumo com:\n` +
-    `• Contas a pagar e vencidas\n` +
-    `• Compromissos do dia\n` +
-    `• Contas a receber\n\n` +
-    `Além disso, envio um *lembrete 30 minutos antes* de cada compromisso marcado.`,
-  );
-
-  // 9. Painel web + Finalização
+  // 3. CTA final pro painel
   await sendWhatsAppCTA(phone,
-    `✅ *Estamos prontos!*\n\n` +
-    `${nome}, agora você sabe tudo que eu faço! Esse WhatsApp é nosso canal principal.\n\n` +
-    `Você também tem acesso ao *painel web* com gráficos, relatórios, fluxo de caixa e seu score financeiro.\n\n` +
-    `Pode começar agora mesmo — me manda seu primeiro lançamento! 🚀`,
+    `Quando terminar o tutorial, me manda seu primeiro lançamento! 🚀\n\n` +
+    `Você também pode acessar o painel web:`,
     {
       displayText: "📊 Acessar o painel web",
       url: "https://www.guardadinheiro.com.br/dashboard",
@@ -267,6 +212,34 @@ async function sendOnboardingSequence(
     phoneNumber: phone,
     direction: "out",
     messageType: "text",
-    content: "[onboarding] Tutorial completo enviado + CTA painel",
+    content: "[onboarding] Tutorial completo + CTA painel",
   });
+}
+
+/**
+ * Fallback: se o Flow tutorial falhar, envia as mensagens chave como texto.
+ */
+async function sendFallbackMessages(
+  supabase: SupabaseClient,
+  phone: string,
+  tenantId: string,
+): Promise<void> {
+  const { sendWhatsAppMessage } = await import("./meta-api");
+
+  const messages = [
+    `💰 *Como registrar*\n\nMe manda: _"Gastei 50 no mercado"_ ou _"Recebi 1500 do cliente"_\nPode ser texto ou áudio!\n\n⚠️ Sempre valor + descrição numa mensagem só.`,
+    `📅 *Compromissos*: _"Tenho médico amanhã às 16h"_\n🔍 *Consultas*: _"Qual meu saldo?"_\n🔔 *Lembretes*: todo dia às 08h + 30min antes de compromissos`,
+  ];
+
+  for (const msg of messages) {
+    await sendWhatsAppMessage(phone, msg);
+    await logConversation(supabase, {
+      tenantId,
+      phoneNumber: phone,
+      direction: "out",
+      messageType: "text",
+      content: msg,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
 }
