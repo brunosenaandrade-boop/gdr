@@ -241,6 +241,38 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     return true;
   }
 
+  // ===== Extrair textContent (texto digitado OU transcrição de áudio) =====
+  // Faz ANTES dos intent checks pra que áudio transcrito passe pelos mesmos detectores que texto.
+  let textContent = "";
+
+  if (message.type === "audio" && message.audio) {
+    const audioBuffer = await downloadWhatsAppMedia(message.audio.id);
+    if (!audioBuffer) {
+      await respond("Não consegui baixar o áudio. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
+      return;
+    }
+
+    const transcription = await transcribeAudio(audioBuffer, { tenantId });
+    if (!transcription.ok) {
+      await respond("Não consegui transcrever o áudio. Tente enviar como texto.");
+      return;
+    }
+
+    textContent = transcription.text;
+
+    await logConversation(supabase, {
+      tenantId: currentTenantId,
+      phoneNumber: message.from,
+      direction: "in",
+      messageType: "system",
+      content: `[transcrição] ${textContent}`,
+      metadata: { audioId: message.audio.id },
+    });
+  } else if (message.type === "text" && message.text) {
+    textContent = message.text?.body ?? "";
+  }
+  // Se interactive (botões), textContent fica vazio — processado pelo FLUXO 1.5
+
   // ===== Buscar pending ativo (para contexto multi-turn e detecção de intent) =====
   const { data: activePending } = await supabase
     .from("whatsapp_pending")
@@ -400,8 +432,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2: Confirmação/Cancelamento =====
-  if (message.type === "text" && message.text) {
-    const text = message.text?.body ?? "";
+  if (textContent) {
+    const text = textContent;
 
     // Regex-based intent (rápido, sem custo)
     if (isConfirmation(text)) {
@@ -436,8 +468,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2.55: Saudação / conversa casual =====
-  if (message.type === "text" && message.text) {
-    const text = (message.text?.body ?? "").trim();
+  if (textContent) {
+    const text = textContent.trim();
     if (/^(oi|ol[aá]|hey|e\s*a[ií]|fala|salve|bom\s*dia|boa\s*(tarde|noite)|boa|hello|hi)\s*[!?.]*$/i.test(text)) {
       await respond(
         "Oi! Sou o *Guardinha*, seu assistente financeiro 🛡️\n\n" +
@@ -454,8 +486,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2.56: Conversa casual / suporte / agradecimento =====
-  if (message.type === "text" && message.text) {
-    const text = (message.text?.body ?? "").trim();
+  if (textContent) {
+    const text = textContent.trim();
     const lower = text.toLowerCase();
 
     // Agradecimento
@@ -494,7 +526,7 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     if (/^(quero\s*(falar|suporte)|suporte|humano|atendente|falar\s*com\s*(algu[eé]m|gente|pessoa))/i.test(lower)) {
       await respond(
         "Nosso suporte funciona por email:\n\n" +
-        "📧 *brunoeducafinancas@gmail.com*\n\n" +
+        "📧 *contato@guardadinheiro.com.br*\n\n" +
         "Descreva seu problema que a equipe responde em até 24h.",
       );
       return;
@@ -508,8 +540,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2.6: Reenviar bônus (order bumps) =====
-  if (message.type === "text" && message.text) {
-    const text = (message.text?.body ?? "").toLowerCase().trim();
+  if (textContent) {
+    const text = textContent.toLowerCase().trim();
     if (/^reenviar\s+(b[ôo]nus|produto|b[uú]mp|materi)/i.test(text) ||
         /^(manda|envia|me envia|quero).*(b[ôo]nus|materi|produto|arquivos?)/i.test(text)) {
       const { resendBumpLinks } = await import("@/lib/delivery/bump-delivery");
@@ -526,8 +558,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2.5: Consulta livre ("quanto gastei?", "qual meu saldo?") =====
-  if (message.type === "text" && message.text) {
-    const text = message.text?.body ?? "";
+  if (textContent) {
+    const text = textContent;
 
     // 2.5a — Consulta de agenda ("o que tenho hoje?", "minha agenda")
     if (isAgendaQuery(text)) {
@@ -545,8 +577,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 2.9: Validações de entrada antes de gastar IA =====
-  if (message.type === "text" && message.text) {
-    const rawText = (message.text?.body ?? "").trim();
+  if (textContent) {
+    const rawText = textContent.trim();
 
     // #10: Mensagem muito longa → rejeitar sem gastar IA
     if (rawText.length > 500) {
@@ -568,6 +600,11 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
   }
 
   // ===== FLUXO 3: Novo lançamento =====
+  // Guard: sem texto pra processar (ex: interactive não reconhecido)
+  if (!textContent.trim()) {
+    return;
+  }
+
   // Bloqueio antecipado: se não tem acesso, nem gasta IA chamando parser
   if (!canWrite) {
     await blockWithPaywall();
@@ -590,39 +627,6 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     Sentry.captureException(catError);
     console.error("Erro ao buscar categorias:", catError.message);
     await respond("Erro interno. Tente novamente em alguns minutos. Se persistir, diga _\"quero suporte\"_.");
-    return;
-  }
-
-  // Processar texto ou áudio
-  let textContent: string;
-
-  if (message.type === "audio" && message.audio) {
-    const audioBuffer = await downloadWhatsAppMedia(message.audio.id);
-    if (!audioBuffer) {
-      await respond("Não consegui baixar o áudio. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
-      return;
-    }
-
-    const transcription = await transcribeAudio(audioBuffer, { tenantId });
-    if (!transcription.ok) {
-      await respond("Não consegui transcrever o áudio. Tente enviar como texto.");
-      return;
-    }
-
-    textContent = transcription.text;
-
-    await logConversation(supabase, {
-      tenantId: currentTenantId,
-      phoneNumber: message.from,
-      direction: "in",
-      messageType: "system",
-      content: `[transcrição] ${textContent}`,
-      metadata: { audioId: message.audio.id },
-    });
-  } else if (message.type === "text" && message.text) {
-    textContent = message.text?.body ?? "";
-  } else {
-    await respond("Envie uma mensagem de texto ou áudio com seu lançamento financeiro.");
     return;
   }
 
@@ -716,7 +720,12 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
   if (!result.ok) {
     await respond(
-      'Não entendi o lançamento. Tente algo como:\n"Paguei 150 reais de luz"\n"Recebi 500 do cliente João"',
+      "Não consegui identificar um lançamento financeiro na sua mensagem.\n\n" +
+      "Posso te ajudar com:\n" +
+      "💰 Registrar gastos: _\"Gastei 50 no mercado\"_\n" +
+      "📊 Consultar saldo: _\"Qual meu saldo?\"_\n" +
+      "📅 Agendar: _\"Tenho médico amanhã às 16h\"_\n" +
+      "❓ Ajuda: _\"Como funciona\"_",
     );
     return;
   }
