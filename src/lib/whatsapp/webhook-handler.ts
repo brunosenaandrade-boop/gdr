@@ -861,6 +861,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
 
   // === Lançamento DIRETO para high confidence (sem Sim/Não) ===
   if (parsed.confidence === "high" && parsed.amount > 0) {
+    const { todayBRT } = await import("@/lib/date/brt");
+    const txDueDate = parsed.due_date ?? todayBRT();
     const { data: newTx, error: insertError } = await supabase.from("transactions").insert({
       tenant_id: tenantId,
       type: parsed.type,
@@ -868,7 +870,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
       amount: parsed.amount,
       category_id: matched?.id ?? null,
       status: "pago",
-      paid_date: new Date().toISOString().split("T")[0],
+      due_date: txDueDate,
+      paid_date: txDueDate,
       source: "whatsapp",
     }).select("id").maybeSingle();
 

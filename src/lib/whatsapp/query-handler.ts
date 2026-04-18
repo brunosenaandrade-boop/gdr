@@ -15,7 +15,8 @@ export function isQuery(text: string): boolean {
 const QUERY_PATTERNS: RegExp[] = [
   /^quanto\s+(gastei|recebi|paguei|tenho|devo|sobr)/i,
   /^qual\s+(meu\s+saldo|o\s+saldo|o\s+total|meu\s+score)/i,
-  /^tenho\s+contas?\s+(a\s+pagar|vencid|pendent)/i,
+  /^tenho\s+contas?\s+(a\s+pagar|vencid|pendent|atrasad)/i,
+  /\bcontas?\s*(atrasad|vencid|pendent)/i,
   /^(me\s+)?mostr[ae]\s+(meu|minha|o|a|os|as)/i,
   /^(me\s+)?pass[ae]\s+(meu|o|a|um)/i,
   /^list[ae]\s+(meus|minhas|as|os|todas)/i,
@@ -53,7 +54,7 @@ function classifyQuery(text: string): { type: QueryType; categoryFilter?: string
   if (/\bscore\b/i.test(lower)) return { type: "score" };
   if (/saldo/i.test(lower)) return { type: "saldo" };
   if (/contas?\s*(a\s+pagar|pendent)/i.test(lower)) return { type: "contas_pagar" };
-  if (/contas?\s*vencid/i.test(lower)) return { type: "contas_vencidas" };
+  if (/contas?\s*(vencid|atrasad)/i.test(lower)) return { type: "contas_vencidas" };
   if (/recebi|receit|entr(ou|ada)|ganh/i.test(lower)) return { type: "receitas" };
   if (/gastei|despes|sa[ií](u|da)|paguei/i.test(lower)) return { type: "despesas" };
   if (/resumo|relat[oó]rio|como\s+(est|anda|t[aá])|positivo|negativo/i.test(lower)) return { type: "resumo_mes" };

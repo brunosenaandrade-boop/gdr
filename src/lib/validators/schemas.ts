@@ -73,6 +73,7 @@ export const aiParsedTransactionSchema = z.object({
   category_suggestion: z.string(),
   counterparty: z.string().nullable().optional(),
   confidence: z.enum(["high", "medium", "low"]).optional(),
+  due_date: z.string().nullable().optional(),
   is_recurring: z.boolean().optional(),
   day_of_month: z.number().int().min(1).max(31).optional(),
 });

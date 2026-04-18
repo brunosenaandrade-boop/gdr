@@ -59,6 +59,7 @@ describe("isAgendaQuery", () => {
   it("detecta perguntas sobre agenda", () => {
     expect(isAgendaQuery("O que tenho hoje?")).toBe(true);
     expect(isAgendaQuery("O que tenho amanhã?")).toBe(true);
+    expect(isAgendaQuery("O que eu tenho pra fazer amanhã?")).toBe(true);
     expect(isAgendaQuery("Quais meus compromissos?")).toBe(true);
     expect(isAgendaQuery("Minha agenda")).toBe(true);
     expect(isAgendaQuery("Ver minha agenda")).toBe(true);

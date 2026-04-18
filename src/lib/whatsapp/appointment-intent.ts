@@ -122,7 +122,7 @@ export function isAgendaQuery(text: string): boolean {
   const normalized = lower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   return (
     /\b(?:quais|que)\s+(?:sao\s+)?(?:meus?|os)\s+(?:compromissos?|agend|eventos?)/.test(normalized) ||
-    /\bo\s+que\s+(?:eu\s+)?tenho\s+(?:hoje|amanha|essa\s+semana|pra\s+hoje|pra\s+amanha)/.test(normalized) ||
+    /\bo\s+que\s+(?:eu\s+)?tenho\s+(?:hoje|amanha|essa\s+semana|pra\s+hoje|pra\s+amanha|pra\s+fazer)/.test(normalized) ||
     /\btenho\s+(?:algum\s+)?(?:compromisso|reuniao|consulta)/.test(normalized) ||
     /\bminha\s+agenda\b/.test(normalized) ||
     /\bver\s+(?:minha\s+)?agenda\b/.test(normalized) ||

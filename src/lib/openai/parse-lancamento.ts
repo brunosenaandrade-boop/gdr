@@ -169,6 +169,7 @@ Retorne APENAS um JSON válido com estes campos:
 - category_suggestion: nome da categoria mais provável da lista disponível
 - counterparty: nome da pessoa/empresa envolvida (null se não mencionada)
 - confidence: "high" | "medium" | "low"
+- due_date: data de vencimento/pagamento no formato YYYY-MM-DD se o usuário mencionar (ex: "dia 5", "dia 22", "ontem", "semana passada"). null se não mencionada. Se disser "dia 5" sem mês, use o mês atual (ou próximo mês se dia já passou).
 - is_recurring: true se o usuário indicar que é recorrente ("todo mês", "fixo", "mensal", "semanal", "sempre"). false ou omitido caso contrário.
 - day_of_month: dia do mês para recorrência (1-31). Obrigatório se is_recurring=true. Extrair do texto (ex: "dia 10", "todo dia 5"). Se não mencionado, usar o dia atual.
 

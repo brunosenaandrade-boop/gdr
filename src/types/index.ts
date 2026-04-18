@@ -51,6 +51,7 @@ export type AIParsedTransaction = {
   category_suggestion: string;
   counterparty?: string | null;
   confidence?: AIConfidence;
+  due_date?: string | null;
   is_recurring?: boolean;
   day_of_month?: number;
 };
