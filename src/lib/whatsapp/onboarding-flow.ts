@@ -12,11 +12,11 @@ export async function sendSignupFlow(
 ): Promise<void> {
   const result = await sendWhatsAppFlow(
     phone,
-    "Olá! 👋 Crie sua conta grátis agora e ganhe *7 dias gratuitos* para organizar suas finanças e começar a sair das dívidas de vez! 🚀\n\nO cadastro é rápido e acontece aqui mesmo no WhatsApp!",
+    "Oi, tudo bem com você! 👋 Vi que você ainda não ativou o seu cadastro. Clique no botão abaixo e ative ele! 🚀\n\nVocê está a um clique de ter um assistente financeiro 24 horas pra organizar a sua vida.\n\nFaça seu cadastro rapidamente pra ativar a sua conta no Guarda Dinheiro! ⏱️ O cadastro demora apenas 30 segundos.",
     {
       header: "Cadastro Guarda Dinheiro",
-      footer: "Sem cartão de crédito.",
-      ctaText: "🎯 Criar minha conta grátis",
+      footer: "Cadastro rápido em 30 segundos.",
+      ctaText: "FAÇA SEU CADASTRO AQUI",
       screen: "CADASTRO",
     },
   );
@@ -137,42 +137,136 @@ export async function handleFlowResponse(
     content: "[onboarding] Conta criada com sucesso",
   });
 
-  // Disparar sequência de onboarding
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // Disparar sequência de onboarding (tutorial passo a passo no WhatsApp)
+  await sendOnboardingSequence(supabase, phone, tenant.id, nome);
+}
 
-  const msg1Body =
-    "A partir de agora, eu serei o seu Guardinha, seu assistente financeiro pessoal! 🛡️💚\n\n" +
-    "Estou aqui para te ajudar a organizar sua vida financeira, registrar seus gastos e te ajudar a sair das dívidas de vez!\n\n" +
-    "Preparei um guia rápido de como eu funciono para que possamos começar juntos da melhor forma. Clique no botão abaixo para entender! 👇";
+const DELAY_MS = 2500;
 
-  await sendWhatsAppCTA(phone, msg1Body, {
-    displayText: "📖 Entender como funciona",
-    url: "https://www.guardadinheiro.com.br/como-funciona",
-  });
+async function sendOnboardingSequence(
+  supabase: SupabaseClient,
+  phone: string,
+  tenantId: string,
+  nome: string,
+): Promise<void> {
+  const { sendWhatsAppMessage } = await import("./meta-api");
+
+  async function send(text: string): Promise<void> {
+    await sendWhatsAppMessage(phone, text);
+    await logConversation(supabase, {
+      tenantId,
+      phoneNumber: phone,
+      direction: "out",
+      messageType: "text",
+      content: text,
+    });
+    await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+  }
+
+  // 1. Boas-vindas
+  await send(
+    `A partir de agora, eu sou o *Guardinha*, seu assistente financeiro pessoal! 🛡️💚\n\n` +
+    `${nome}, estou aqui 24 horas pra te ajudar a organizar sua vida financeira.\n\n` +
+    `Preparei um guia rápido pra você. Vamos lá! 👇`,
+  );
+
+  // 2. Registro de transações
+  await send(
+    `💰 *Registro de transações*\n\n` +
+    `Você pode me enviar mensagens de texto ou áudio, como ficar mais prático pra você!\n\n` +
+    `Veja alguns exemplos de uso:\n\n` +
+    `✅ _"Gastei 35 reais no mercado"_\n` +
+    `✅ _"Paguei 120 reais na conta de luz"_\n` +
+    `✅ _"Recebi 1500 do cliente João"_\n` +
+    `✅ _"Paguei 5 mil de aluguel hoje dia 5"_\n\n` +
+    `❌ _"Gastei"_, _"35 reais no mercado"_ (em duas mensagens separadas)\n` +
+    `❌ _"Paguei 10 reais"_ (sem informar do que é)\n\n` +
+    `⚠️ Sempre envie tudo em uma *única mensagem* com valor e descrição.`,
+  );
+
+  // 3. Categorias
+  await send(
+    `🚀 *Categorias personalizadas*\n\n` +
+    `Já cadastramos categorias essenciais pra suas finanças (Alimentação, Moradia, Transporte, Saúde, etc.).\n\n` +
+    `Quer um controle mais detalhado? Crie categorias no painel web! Por exemplo, uma categoria "Café" pra saber quanto gasta de café no mês.\n\n` +
+    `Acesse: guardadinheiro.com.br/dashboard/categorias`,
+  );
+
+  // 4. Compromissos e lembretes
+  await send(
+    `📅 *Compromissos e lembretes*\n\n` +
+    `Registre compromissos e eu te lembro 30 minutos antes! Exemplos:\n\n` +
+    `✅ _"Tenho médico amanhã às 16 horas"_\n` +
+    `✅ _"Tenho que ir no dentista terça às 11 horas"_\n` +
+    `✅ _"Me lembre de buscar meu filho na escola hoje às 16:30"_\n` +
+    `✅ _"Tenho reunião amanhã às 14:30 com o cliente X"_\n\n` +
+    `❌ _"Tenho reunião amanhã"_ (sem horário)\n` +
+    `❌ _"Tenho reunião com a empresa X"_ (sem data e horário)\n\n` +
+    `⚠️ Sempre informe *data e horário* pro lembrete funcionar.`,
+  );
+
+  // 5. Receitas e gastos recorrentes
+  await send(
+    `🔄 *Receitas e gastos recorrentes*\n\n` +
+    `Registre transações que se repetem todo mês:\n\n` +
+    `✅ _"Tenho pra pagar 2 mil de aluguel todo dia 5"_\n` +
+    `✅ _"Tenho pra receber 5 mil de salário todo dia 6"_\n` +
+    `✅ _"Tenho pra pagar 25 reais de estacionamento toda quarta"_\n\n` +
+    `Eu registro automaticamente pra você no dia certo de cada mês!`,
+  );
+
+  // 6. Edição e exclusão
+  await send(
+    `✏️ *Edição e exclusão de registros*\n\n` +
+    `Depois de registrar um lançamento, aparecem botões pra:\n` +
+    `• ✏️ *Editar* — mudar valor, descrição ou categoria\n` +
+    `• 🗑️ *Excluir* — remover o lançamento\n\n` +
+    `Exemplos do que dizer ao editar:\n` +
+    `• _"O valor era 200"_\n` +
+    `• _"Coloca na categoria Transporte"_\n` +
+    `• _"A descrição é almoço com cliente"_`,
+  );
+
+  // 7. Consultas
+  await send(
+    `🔍 *Pergunte o que quiser*\n\n` +
+    `Você pode me perguntar sobre suas finanças a qualquer momento:\n\n` +
+    `• _"Quanto gastei esse mês?"_\n` +
+    `• _"Qual meu saldo?"_\n` +
+    `• _"Quanto gastei de alimentação?"_\n` +
+    `• _"Tenho conta atrasada?"_\n` +
+    `• _"Qual meu score?"_\n` +
+    `• _"O que eu tenho pra fazer amanhã?"_\n` +
+    `• _"Onde estou gastando mais?"_\n\n` +
+    `Pode perguntar do seu jeito que eu entendo! 😊`,
+  );
+
+  // 8. Lembretes diários
+  await send(
+    `🔔 *Lembretes diários*\n\n` +
+    `Todos os dias às 08:00 da manhã eu te envio um resumo com:\n` +
+    `• Contas a pagar e vencidas\n` +
+    `• Compromissos do dia\n` +
+    `• Contas a receber\n\n` +
+    `Além disso, envio um *lembrete 30 minutos antes* de cada compromisso marcado.`,
+  );
+
+  // 9. Painel web + Finalização
+  await sendWhatsAppCTA(phone,
+    `✅ *Estamos prontos!*\n\n` +
+    `${nome}, agora você sabe tudo que eu faço! Esse WhatsApp é nosso canal principal.\n\n` +
+    `Você também tem acesso ao *painel web* com gráficos, relatórios, fluxo de caixa e seu score financeiro.\n\n` +
+    `Pode começar agora mesmo — me manda seu primeiro lançamento! 🚀`,
+    {
+      displayText: "📊 Acessar o painel web",
+      url: "https://www.guardadinheiro.com.br/dashboard",
+    },
+  );
   await logConversation(supabase, {
-    tenantId: tenant.id,
+    tenantId,
     phoneNumber: phone,
     direction: "out",
     messageType: "text",
-    content: msg1Body + " [CTA: 📖 Entender como funciona]",
-  });
-
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  const msg2Body =
-    "Estamos prontos para começar! 🚀\n\n" +
-    "Esse contato de WhatsApp será nosso canal principal. Você já pode começar a registrar tudo aqui comigo, é só mandar uma mensagem de voz ou texto!\n\n" +
-    "Para acessar o painel com todos os seus dados:";
-
-  await sendWhatsAppCTA(phone, msg2Body, {
-    displayText: "📊 Acessar a plataforma",
-    url: "https://www.guardadinheiro.com.br/dashboard",
-  });
-  await logConversation(supabase, {
-    tenantId: tenant.id,
-    phoneNumber: phone,
-    direction: "out",
-    messageType: "text",
-    content: msg2Body + " [CTA: 📊 Acessar a plataforma]",
+    content: "[onboarding] Tutorial completo enviado + CTA painel",
   });
 }
