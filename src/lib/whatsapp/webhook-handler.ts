@@ -325,6 +325,36 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     if (buttonId.startsWith("excluir_")) {
       if (!canWrite) { await blockWithPaywall(); return; }
       const txId = buttonId.replace("excluir_", "");
+
+      // Buscar dados da transação pra mostrar na confirmação
+      const { data: txToDelete } = await supabase
+        .from("transactions")
+        .select("description, amount")
+        .eq("id", txId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+
+      if (!txToDelete) {
+        await respond("Lançamento não encontrado.");
+        return;
+      }
+
+      const desc = txToDelete.description ?? "lançamento";
+      const val = (txToDelete.amount / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+
+      await sendWhatsAppButtons(message.from,
+        `Tem certeza que quer excluir *${desc}* de R$ ${val}?`,
+        [
+          { id: `confirmar_excluir_${txId}`, title: "Sim, excluir" },
+          { id: "cancelar_acao", title: "Cancelar" },
+        ],
+      );
+      return;
+    }
+
+    if (buttonId.startsWith("confirmar_excluir_")) {
+      if (!canWrite) { await blockWithPaywall(); return; }
+      const txId = buttonId.replace("confirmar_excluir_", "");
       const { error: delErr } = await supabase
         .from("transactions")
         .delete()
@@ -335,8 +365,13 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
         console.error("Erro ao excluir transação:", delErr.message);
         await respond("Erro ao excluir. Tente novamente. Se persistir, diga _\"quero suporte\"_.");
       } else {
-        await respond("Lançamento excluído com sucesso.");
+        await respond("Lançamento excluído com sucesso. ✅");
       }
+      return;
+    }
+
+    if (buttonId === "cancelar_acao") {
+      await respond("Ação cancelada. 👍");
       return;
     }
 

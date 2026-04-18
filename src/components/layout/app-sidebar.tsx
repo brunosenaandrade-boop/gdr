@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   CalendarDays,
+  Repeat,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/dashboard/contas-receber", label: "Contas a Receber", icon: TrendingUp },
   { href: "/dashboard/fluxo-caixa", label: "Fluxo de Caixa", icon: BarChart3 },
   { href: "/dashboard/categorias", label: "Categorias", icon: Tag },
+  { href: "/dashboard/recorrencias", label: "Recorrências", icon: Repeat },
   { href: "/dashboard/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/dashboard/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },

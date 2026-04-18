@@ -85,7 +85,8 @@ export async function deleteTransaction(id: string): Promise<{ error?: string }>
 
 export async function markTransactionPaid(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const { todayBRT } = await import("@/lib/date/brt");
+  const today = todayBRT();
   const { error } = await supabase
     .from("transactions")
     .update({ status: "pago", paid_date: today, updated_at: new Date().toISOString() })

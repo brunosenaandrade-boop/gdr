@@ -100,7 +100,7 @@ export function CategoriasClient({ categories, tenantId }: Props) {
                   <div className="flex items-center gap-3">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color ?? "#34d399" }} />
                     <span className="text-sm text-slate-200">{cat.name}</span>
-                    {cat.is_default && <Badge variant="default">Padrao</Badge>}
+                    {cat.is_default && <Badge variant="default">Padrão</Badge>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(cat)} className="rounded-lg p-1 text-slate-500 hover:text-slate-300 hover:bg-white/5">
@@ -132,7 +132,7 @@ export function CategoriasClient({ categories, tenantId }: Props) {
                   <div className="flex items-center gap-3">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color ?? "#f87171" }} />
                     <span className="text-sm text-slate-200">{cat.name}</span>
-                    {cat.is_default && <Badge variant="default">Padrao</Badge>}
+                    {cat.is_default && <Badge variant="default">Padrão</Badge>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(cat)} className="rounded-lg p-1 text-slate-500 hover:text-slate-300 hover:bg-white/5">

@@ -174,7 +174,6 @@ export async function updateSession(request: NextRequest) {
     "/planos",
     "/como-funciona",
     "/compra-concluida",
-    "/lp",
   ];
   const isPublicRoute = publicRoutes.includes(path);
   const isApiRoute = path.startsWith("/api/");

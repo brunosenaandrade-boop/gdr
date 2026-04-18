@@ -1,7 +1,3 @@
-"use client";
-
-import { Badge } from "@/components/ui/badge";
-
 type AppHeaderProps = {
   title: string;
   description?: string;
@@ -22,9 +18,6 @@ export function AppHeader({ title, description, children }: AppHeaderProps) {
         </div>
         <div className="flex items-center gap-3">
           {children}
-          <Badge variant="success" pulse>
-            Online
-          </Badge>
         </div>
       </div>
     </header>
