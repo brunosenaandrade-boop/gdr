@@ -103,7 +103,7 @@ async function run() {
   await test("Ajuda: Como funciona", "Como funciona", ["Guardinha"]);
   await test("Ajuda: O que você faz", "O que você faz", ["Guardinha"]);
   await test("Ajuda: Me ajuda", "Me ajuda", ["Guardinha"]);
-  await test("Cancelar: Quero cancelar", "Quero cancelar", ["Hotmart"]);
+  await test("Cancelar: Quero cancelar", "Quero cancelar", ["Mercado Pago"]);
   await test("Suporte: Quero suporte", "Quero suporte", ["contato@guardadinheiro.com.br"]);
   await test("Suporte: Quero falar com alguém", "Quero falar com alguém", ["contato@guardadinheiro.com.br"]);
   await test("Avulso: Beleza", "Beleza", ["mais alguma"]);

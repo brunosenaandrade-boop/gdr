@@ -16,7 +16,7 @@ export async function reconcilePendingPurchase(
     .select("id, event_type, payload")
     .is("tenant_id", null)
     .eq("processed", false)
-    .in("event_type", ["PURCHASE_APPROVED", "payment.approved"])
+    .in("event_type", ["payment.approved"])
     .order("received_at", { ascending: false })
     .limit(10);
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Copy, CheckCheck } from "lucide-react";
 
-const CHECKOUT_BASE = "https://pay.mercadopago.com/V105379736J";
+const CHECKOUT_BASE = "https://www.guardadinheiro.com.br/planos";
 const SITE_BASE = "https://www.guardadinheiro.com.br";
 
 type Props = {

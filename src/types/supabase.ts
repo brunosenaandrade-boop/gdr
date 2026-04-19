@@ -103,7 +103,6 @@ export type Database = {
           coupon_code: string | null
           created_at: string | null
           gateway_transaction_id: string | null
-          hotmart_event_id: string | null
           id: string
           paid_at: string | null
           paid_by: string | null
@@ -123,7 +122,6 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string | null
           gateway_transaction_id?: string | null
-          hotmart_event_id?: string | null
           id?: string
           paid_at?: string | null
           paid_by?: string | null
@@ -143,7 +141,6 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string | null
           gateway_transaction_id?: string | null
-          hotmart_event_id?: string | null
           id?: string
           paid_at?: string | null
           paid_by?: string | null
@@ -169,13 +166,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "coupons"
             referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "affiliate_sales_hotmart_event_id_fkey"
-            columns: ["hotmart_event_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_events"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "affiliate_sales_subscription_id_fkey"
@@ -496,8 +486,6 @@ export type Database = {
           delivered_at: string | null
           delivery_error: string | null
           delivery_status: string
-          hotmart_event_id: string | null
-          hotmart_transaction: string | null
           id: string
           last_resend_at: string | null
           product_id: string
@@ -513,8 +501,6 @@ export type Database = {
           delivered_at?: string | null
           delivery_error?: string | null
           delivery_status?: string
-          hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           last_resend_at?: string | null
           product_id: string
@@ -530,8 +516,6 @@ export type Database = {
           delivered_at?: string | null
           delivery_error?: string | null
           delivery_status?: string
-          hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           last_resend_at?: string | null
           product_id?: string
@@ -545,13 +529,6 @@ export type Database = {
             columns: ["bump_product_id"]
             isOneToOne: false
             referencedRelation: "bump_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_bumps_hotmart_event_id_fkey"
-            columns: ["hotmart_event_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_events"
             referencedColumns: ["id"]
           },
           {
@@ -629,7 +606,6 @@ export type Database = {
           buyer_email: string | null
           event_type: string
           gateway_event_id: string | null
-          hotmart_transaction: string | null
           id: string
           payload: Json
           processed: boolean | null
@@ -642,7 +618,6 @@ export type Database = {
           buyer_email?: string | null
           event_type: string
           gateway_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           payload: Json
           processed?: boolean | null
@@ -655,7 +630,6 @@ export type Database = {
           buyer_email?: string | null
           event_type?: string
           gateway_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           payload?: Json
           processed?: boolean | null

@@ -47,12 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "already_processed" });
     }
 
-    // Buscar detalhes do pagamento na API do MP
+    // Validação de segurança: buscar pagamento na API oficial do MP.
+    // Se o ID for forjado, a API retorna erro — impossível ativar subscription falsa.
     const payment = getPayment();
-    const paymentData = await payment.get({ id: parseInt(paymentId, 10) });
+    let paymentData;
+    try {
+      paymentData = await payment.get({ id: parseInt(paymentId, 10) });
+    } catch (err) {
+      console.error("[mercadopago] Falha ao verificar pagamento (possível fraude):", paymentId, err);
+      return NextResponse.json({ error: "Payment verification failed" }, { status: 403 });
+    }
 
-    if (!paymentData) {
-      console.error("[mercadopago] Pagamento não encontrado:", paymentId);
+    if (!paymentData || !paymentData.id) {
+      console.error("[mercadopago] Pagamento não encontrado (possível ID forjado):", paymentId);
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 

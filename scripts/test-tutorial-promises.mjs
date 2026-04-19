@@ -276,7 +276,7 @@ async function run() {
   results.push(await testCase(
     "Suporte: quero cancelar",
     "Quero cancelar",
-    ["Hotmart"]
+    ["Mercado Pago"]
   ));
   await new Promise(r => setTimeout(r, 3000));
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Cadastra o order bump 'Arquitetura da Liberdade' na tabela bump_products.
- * Idempotente: se já existe com o hotmart_product_id, só atualiza.
+ * Idempotente: se já existe com o product_id, só atualiza.
  */
 import { createClient } from "@supabase/supabase-js";
 
@@ -12,12 +12,12 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
-// IMPORTANTE: substituir pelo hotmart_product_id real do bump quando criar na Hotmart
-// Placeholder por enquanto (será atualizado quando você criar o bump na Hotmart)
-const HOTMART_PRODUCT_ID = "BUMP_ARQUITETURA_LIBERDADE";
+// IMPORTANTE: substituir pelo product_id real do bump quando criar na Mercado Pago
+// Placeholder por enquanto (será atualizado quando você criar o bump na Mercado Pago)
+const BUMP_PRODUCT_ID = "BUMP_ARQUITETURA_LIBERDADE";
 
 const bumpData = {
-  hotmart_product_id: HOTMART_PRODUCT_ID,
+  product_id: BUMP_PRODUCT_ID,
   name: "Arquitetura da Liberdade — Pacote Completo",
   description:
     "eBook de 57 páginas (10 capítulos) + Workbook interativo Meu Dia Perfeito + Planilha Simulador de Cenários. " +
@@ -55,7 +55,7 @@ const bumpData = {
 
 const { data, error } = await supabase
   .from("bump_products")
-  .upsert(bumpData, { onConflict: "hotmart_product_id" })
+  .upsert(bumpData, { onConflict: "product_id" })
   .select("id, name")
   .maybeSingle();
 
@@ -67,8 +67,8 @@ if (error) {
 console.log("✅ Bump product cadastrado:");
 console.log(`   ID: ${data?.id}`);
 console.log(`   Name: ${data?.name}`);
-console.log(`   Hotmart product ID (placeholder): ${HOTMART_PRODUCT_ID}`);
+console.log(`   Mercado Pago product ID (placeholder): ${BUMP_PRODUCT_ID}`);
 console.log("");
-console.log("⚠️  Quando você criar o bump na Hotmart, atualize o hotmart_product_id");
+console.log("⚠️  Quando você criar o bump na Mercado Pago, atualize o product_id");
 console.log("    via /admin/bumps ou execute:");
-console.log(`    UPDATE bump_products SET hotmart_product_id = 'ID_REAL' WHERE id = '${data?.id}';`);
+console.log(`    UPDATE bump_products SET product_id = 'ID_REAL' WHERE id = '${data?.id}';`);
