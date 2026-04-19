@@ -12,7 +12,7 @@ type Sale = {
   commissionAmountCents: number;
   couponCode: string | null;
   attributionSource: string;
-  hotmartTransaction: string | null;
+  mercadopagoTransaction: string | null;
   createdAt: string;
 };
 
@@ -165,7 +165,7 @@ export function PayoutsClient({
                   <th className="text-left p-3">Data</th>
                   <th className="text-left p-3">Origem</th>
                   <th className="text-left p-3">Cupom</th>
-                  <th className="text-left p-3">TX Hotmart</th>
+                  <th className="text-left p-3">TX Mercado Pago</th>
                   <th className="text-right p-3">Venda</th>
                   <th className="text-right p-3">Comissão</th>
                   <th className="p-3"></th>
@@ -177,7 +177,7 @@ export function PayoutsClient({
                     <td className="p-3 text-xs text-zinc-400">{formatDate(s.createdAt)}</td>
                     <td className="p-3 text-xs">{s.attributionSource}</td>
                     <td className="p-3 text-xs font-mono">{s.couponCode ?? "—"}</td>
-                    <td className="p-3 text-xs font-mono text-zinc-500">{s.hotmartTransaction ?? "—"}</td>
+                    <td className="p-3 text-xs font-mono text-zinc-500">{s.mercadopagoTransaction ?? "—"}</td>
                     <td className="p-3 text-right text-xs font-mono">
                       {formatCurrency(s.saleAmountCents)}
                     </td>

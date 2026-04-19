@@ -77,7 +77,7 @@ export async function updateAffiliateProfile(input: {
   phone?: string | null;
   pix_key?: string | null;
   cpf_cnpj?: string | null;
-  hotmart_email?: string | null;
+  affiliate_email?: string | null;
 }): Promise<ActionResult> {
   const affiliate = await getCurrentAffiliate();
   if (!affiliate) return { ok: false, error: "Não autenticado" };
@@ -87,7 +87,7 @@ export async function updateAffiliateProfile(input: {
     phone?: string | null;
     pix_key?: string | null;
     cpf_cnpj?: string | null;
-    hotmart_email?: string | null;
+    affiliate_email?: string | null;
   } = {};
 
   if (input.name !== undefined) {
@@ -98,12 +98,12 @@ export async function updateAffiliateProfile(input: {
   if (input.phone !== undefined) updates.phone = input.phone?.replace(/\D/g, "") || null;
   if (input.pix_key !== undefined) updates.pix_key = input.pix_key?.trim() || null;
   if (input.cpf_cnpj !== undefined) updates.cpf_cnpj = input.cpf_cnpj?.replace(/\D/g, "") || null;
-  if (input.hotmart_email !== undefined) {
-    const email = input.hotmart_email?.trim().toLowerCase() || null;
+  if (input.affiliate_email !== undefined) {
+    const email = input.affiliate_email?.trim().toLowerCase() || null;
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return { ok: false, error: "Email Hotmart inválido" };
+      return { ok: false, error: "Email Mercado Pago inválido" };
     }
-    updates.hotmart_email = email;
+    updates.affiliate_email = email;
   }
 
   const service = await createServiceClient();

@@ -13,7 +13,7 @@ export default async function AfiliadoContaPage() {
   const service = await createServiceClient();
   const { data } = await service
     .from("affiliates")
-    .select("name, phone, pix_key, cpf_cnpj, hotmart_email, commission_rate")
+    .select("name, phone, pix_key, cpf_cnpj, affiliate_email, commission_rate")
     .eq("id", affiliate.affiliateId)
     .maybeSingle();
 
@@ -28,7 +28,7 @@ export default async function AfiliadoContaPage() {
           phone: data?.phone ?? "",
           pix_key: data?.pix_key ?? "",
           cpf_cnpj: data?.cpf_cnpj ?? "",
-          hotmart_email: data?.hotmart_email ?? "",
+          affiliate_email: data?.affiliate_email ?? "",
         }}
       />
     </AfiliadoShell>

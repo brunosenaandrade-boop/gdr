@@ -26,8 +26,8 @@ export function NewAffiliateForm() {
       phone: String(formData.get("phone") ?? ""),
       pix_key: String(formData.get("pix_key") ?? ""),
       commission_rate: parseFloat(String(formData.get("commission_rate") ?? "40")),
-      hotmart_email: String(formData.get("hotmart_email") ?? ""),
-      hotmart_affiliate_code: String(formData.get("hotmart_affiliate_code") ?? ""),
+      affiliate_email: String(formData.get("affiliate_email") ?? ""),
+      affiliate_code: String(formData.get("affiliate_code") ?? ""),
       notes: String(formData.get("notes") ?? ""),
     };
 
@@ -125,14 +125,14 @@ export function NewAffiliateForm() {
       </div>
 
       <div className="border-t border-zinc-800 pt-5 space-y-4">
-        <h3 className="text-sm font-medium text-zinc-300">Hotmart (opcional)</h3>
+        <h3 className="text-sm font-medium text-zinc-300">Mercado Pago (opcional)</h3>
         <p className="text-xs text-zinc-500">
-          Preencha se o afiliado for cadastrado como afiliado oficial do produto na Hotmart.
+          Preencha se o afiliado for cadastrado como afiliado oficial do produto na Mercado Pago.
           Isso permite atribuir vendas automaticamente.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Email Hotmart" name="hotmart_email" type="email" />
-          <Field label="Código afiliado Hotmart" name="hotmart_affiliate_code" />
+          <Field label="Email Mercado Pago" name="affiliate_email" type="email" />
+          <Field label="Código afiliado Mercado Pago" name="affiliate_code" />
         </div>
       </div>
 

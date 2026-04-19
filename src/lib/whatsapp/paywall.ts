@@ -68,7 +68,7 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
 }
 
 /**
- * Envia mensagem de paywall via WhatsApp com botão CTA para o checkout Hotmart.
+ * Envia mensagem de paywall via WhatsApp com botão CTA para o checkout Mercado Pago.
  * Usado toda vez que um usuário sem acesso ativo tenta fazer escrita no sistema.
  */
 export async function sendPaywallCTA(phone: string, reason: AccessDenialReason): Promise<void> {

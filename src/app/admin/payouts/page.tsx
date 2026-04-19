@@ -11,7 +11,7 @@ export default async function AdminPayoutsPage() {
     .from("affiliate_sales")
     .select(`
       id, sale_amount_cents, commission_amount_cents, coupon_code,
-      attribution_source, hotmart_transaction, created_at,
+      attribution_source, gateway_transaction_id, created_at,
       affiliates(id, name, email, pix_key, phone)
     `)
     .eq("status", "pending")
@@ -28,7 +28,7 @@ export default async function AdminPayoutsPage() {
     commissionAmountCents: number;
     couponCode: string | null;
     attributionSource: string;
-    hotmartTransaction: string | null;
+    mercadopagoTransaction: string | null;
     createdAt: string;
   };
 
@@ -46,7 +46,7 @@ export default async function AdminPayoutsPage() {
       commissionAmountCents: s.commission_amount_cents,
       couponCode: s.coupon_code,
       attributionSource: s.attribution_source,
-      hotmartTransaction: s.hotmart_transaction,
+      mercadopagoTransaction: s.gateway_transaction_id,
       createdAt: s.created_at ?? "",
     }];
   });

@@ -207,14 +207,14 @@ async function markDeliveryFailed(
 }
 
 /**
- * Detecta produtos bump em um payload Hotmart.
- * Retorna lista de { hotmart_product_id, name, amount_cents }.
+ * Detecta produtos bump em um payload Mercado Pago.
+ * Retorna lista de { product_id, name, amount_cents }.
  *
- * Hotmart envia os bumps em campos variados dependendo da configuração.
+ * Mercado Pago envia os bumps em campos variados dependendo da configuração.
  * Essa função é defensiva — tenta múltiplos caminhos.
  */
 export function extractBumpsFromPayload(payload: unknown): Array<{
-  hotmart_product_id: string;
+  product_id: string;
   name: string;
   amount_cents: number;
 }> {
@@ -237,7 +237,7 @@ export function extractBumpsFromPayload(payload: unknown): Array<{
   };
 
   const mainProductId = String(data.data?.product?.id ?? "");
-  const bumps: Array<{ hotmart_product_id: string; name: string; amount_cents: number }> = [];
+  const bumps: Array<{ product_id: string; name: string; amount_cents: number }> = [];
 
   // Caminho 1: array 'products' com mais de 1 item (primeiro é o principal, resto é bump)
   if (Array.isArray(data.data?.products)) {
@@ -246,7 +246,7 @@ export function extractBumpsFromPayload(payload: unknown): Array<{
       if (!pid || pid === mainProductId) continue;
       const priceValue = p.price?.value ?? p.amount ?? 0;
       bumps.push({
-        hotmart_product_id: pid,
+        product_id: pid,
         name: p.name ?? `Bump ${pid}`,
         amount_cents: Math.round(priceValue * 100),
       });
@@ -260,7 +260,7 @@ export function extractBumpsFromPayload(payload: unknown): Array<{
       if (!pid) continue;
       const priceValue = b.price?.value ?? 0;
       bumps.push({
-        hotmart_product_id: pid,
+        product_id: pid,
         name: b.name ?? `Bump ${pid}`,
         amount_cents: Math.round(priceValue * 100),
       });
@@ -271,18 +271,18 @@ export function extractBumpsFromPayload(payload: unknown): Array<{
 }
 
 /**
- * Registra bumps detectados no payload Hotmart.
- * Idempotente via (hotmart_transaction, hotmart_product_id).
+ * Registra bumps detectados no payload Mercado Pago.
+ * Idempotente via (gateway_transaction_id, product_id).
  */
 export async function registerBumpsFromPayload(params: {
   supabase: SupabaseClient;
   payload: unknown;
   subscriptionId: string | null;
   tenantId: string;
-  hotmartTransaction: string | null;
+  mercadopagoTransaction: string | null;
   eventId: string | null;
 }): Promise<string[]> {
-  const { supabase, payload, subscriptionId, tenantId, hotmartTransaction, eventId } = params;
+  const { supabase, payload, subscriptionId, tenantId, mercadopagoTransaction, eventId } = params;
 
   const bumpsInPayload = extractBumpsFromPayload(payload);
   if (bumpsInPayload.length === 0) return [];
@@ -290,11 +290,11 @@ export async function registerBumpsFromPayload(params: {
   const createdBumpIds: string[] = [];
 
   for (const bump of bumpsInPayload) {
-    // Buscar produto cadastrado com esse hotmart_product_id
+    // Buscar produto cadastrado com esse product_id
     const { data: product } = await supabase
       .from("bump_products")
       .select("id, name, amount_cents, files")
-      .eq("hotmart_product_id", bump.hotmart_product_id)
+      .eq("product_id", bump.product_id)
       .eq("active", true)
       .maybeSingle();
 
@@ -308,11 +308,11 @@ export async function registerBumpsFromPayload(params: {
         subscription_id: subscriptionId,
         tenant_id: tenantId,
         bump_product_id: product?.id ?? null,
-        hotmart_product_id: bump.hotmart_product_id,
+        product_id: bump.product_id,
         bump_name: bumpName,
         amount_cents: amountCents,
-        hotmart_transaction: hotmartTransaction,
-        hotmart_event_id: eventId,
+        gateway_transaction_id: mercadopagoTransaction,
+        gateway_event_id: eventId,
         delivery_status: "pending",
       })
       .select("id")
@@ -321,7 +321,7 @@ export async function registerBumpsFromPayload(params: {
     if (error) {
       // Code 23505 = duplicate (idempotência OK)
       if (error.code !== "23505") {
-        console.error(`[bump] Erro registrando bump ${bump.hotmart_product_id}:`, error.message);
+        console.error(`[bump] Erro registrando bump ${bump.product_id}:`, error.message);
       }
       continue;
     }

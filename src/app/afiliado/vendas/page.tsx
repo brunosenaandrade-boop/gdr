@@ -98,7 +98,7 @@ export default async function AfiliadoVendasPage({
                     <td className="p-3 text-xs text-gray-600">{formatDate(s.createdAt)}</td>
                     <td className="p-3 text-xs text-gray-600">
                       {s.attributionSource === "coupon" ? "Cupom" :
-                        s.attributionSource === "hotmart_affiliate" ? "Afiliado Hotmart" :
+                        s.attributionSource === "mercadopago_affiliate" ? "Afiliado Mercado Pago" :
                         "Manual"}
                     </td>
                     <td className="p-3 font-mono text-xs">{s.couponCode ?? "—"}</td>

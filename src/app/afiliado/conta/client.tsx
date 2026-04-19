@@ -14,7 +14,7 @@ type Props = {
     phone: string;
     pix_key: string;
     cpf_cnpj: string;
-    hotmart_email: string;
+    affiliate_email: string;
   };
 };
 
@@ -41,7 +41,7 @@ export function ContaClient({ email, mustChangePassword, commissionRate, profile
       phone: String(formData.get("phone") ?? ""),
       pix_key: String(formData.get("pix_key") ?? ""),
       cpf_cnpj: String(formData.get("cpf_cnpj") ?? ""),
-      hotmart_email: String(formData.get("hotmart_email") ?? ""),
+      affiliate_email: String(formData.get("affiliate_email") ?? ""),
     };
     startTransition(async () => {
       const res = await updateAffiliateProfile(input);
@@ -116,10 +116,10 @@ export function ContaClient({ email, mustChangePassword, commissionRate, profile
               wide
             />
             <Field
-              label="Email Hotmart (opcional)"
-              name="hotmart_email"
+              label="Email Mercado Pago (opcional)"
+              name="affiliate_email"
               type="email"
-              defaultValue={profile.hotmart_email}
+              defaultValue={profile.affiliate_email}
               placeholder="Se for diferente do email de cadastro"
               wide
             />

@@ -133,8 +133,8 @@ export async function handleFlowResponse(
     verified: true,
   });
 
-  // VAR 1: Reconciliar compra Hotmart pendente (webhook pode ter chegado antes)
-  const { reconcilePendingPurchase } = await import("@/lib/hotmart/reconcile");
+  // VAR 1: Reconciliar compra Mercado Pago pendente (webhook pode ter chegado antes)
+  const { reconcilePendingPurchase } = await import("@/lib/mercadopago/reconcile");
   const { reconciled } = await reconcilePendingPurchase(supabase, email, tenant.id);
 
   // Confirmar criação da conta
@@ -160,7 +160,7 @@ export async function handleFlowResponse(
       `📧 E-mail: ${email.toLowerCase()}\n` +
       `🔑 Senha: a que você escolheu no cadastro\n\n` +
       `Seu WhatsApp já está vinculado automaticamente.\n\n` +
-      `Se você já fez a compra no Hotmart, seu acesso será ativado automaticamente em alguns minutos.\n` +
+      `Se você já fez a compra no Mercado Pago, seu acesso será ativado automaticamente em alguns minutos.\n` +
       `Se ainda não assinou: guardadinheiro.com.br/planos\n\n` +
       `_Ao usar o Guardinha, você concorda com nossos Termos de Uso e Política de Privacidade: guardadinheiro.com.br/termos_`,
     );

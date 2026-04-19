@@ -102,8 +102,8 @@ export type Database = {
           commission_rate_applied: number
           coupon_code: string | null
           created_at: string | null
+          gateway_transaction_id: string | null
           hotmart_event_id: string | null
-          hotmart_transaction: string | null
           id: string
           paid_at: string | null
           paid_by: string | null
@@ -122,8 +122,8 @@ export type Database = {
           commission_rate_applied: number
           coupon_code?: string | null
           created_at?: string | null
+          gateway_transaction_id?: string | null
           hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           paid_at?: string | null
           paid_by?: string | null
@@ -142,8 +142,8 @@ export type Database = {
           commission_rate_applied?: number
           coupon_code?: string | null
           created_at?: string | null
+          gateway_transaction_id?: string | null
           hotmart_event_id?: string | null
-          hotmart_transaction?: string | null
           id?: string
           paid_at?: string | null
           paid_by?: string | null
@@ -188,12 +188,12 @@ export type Database = {
       }
       affiliates: {
         Row: {
+          affiliate_code: string | null
+          affiliate_email: string | null
           commission_rate: number
           cpf_cnpj: string | null
           created_at: string | null
           email: string
-          hotmart_affiliate_code: string | null
-          hotmart_email: string | null
           id: string
           must_change_password: boolean
           name: string
@@ -205,12 +205,12 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          affiliate_code?: string | null
+          affiliate_email?: string | null
           commission_rate?: number
           cpf_cnpj?: string | null
           created_at?: string | null
           email: string
-          hotmart_affiliate_code?: string | null
-          hotmart_email?: string | null
           id?: string
           must_change_password?: boolean
           name: string
@@ -222,12 +222,12 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          affiliate_code?: string | null
+          affiliate_email?: string | null
           commission_rate?: number
           cpf_cnpj?: string | null
           created_at?: string | null
           email?: string
-          hotmart_affiliate_code?: string | null
-          hotmart_email?: string | null
           id?: string
           must_change_password?: boolean
           name?: string
@@ -338,9 +338,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           files: Json
-          hotmart_product_id: string
           id: string
           name: string
+          product_id: string
           updated_at: string | null
         }
         Insert: {
@@ -349,9 +349,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           files?: Json
-          hotmart_product_id: string
           id?: string
           name: string
+          product_id: string
           updated_at?: string | null
         }
         Update: {
@@ -360,9 +360,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           files?: Json
-          hotmart_product_id?: string
           id?: string
           name?: string
+          product_id?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -497,10 +497,10 @@ export type Database = {
           delivery_error: string | null
           delivery_status: string
           hotmart_event_id: string | null
-          hotmart_product_id: string
           hotmart_transaction: string | null
           id: string
           last_resend_at: string | null
+          product_id: string
           resend_count: number
           subscription_id: string | null
           tenant_id: string | null
@@ -514,10 +514,10 @@ export type Database = {
           delivery_error?: string | null
           delivery_status?: string
           hotmart_event_id?: string | null
-          hotmart_product_id: string
           hotmart_transaction?: string | null
           id?: string
           last_resend_at?: string | null
+          product_id: string
           resend_count?: number
           subscription_id?: string | null
           tenant_id?: string | null
@@ -531,10 +531,10 @@ export type Database = {
           delivery_error?: string | null
           delivery_status?: string
           hotmart_event_id?: string | null
-          hotmart_product_id?: string
           hotmart_transaction?: string | null
           id?: string
           last_resend_at?: string | null
+          product_id?: string
           resend_count?: number
           subscription_id?: string | null
           tenant_id?: string | null
@@ -628,7 +628,7 @@ export type Database = {
         Row: {
           buyer_email: string | null
           event_type: string
-          hotmart_event_id: string | null
+          gateway_event_id: string | null
           hotmart_transaction: string | null
           id: string
           payload: Json
@@ -641,7 +641,7 @@ export type Database = {
         Insert: {
           buyer_email?: string | null
           event_type: string
-          hotmart_event_id?: string | null
+          gateway_event_id?: string | null
           hotmart_transaction?: string | null
           id?: string
           payload: Json
@@ -654,7 +654,7 @@ export type Database = {
         Update: {
           buyer_email?: string | null
           event_type?: string
-          hotmart_event_id?: string | null
+          gateway_event_id?: string | null
           hotmart_transaction?: string | null
           id?: string
           payload?: Json
@@ -683,44 +683,53 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          buyer_email: string | null
           canceled_at: string | null
           created_at: string | null
           current_period_end: string | null
-          hotmart_buyer_email: string | null
-          hotmart_subscriber_code: string | null
-          hotmart_transaction: string | null
+          gateway: string | null
+          gateway_transaction_id: string | null
           id: string
           past_due_since: string | null
+          plan_type: string | null
           refunded_at: string | null
+          renewal_link_sent_at: string | null
           status: string
+          subscriber_code: string | null
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
+          buyer_email?: string | null
           canceled_at?: string | null
           created_at?: string | null
           current_period_end?: string | null
-          hotmart_buyer_email?: string | null
-          hotmart_subscriber_code?: string | null
-          hotmart_transaction?: string | null
+          gateway?: string | null
+          gateway_transaction_id?: string | null
           id?: string
           past_due_since?: string | null
+          plan_type?: string | null
           refunded_at?: string | null
+          renewal_link_sent_at?: string | null
           status: string
+          subscriber_code?: string | null
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
+          buyer_email?: string | null
           canceled_at?: string | null
           created_at?: string | null
           current_period_end?: string | null
-          hotmart_buyer_email?: string | null
-          hotmart_subscriber_code?: string | null
-          hotmart_transaction?: string | null
+          gateway?: string | null
+          gateway_transaction_id?: string | null
           id?: string
           past_due_since?: string | null
+          plan_type?: string | null
           refunded_at?: string | null
+          renewal_link_sent_at?: string | null
           status?: string
+          subscriber_code?: string | null
           tenant_id?: string
           updated_at?: string | null
         }

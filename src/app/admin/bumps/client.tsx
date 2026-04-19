@@ -6,7 +6,7 @@ import { updateBumpProduct } from "@/lib/delivery/admin-actions";
 
 type Product = {
   id: string;
-  hotmart_product_id: string;
+  product_id: string;
   name: string;
   description: string | null;
   amount_cents: number;
@@ -32,7 +32,7 @@ export function BumpsClient({ products }: { products: Product[] }) {
     const input = {
       name: String(formData.get("name") ?? ""),
       description: String(formData.get("description") ?? ""),
-      hotmart_product_id: String(formData.get("hotmart_product_id") ?? ""),
+      product_id: String(formData.get("product_id") ?? ""),
       amount_cents: Math.round(parseFloat(String(formData.get("amount") ?? "0")) * 100),
     };
     startTransition(async () => {
@@ -94,11 +94,11 @@ export function BumpsClient({ products }: { products: Product[] }) {
                       </div>
                       <div>
                         <label className="block text-xs text-zinc-400 mb-1">
-                          ID Hotmart (obrigatório pra matching)
+                          ID Mercado Pago (obrigatório pra matching)
                         </label>
                         <input
-                          name="hotmart_product_id"
-                          defaultValue={p.hotmart_product_id}
+                          name="product_id"
+                          defaultValue={p.product_id}
                           required
                           className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm font-mono"
                         />
@@ -157,7 +157,7 @@ export function BumpsClient({ products }: { products: Product[] }) {
                         )}
                       </div>
                       <div className="text-xs text-zinc-500 space-x-3">
-                        <span>ID Hotmart: <code className="font-mono">{p.hotmart_product_id}</code></span>
+                        <span>ID Mercado Pago: <code className="font-mono">{p.product_id}</code></span>
                         <span>·</span>
                         <span>{formatCurrency(p.amount_cents)}</span>
                         <span>·</span>

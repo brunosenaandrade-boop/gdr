@@ -548,8 +548,8 @@ export async function handleIncomingMessage(message: WhatsAppMessage): Promise<v
     // Cancelamento
     if (/^(quero\s*cancelar|cancelar\s*(assinatura|plano|conta)|cancela\s*minha)/i.test(lower)) {
       await respond(
-        "Pra cancelar sua assinatura, acesse a área do assinante na Hotmart:\n\n" +
-        "1. Abra o email de confirmação de compra da Hotmart\n" +
+        "Pra cancelar sua assinatura, acesse a área do assinante na Mercado Pago:\n\n" +
+        "1. Abra o email de confirmação de compra da Mercado Pago\n" +
         "2. Clique em \"Área do assinante\"\n" +
         "3. Cancele quando quiser — sem multa, sem burocracia\n\n" +
         "Se precisar de ajuda, diga _\"quero suporte\"_.",

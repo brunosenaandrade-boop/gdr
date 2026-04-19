@@ -23,7 +23,7 @@ export default async function AdminBumpsPage() {
   const { data: recentPurchases } = await supabase
     .from("purchase_bumps")
     .select(`
-      id, hotmart_product_id, bump_name, amount_cents,
+      id, product_id, bump_name, amount_cents,
       delivery_status, delivery_error, delivered_at, created_at,
       tenants(id, name)
     `)
@@ -36,14 +36,14 @@ export default async function AdminBumpsPage() {
         <div>
           <h1 className="text-2xl font-semibold">Order Bumps</h1>
           <p className="text-sm text-zinc-400">
-            Catálogo de produtos extras vendidos no checkout Hotmart
+            Catálogo de produtos extras vendidos no checkout Mercado Pago
           </p>
         </div>
 
         <BumpsClient
           products={(products ?? []).map((p) => ({
             id: p.id,
-            hotmart_product_id: p.hotmart_product_id,
+            product_id: p.product_id,
             name: p.name,
             description: p.description,
             amount_cents: p.amount_cents,

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
 
-const HOTMART_CHECKOUT_ANUAL = process.env.HOTMART_CHECKOUT_URL ?? "https://pay.hotmart.com/V105379736J";
-const HOTMART_CHECKOUT_MENSAL = process.env.HOTMART_CHECKOUT_MENSAL_URL ?? HOTMART_CHECKOUT_ANUAL;
+// Checkout via Mercado Pago — URLs serão geradas dinamicamente via server action
+// Fallback: página /planos com botão que redireciona
 
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
@@ -12,26 +12,35 @@ export const metadata = {
 };
 
 async function getCheckoutUrls(): Promise<{ anual: string; mensal: string }> {
-  let email: string | undefined;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    email = user?.email ?? undefined;
+    const { createCheckoutPreference } = await import("@/lib/mercadopago/checkout");
+    let email: string | undefined;
+    let tenantId: string | undefined;
+
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      email = user?.email ?? undefined;
+      if (user) {
+        const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+        tenantId = tenant?.id;
+      }
+    } catch {
+      // Usuário não logado
+    }
+
+    const [anualResult, mensalResult] = await Promise.all([
+      createCheckoutPreference({ tenantId, planType: "anual", email }),
+      createCheckoutPreference({ tenantId, planType: "mensal", email }),
+    ]);
+
+    return {
+      anual: anualResult.ok ? anualResult.url : "/planos",
+      mensal: mensalResult.ok ? mensalResult.url : "/planos",
+    };
   } catch {
-    // Usuário não logado
+    return { anual: "/planos", mensal: "/planos" };
   }
-
-  function withEmail(base: string): string {
-    if (!email) return base;
-    const url = new URL(base);
-    url.searchParams.set("email", email);
-    return url.toString();
-  }
-
-  return {
-    anual: withEmail(HOTMART_CHECKOUT_ANUAL),
-    mensal: withEmail(HOTMART_CHECKOUT_MENSAL),
-  };
 }
 
 export default async function PlanosPage() {
@@ -247,7 +256,7 @@ export default async function PlanosPage() {
           <div className="space-y-4">
             <FAQ
               q="Como funciona a garantia de 7 dias?"
-              a="Você paga, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Hotmart — nenhuma pergunta, nenhuma burocracia. É direito do consumidor e a gente respeita."
+              a="Você paga, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Mercado Pago — nenhuma pergunta, nenhuma burocracia. É direito do consumidor e a gente respeita."
             />
             <FAQ
               q="Tem cadastro? Preciso baixar app?"
@@ -255,7 +264,7 @@ export default async function PlanosPage() {
             />
             <FAQ
               q="E se eu cancelar?"
-              a="Você cancela quando quiser na área do assinante Hotmart. Mantém acesso até o fim do período pago (não cobramos ciclos futuros)."
+              a="Você cancela quando quiser na área do assinante Mercado Pago. Mantém acesso até o fim do período pago (não cobramos ciclos futuros)."
             />
             <FAQ
               q="A IA é precisa?"
@@ -267,7 +276,7 @@ export default async function PlanosPage() {
             />
             <FAQ
               q="Posso mudar de plano depois?"
-              a="Sim! Comece no mensal e migre pro anual quando quiser (ou vice-versa). A mudança é feita pela área do assinante na Hotmart."
+              a="Sim! Comece no mensal e migre pro anual quando quiser (ou vice-versa). A mudança é feita pela área do assinante na Mercado Pago."
             />
           </div>
         </section>
@@ -304,7 +313,7 @@ export default async function PlanosPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8">
         <div className="mx-auto max-w-4xl px-4 text-center text-xs text-slate-500">
-          <p>© 2026 Guarda Dinheiro · Pagamento seguro processado pela Hotmart</p>
+          <p>© 2026 Guarda Dinheiro · Pagamento seguro processado pela Mercado Pago</p>
           <p className="mt-2">
             <Link href="/termos" className="hover:text-slate-300">Termos</Link>
             <span className="mx-2">·</span>

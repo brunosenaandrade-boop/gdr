@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       .from("affiliate_sales")
       .select(`
         id, affiliate_id, sale_amount_cents, commission_amount_cents,
-        coupon_code, attribution_source, hotmart_transaction, created_at,
+        coupon_code, attribution_source, gateway_transaction_id, created_at,
         affiliates(name, email, pix_key)
       `)
       .eq("status", "pending")

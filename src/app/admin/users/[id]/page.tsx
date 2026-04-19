@@ -92,8 +92,8 @@ export default async function AdminUserDetailPage({
                 <div className="flex justify-between"><dt className="text-zinc-500">Status</dt><dd className="uppercase">{subscription.status}</dd></div>
                 <div className="flex justify-between"><dt className="text-zinc-500">Válida até</dt><dd>{formatDate(subscription.current_period_end)}</dd></div>
                 <div className="flex justify-between"><dt className="text-zinc-500">Cancelada em</dt><dd>{formatDate(subscription.canceled_at)}</dd></div>
-                <div className="flex justify-between"><dt className="text-zinc-500">Hotmart code</dt><dd className="font-mono text-xs">{subscription.hotmart_subscriber_code ?? "—"}</dd></div>
-                <div className="flex justify-between"><dt className="text-zinc-500">Email Hotmart</dt><dd className="text-xs">{subscription.hotmart_buyer_email ?? "—"}</dd></div>
+                <div className="flex justify-between"><dt className="text-zinc-500">Mercado Pago code</dt><dd className="font-mono text-xs">{subscription.subscriber_code ?? "—"}</dd></div>
+                <div className="flex justify-between"><dt className="text-zinc-500">Email Mercado Pago</dt><dd className="text-xs">{subscription.buyer_email ?? "—"}</dd></div>
               </dl>
             ) : (
               <p className="text-sm text-zinc-500">Sem assinatura.</p>

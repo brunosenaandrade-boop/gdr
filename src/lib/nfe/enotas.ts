@@ -1,5 +1,5 @@
 /**
- * Integração com eNotas — emissão automática de NFS-e após pagamento Hotmart.
+ * Integração com eNotas — emissão automática de NFS-e após pagamento Mercado Pago.
  *
  * Se as env vars ENOTAS_API_KEY e ENOTAS_EMPRESA_ID não estiverem configuradas,
  * as funções retornam `skipped` — útil em dev antes de contratar o eNotas.
@@ -28,7 +28,7 @@ export type NFeRequest = {
   amount: number;
   description: string;
   customer: NFeCustomer;
-  /** ID externo nosso pra tracking — ex: hotmart transaction ID */
+  /** ID externo nosso pra tracking — ex: mercadopago transaction ID */
   externalId: string;
 };
 

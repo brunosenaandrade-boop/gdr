@@ -57,7 +57,7 @@ export async function hasActiveAccess(
   const periodEnd = data.current_period_end ? new Date(data.current_period_end) : null;
   const now = new Date();
 
-  // active: ok se ainda no período (ou sem período definido — Hotmart subscription ativa sem end date)
+  // active: ok se ainda no período (ou sem período definido — Mercado Pago subscription ativa sem end date)
   if (status === "active") {
     if (!periodEnd || periodEnd > now) {
       const daysRemaining = periodEnd

@@ -44,7 +44,7 @@ export default async function AdminSubscriptionsPage() {
                 <th className="text-left p-3">Tenant</th>
                 <th className="text-left p-3">Status</th>
                 <th className="text-left p-3">Válida até</th>
-                <th className="text-left p-3">Email Hotmart</th>
+                <th className="text-left p-3">Email Mercado Pago</th>
                 <th className="text-left p-3">Atualizada</th>
                 <th className="p-3"></th>
               </tr>
@@ -54,7 +54,7 @@ export default async function AdminSubscriptionsPage() {
                 id: string;
                 status: string;
                 current_period_end: string | null;
-                hotmart_buyer_email: string | null;
+                buyer_email: string | null;
                 updated_at: string | null;
                 tenants: { id: string; name: string } | null;
               }) => (
@@ -62,7 +62,7 @@ export default async function AdminSubscriptionsPage() {
                   <td className="p-3">{s.tenants?.name ?? "—"}</td>
                   <td className="p-3 uppercase text-xs">{s.status}</td>
                   <td className="p-3">{formatDate(s.current_period_end)}</td>
-                  <td className="p-3 text-xs text-zinc-400">{s.hotmart_buyer_email ?? "—"}</td>
+                  <td className="p-3 text-xs text-zinc-400">{s.buyer_email ?? "—"}</td>
                   <td className="p-3 text-xs text-zinc-500">{formatDate(s.updated_at)}</td>
                   <td className="p-3 text-right">
                     {s.tenants?.id && (
@@ -83,7 +83,7 @@ export default async function AdminSubscriptionsPage() {
         {/* Eventos recentes */}
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
           <div className="p-4 border-b border-zinc-800">
-            <h2 className="text-sm font-medium">Últimos eventos Hotmart</h2>
+            <h2 className="text-sm font-medium">Últimos eventos Mercado Pago</h2>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-zinc-900 text-xs text-zinc-400 uppercase">

@@ -795,8 +795,8 @@ export default function LandingPage() {
             {[
               { q: "Como funciona o Guardinha?", a: "Você manda uma mensagem de texto ou áudio pelo WhatsApp (ex: \"Gastei 50 no mercado\") e a IA registra automaticamente, categoriza e organiza pra você. Também pode consultar saldo, agendar compromissos e receber lembretes." },
               { q: "Preciso baixar algum app?", a: "Não. O Guardinha funciona 100% dentro do WhatsApp que você já usa. Tem também um painel web pra ver gráficos e relatórios." },
-              { q: "Como funciona a garantia de 7 dias?", a: "Você assina, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Hotmart. Nenhuma pergunta, nenhuma burocracia." },
-              { q: "E se eu cancelar?", a: "Cancela quando quiser pela área do assinante da Hotmart. Sem multa, sem burocracia. Mantém acesso até o fim do período pago." },
+              { q: "Como funciona a garantia de 7 dias?", a: "Você assina, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhuma burocracia." },
+              { q: "E se eu cancelar?", a: "Cancela quando quiser pela área do assinante da Mercado Pago. Sem multa, sem burocracia. Mantém acesso até o fim do período pago." },
               { q: "A IA é precisa?", a: "Usamos IA de última geração pra categorizar seus lançamentos. Precisão média acima de 95% em testes reais. E você sempre pode corrigir se a IA errar." },
               { q: "Funciona pra empresa (PJ)?", a: "Sim! No cadastro você escolhe PF ou PJ. As categorias e o contexto da IA se adaptam automaticamente." },
             ].map((item) => (

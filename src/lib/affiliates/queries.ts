@@ -16,7 +16,7 @@ export type AffiliateSaleRow = {
   saleAmountCents: number;
   commissionAmountCents: number;
   status: "pending" | "paid" | "refunded" | "canceled";
-  attributionSource: "coupon" | "hotmart_affiliate" | "manual";
+  attributionSource: "coupon" | "mercadopago_affiliate" | "manual";
   couponCode: string | null;
   createdAt: string;
   paidAt: string | null;

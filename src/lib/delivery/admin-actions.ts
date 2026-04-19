@@ -28,7 +28,7 @@ export async function updateBumpProduct(
   input: {
     name?: string;
     description?: string;
-    hotmart_product_id?: string;
+    product_id?: string;
     amount_cents?: number;
     active?: boolean;
   },
@@ -39,14 +39,14 @@ export async function updateBumpProduct(
   const updates: {
     name?: string;
     description?: string | null;
-    hotmart_product_id?: string;
+    product_id?: string;
     amount_cents?: number;
     active?: boolean;
   } = {};
 
   if (input.name !== undefined) updates.name = input.name.trim();
   if (input.description !== undefined) updates.description = input.description?.trim() || null;
-  if (input.hotmart_product_id !== undefined) updates.hotmart_product_id = input.hotmart_product_id.trim();
+  if (input.product_id !== undefined) updates.product_id = input.product_id.trim();
   if (input.amount_cents !== undefined) updates.amount_cents = input.amount_cents;
   if (input.active !== undefined) updates.active = input.active;
 

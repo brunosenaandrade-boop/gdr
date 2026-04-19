@@ -25,8 +25,8 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
       phone: String(formData.get("phone") ?? ""),
       pix_key: String(formData.get("pix_key") ?? ""),
       commission_rate: parseFloat(String(formData.get("commission_rate") ?? "40")),
-      hotmart_email: String(formData.get("hotmart_email") ?? ""),
-      hotmart_affiliate_code: String(formData.get("hotmart_affiliate_code") ?? ""),
+      affiliate_email: String(formData.get("affiliate_email") ?? ""),
+      affiliate_code: String(formData.get("affiliate_code") ?? ""),
       notes: String(formData.get("notes") ?? ""),
     };
     startTransition(async () => {
@@ -108,14 +108,14 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
               defaultValue={String(affiliate.commission_rate)}
             />
             <Input
-              label="Email Hotmart"
-              name="hotmart_email"
-              defaultValue={affiliate.hotmart_email ?? ""}
+              label="Email Mercado Pago"
+              name="affiliate_email"
+              defaultValue={affiliate.affiliate_email ?? ""}
             />
             <Input
-              label="Código Hotmart"
-              name="hotmart_affiliate_code"
-              defaultValue={affiliate.hotmart_affiliate_code ?? ""}
+              label="Código Mercado Pago"
+              name="affiliate_code"
+              defaultValue={affiliate.affiliate_code ?? ""}
             />
           </div>
           <div>
@@ -150,8 +150,8 @@ export function AffiliateDetailClient({ affiliate }: { affiliate: Affiliate }) {
           <Row label="CPF/CNPJ" value={affiliate.cpf_cnpj ?? "—"} />
           <Row label="PIX" value={affiliate.pix_key ?? "—"} />
           <Row label="Comissão" value={`${Number(affiliate.commission_rate).toFixed(0)}%`} />
-          <Row label="Email Hotmart" value={affiliate.hotmart_email ?? "—"} />
-          <Row label="Código Hotmart" value={affiliate.hotmart_affiliate_code ?? "—"} />
+          <Row label="Email Mercado Pago" value={affiliate.affiliate_email ?? "—"} />
+          <Row label="Código Mercado Pago" value={affiliate.affiliate_code ?? "—"} />
           <Row label="Status" value={affiliate.status} />
           {affiliate.notes && <Row label="Notas" value={affiliate.notes} />}
         </dl>

@@ -113,7 +113,7 @@ export default function CompraConcluida() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8">
         <div className="mx-auto max-w-4xl px-4 text-center text-xs text-slate-500">
-          <p>© 2026 Guarda Dinheiro · Pagamento seguro processado pela Hotmart</p>
+          <p>© 2026 Guarda Dinheiro · Pagamento seguro processado pela Mercado Pago</p>
           <p className="mt-2">
             <Link href="/termos" className="hover:text-slate-300">Termos</Link>
             <span className="mx-2">·</span>

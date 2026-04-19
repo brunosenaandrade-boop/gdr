@@ -47,8 +47,8 @@ export async function createAffiliate(input: {
   phone?: string | null;
   pix_key?: string | null;
   commission_rate?: number;
-  hotmart_email?: string | null;
-  hotmart_affiliate_code?: string | null;
+  affiliate_email?: string | null;
+  affiliate_code?: string | null;
   notes?: string | null;
 }): Promise<ActionResult<{ affiliateId: string; tempPassword: string }>> {
   const admin = await requireAdmin();
@@ -99,8 +99,8 @@ export async function createAffiliate(input: {
       phone: input.phone?.replace(/\D/g, "") || null,
       pix_key: input.pix_key || null,
       commission_rate: input.commission_rate ?? 40,
-      hotmart_email: input.hotmart_email?.toLowerCase() || null,
-      hotmart_affiliate_code: input.hotmart_affiliate_code || null,
+      affiliate_email: input.affiliate_email?.toLowerCase() || null,
+      affiliate_code: input.affiliate_code || null,
       notes: input.notes || null,
       status: "active",
     })
@@ -131,8 +131,8 @@ export async function updateAffiliate(
     phone?: string | null;
     pix_key?: string | null;
     commission_rate?: number;
-    hotmart_email?: string | null;
-    hotmart_affiliate_code?: string | null;
+    affiliate_email?: string | null;
+    affiliate_code?: string | null;
     notes?: string | null;
   },
 ): Promise<ActionResult> {
@@ -144,16 +144,16 @@ export async function updateAffiliate(
     phone?: string | null;
     pix_key?: string | null;
     commission_rate?: number;
-    hotmart_email?: string | null;
-    hotmart_affiliate_code?: string | null;
+    affiliate_email?: string | null;
+    affiliate_code?: string | null;
     notes?: string | null;
   } = {};
   if (input.name !== undefined) updates.name = input.name.trim();
   if (input.phone !== undefined) updates.phone = input.phone?.replace(/\D/g, "") || null;
   if (input.pix_key !== undefined) updates.pix_key = input.pix_key || null;
   if (input.commission_rate !== undefined) updates.commission_rate = input.commission_rate;
-  if (input.hotmart_email !== undefined) updates.hotmart_email = input.hotmart_email?.toLowerCase() || null;
-  if (input.hotmart_affiliate_code !== undefined) updates.hotmart_affiliate_code = input.hotmart_affiliate_code || null;
+  if (input.affiliate_email !== undefined) updates.affiliate_email = input.affiliate_email?.toLowerCase() || null;
+  if (input.affiliate_code !== undefined) updates.affiliate_code = input.affiliate_code || null;
   if (input.notes !== undefined) updates.notes = input.notes || null;
 
   const { error } = await service.from("affiliates").update(updates).eq("id", id);
