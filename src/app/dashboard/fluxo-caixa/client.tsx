@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { CashFlowEntry } from "@/types";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
@@ -83,6 +84,48 @@ export function FluxoCaixaClient({ data, currentDays }: Props) {
         ) : (
           <CashFlowChart data={data} />
         )}
+
+        <Card className="p-0 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead className="text-right">Receitas</TableHead>
+                  <TableHead className="text-right">Despesas</TableHead>
+                  <TableHead className="text-right">Saldo do Dia</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-10 text-slate-500">
+                      Nenhum dado no período
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data.map((entry) => {
+                    const saldoDia = entry.receitas - entry.despesas;
+                    return (
+                      <TableRow key={entry.date}>
+                        <TableCell className="font-medium text-slate-200">{formatDate(entry.date)}</TableCell>
+                        <TableCell className="text-right text-emerald-400 tabular-nums">
+                          {entry.receitas > 0 ? formatCurrency(entry.receitas) : "-"}
+                        </TableCell>
+                        <TableCell className="text-right text-red-400 tabular-nums">
+                          {entry.despesas > 0 ? formatCurrency(entry.despesas) : "-"}
+                        </TableCell>
+                        <TableCell className={`text-right font-medium tabular-nums ${saldoDia >= 0 ? "text-emerald-300" : "text-red-400"}`}>
+                          {formatCurrency(saldoDia)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       </div>
     </>
   );

@@ -98,6 +98,23 @@ export async function markTransactionPaid(id: string): Promise<{ error?: string 
     return { error: "Ocorreu um erro. Tente novamente." };
   }
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/contas-pagar");
+  return {};
+}
+
+export async function postponeTransaction(id: string, newDueDate: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("transactions")
+    .update({ due_date: newDueDate, status: "pendente", updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    Sentry.captureException(error);
+    return { error: "Erro ao adiar. Tente novamente." };
+  }
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/contas-pagar");
   return {};
 }
 

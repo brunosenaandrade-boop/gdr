@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { LancamentoForm } from "@/components/lancamentos/lancamento-form";
-import { markTransactionPaid } from "@/lib/supabase/actions";
+import { markTransactionPaid, postponeTransaction } from "@/lib/supabase/actions";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Transaction, Category } from "@/types";
-import { Plus, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { Plus, AlertTriangle, Clock, CheckCircle2, CalendarClock } from "lucide-react";
 
 type Props = {
   transactions: Transaction[];
@@ -24,8 +24,19 @@ export function ContasPagarClient({ transactions, categories, tenantId }: Props)
   const [formOpen, setFormOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const [postponeId, setPostponeId] = useState<string | null>(null);
+  const [postponeDate, setPostponeDate] = useState("");
+
   async function handleMarkPaid(id: string) {
     await markTransactionPaid(id);
+    startTransition(() => router.refresh());
+  }
+
+  async function handlePostpone(id: string) {
+    if (!postponeDate) return;
+    await postponeTransaction(id, postponeDate);
+    setPostponeId(null);
+    setPostponeDate("");
     startTransition(() => router.refresh());
   }
 
@@ -104,9 +115,32 @@ export function ContasPagarClient({ transactions, categories, tenantId }: Props)
                       {formatCurrency(tx.amount)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="secondary" onClick={() => handleMarkPaid(tx.id)} disabled={isPending}>
-                        Pagar
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button size="sm" variant="secondary" onClick={() => handleMarkPaid(tx.id)} disabled={isPending}>
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Pagar
+                        </Button>
+                        {postponeId === tx.id ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="date"
+                              value={postponeDate}
+                              onChange={(e) => setPostponeDate(e.target.value)}
+                              className="h-8 rounded-lg border border-white/10 bg-white/5 px-2 text-xs text-slate-200"
+                            />
+                            <Button size="sm" onClick={() => handlePostpone(tx.id)} disabled={!postponeDate || isPending}>
+                              OK
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setPostponeId(null)}>
+                              ✕
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="ghost" onClick={() => setPostponeId(tx.id)} disabled={isPending} title="Adiar vencimento">
+                            <CalendarClock className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
