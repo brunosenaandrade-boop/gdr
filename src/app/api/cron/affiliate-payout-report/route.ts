@@ -94,6 +94,30 @@ export async function GET(request: NextRequest) {
     const summary = Array.from(byAffiliate.values());
     const grandTotal = summary.reduce((sum, s) => sum + s.total_commission_cents, 0);
 
+    // Email de relatório mensal para cada afiliado
+    try {
+      const { sendEmail } = await import("@/lib/email/resend");
+      const { AffiliateReportEmail } = await import("@/lib/email/templates/affiliate-report");
+      const periodLabel = `${new Date(startPrevMonth).toLocaleDateString("pt-BR")} - ${new Date(startCurrMonth).toLocaleDateString("pt-BR")}`;
+
+      for (const s of summary) {
+        await sendEmail({
+          to: s.affiliate_email,
+          subject: `Relatorio de comissoes - Guarda Dinheiro`,
+          react: AffiliateReportEmail({
+            name: s.affiliate_name,
+            period: periodLabel,
+            salesCount: s.sales_count,
+            totalCommission: formatCurrency(s.total_commission_cents),
+            dashboardUrl: `https://${process.env.AFFILIATE_DOMAIN ?? "afiliado.guardadinheiro.com.br"}`,
+          }),
+          tags: [{ name: "category", value: "affiliate-report" }],
+        });
+      }
+    } catch (err) {
+      console.error("[cron/affiliate-payout-report] email error:", err);
+    }
+
     // Log estruturado pra admin ver no Sentry/Vercel
     console.log("[cron/affiliate-payout-report]", JSON.stringify({
       period: { start: startPrevMonth, end: startCurrMonth },

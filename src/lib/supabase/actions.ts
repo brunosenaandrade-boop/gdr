@@ -249,6 +249,23 @@ export async function changePassword(formData: {
     return { error: "Não foi possível alterar a senha. Tente novamente." };
   }
 
+  // Email de segurança: senha alterada
+  try {
+    const { sendEmail } = await import("@/lib/email/resend");
+    const { PasswordChangedEmail } = await import("@/lib/email/templates/password-changed");
+    await sendEmail({
+      to: user.email!,
+      subject: "Senha alterada - Guarda Dinheiro",
+      react: PasswordChangedEmail({
+        email: user.email!,
+        changedAt: new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+      }),
+      tags: [{ name: "category", value: "password-changed" }],
+    });
+  } catch (err) {
+    console.error("changePassword email error:", err);
+  }
+
   return { success: "Senha alterada com sucesso!" };
 }
 
@@ -282,6 +299,25 @@ export async function deleteAccount(): Promise<{ ok: true } | { ok: false; error
 
     // Deletar auth user
     await service.auth.admin.deleteUser(user.id);
+
+    // Email LGPD: confirmação de exclusão (antes do signOut)
+    if (user.email) {
+      try {
+        const { sendEmail } = await import("@/lib/email/resend");
+        const { AccountDeletedEmail } = await import("@/lib/email/templates/account-deleted");
+        await sendEmail({
+          to: user.email,
+          subject: "Conta excluida - Guarda Dinheiro",
+          react: AccountDeletedEmail({
+            name: user.user_metadata?.full_name ?? null,
+            email: user.email,
+          }),
+          tags: [{ name: "category", value: "account-deleted" }],
+        });
+      } catch (err) {
+        console.error("deleteAccount email error:", err);
+      }
+    }
 
     // Logout
     await supabase.auth.signOut();

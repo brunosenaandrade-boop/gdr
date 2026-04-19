@@ -120,6 +120,25 @@ export async function createAffiliate(input: {
     ipAddress: await getIP(),
   });
 
+  // Email com credenciais do afiliado
+  try {
+    const { sendEmail } = await import("@/lib/email/resend");
+    const { AffiliateCredentialsEmail } = await import("@/lib/email/templates/affiliate-credentials");
+    await sendEmail({
+      to: email,
+      subject: "Suas credenciais de afiliado - Guarda Dinheiro",
+      react: AffiliateCredentialsEmail({
+        name,
+        email,
+        tempPassword,
+        loginUrl: `https://${process.env.AFFILIATE_DOMAIN ?? "afiliado.guardadinheiro.com.br"}/login`,
+      }),
+      tags: [{ name: "category", value: "affiliate-credentials" }],
+    });
+  } catch (err) {
+    console.error("createAffiliate email error:", err);
+  }
+
   revalidatePath("/admin/affiliates");
   return { ok: true, data: { affiliateId: affiliate.id, tempPassword } };
 }
@@ -371,17 +390,40 @@ export async function markSaleAsPaid(
     ipAddress: await getIP(),
   });
 
-  // Notificar afiliado via WhatsApp se tiver número
+  // Notificar afiliado via WhatsApp + email
   const affiliate = Array.isArray(sale.affiliates) ? sale.affiliates[0] : sale.affiliates;
+  const commissionAmount = (sale.commission_amount_cents / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  const affiliateDomain = process.env.AFFILIATE_DOMAIN ?? "afiliado.guardadinheiro.com.br";
+
   if (affiliate?.phone) {
-    const amount = (sale.commission_amount_cents / 100).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
     await sendWhatsAppMessage(
       affiliate.phone,
-      `💚 Sua comissão de ${amount} foi paga!\n\nMétodo: ${method}\n\nAcesse ${process.env.AFFILIATE_DOMAIN ?? "afiliado.guardadinheiro.com.br"} pra ver os detalhes.`,
+      `💚 Sua comissão de ${commissionAmount} foi paga!\n\nMétodo: ${method}\n\nAcesse ${affiliateDomain} pra ver os detalhes.`,
     );
+  }
+
+  // Email de comissão paga
+  if (affiliate?.email) {
+    try {
+      const { sendEmail } = await import("@/lib/email/resend");
+      const { AffiliateCommissionEmail } = await import("@/lib/email/templates/affiliate-commission");
+      await sendEmail({
+        to: affiliate.email,
+        subject: "Comissao paga! - Guarda Dinheiro",
+        react: AffiliateCommissionEmail({
+          name: affiliate.name ?? "Afiliado",
+          amount: commissionAmount,
+          method,
+          dashboardUrl: `https://${affiliateDomain}`,
+        }),
+        tags: [{ name: "category", value: "affiliate-commission" }],
+      });
+    } catch (err) {
+      console.error("markSaleAsPaid email error:", err);
+    }
   }
 
   revalidatePath("/admin/affiliates");

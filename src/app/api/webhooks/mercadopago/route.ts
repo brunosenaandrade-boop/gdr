@@ -134,6 +134,27 @@ export async function POST(request: NextRequest) {
     // Só processar se approved
     if (status !== "approved") {
       console.log(`[mercadopago] Pagamento ${paymentId} status=${status} — ignorado`);
+
+      // Email de pagamento falhou (se temos email do pagador)
+      if (payerEmail && (status === "rejected" || status === "cancelled")) {
+        try {
+          const { sendEmail } = await import("@/lib/email/resend");
+          const { PaymentFailedEmail } = await import("@/lib/email/templates/payment-failed");
+          await sendEmail({
+            to: payerEmail,
+            subject: "Problema no pagamento - Guarda Dinheiro",
+            react: PaymentFailedEmail({
+              planType: planType as "mensal" | "anual",
+              retryUrl: "https://www.guardadinheiro.com.br/planos",
+            }),
+            idempotencyKey: `payment-failed-${paymentId}`,
+            tags: [{ name: "category", value: "payment-failed" }],
+          });
+        } catch (err) {
+          console.error("[mercadopago] Erro ao enviar email de pagamento falhou:", err);
+        }
+      }
+
       return NextResponse.json({ status: "ok", payment_status: status });
     }
 
@@ -223,6 +244,39 @@ export async function POST(request: NextRequest) {
         `Acesso até: ${new Date(periodEnd).toLocaleDateString("pt-BR")}\n\n` +
         `Pode continuar usando o Guardinha normalmente! 💚`,
       );
+    }
+
+    // Email de pagamento confirmado
+    try {
+      const { data: tenantData } = await supabase
+        .from("tenants")
+        .select("name, user_id")
+        .eq("id", tenantId)
+        .maybeSingle();
+
+      const recipientEmail = payerEmail ?? (tenantData?.user_id
+        ? (await supabase.auth.admin.getUserById(tenantData.user_id)).data?.user?.email
+        : null);
+
+      if (recipientEmail) {
+        const { sendEmail } = await import("@/lib/email/resend");
+        const { PaymentConfirmedEmail } = await import("@/lib/email/templates/payment-confirmed");
+        await sendEmail({
+          to: recipientEmail,
+          subject: "Pagamento confirmado - Guarda Dinheiro",
+          react: PaymentConfirmedEmail({
+            name: tenantData?.name,
+            planType: planType as "mensal" | "anual",
+            amount: amountPaid,
+            periodEnd,
+            transactionId: paymentId,
+          }),
+          idempotencyKey: `payment-confirmed-${paymentId}`,
+          tags: [{ name: "category", value: "payment-confirmed" }],
+        });
+      }
+    } catch (err) {
+      console.error("[mercadopago] Erro ao enviar email de confirmação:", err);
     }
 
     return NextResponse.json({ status: "ok" });

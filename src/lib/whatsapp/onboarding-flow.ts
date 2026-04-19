@@ -173,6 +173,26 @@ export async function handleFlowResponse(
     content: "[onboarding] Conta criada com sucesso",
   });
 
+  // Email de boas-vindas
+  try {
+    const { sendEmail } = await import("@/lib/email/resend");
+    const { WelcomeEmail } = await import("@/lib/email/templates/welcome");
+    await sendEmail({
+      to: email.toLowerCase(),
+      subject: "Bem-vindo ao Guarda Dinheiro!",
+      react: WelcomeEmail({
+        name: nome,
+        email: email.toLowerCase(),
+        dashboardUrl: "https://www.guardadinheiro.com.br/dashboard",
+        hasSubscription: reconciled,
+      }),
+      idempotencyKey: `welcome-${tenant.id}`,
+      tags: [{ name: "category", value: "welcome" }],
+    });
+  } catch (err) {
+    console.error("[onboarding] Erro ao enviar email de boas-vindas:", err);
+  }
+
   // Disparar tutorial via WhatsApp Flow (multi-tela)
   await sendOnboardingTutorial(supabase, phone, tenant.id, nome);
 }
