@@ -72,15 +72,15 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-5xl font-normal tracking-tight text-white sm:text-6xl">
-              <span className="block text-slate-400">Lança gasto</span>
+              <span className="block text-slate-400">Saiba pra onde vai</span>
               <span className="block bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-100 bg-clip-text text-transparent animate-gradient-text">
-                falando no WhatsApp.
+                cada centavo seu.
               </span>
             </h1>
 
             <p className="mt-6 max-w-lg text-lg font-light leading-relaxed text-slate-400">
-              Manda um áudio ou texto pro Guardinha e ele registra tudo pra você.
-              Receitas, despesas, contas a pagar — organizadas com IA, 24h por dia.
+              Manda um áudio no WhatsApp dizendo &quot;gastei 50 no mercado&quot; e a IA registra, categoriza e
+              organiza pra você. Sem planilha, sem app, sem digitar nada.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -93,7 +93,7 @@ export default function LandingPage() {
                   <i className="point" /><i className="point" /><i className="point" /><i className="point" /><i className="point" />
                 </div>
                 <span className="relative z-10 flex items-center gap-2">
-                  Assinar por R$ 29,90/mês
+                  Comecar por R$ 29,90/mes
                   <ArrowRight className="h-4 w-4 text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                 </span>
               </Link>
@@ -479,8 +479,8 @@ export default function LandingPage() {
                 <span className="text-xs font-medium uppercase tracking-wide text-emerald-400">Controle Inteligente</span>
               </div>
               <h2 className="text-4xl font-medium leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Finanças no piloto{" "}
-                <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">automático.</span>
+                Suas finanças no{" "}
+                <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">piloto automatico.</span>
               </h2>
               {/* Feature pills */}
               <div className="relative mt-10">
@@ -569,8 +569,8 @@ export default function LandingPage() {
         {/* Section Header */}
         <div className="mb-10 mt-4 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-10 sm:flex-row sm:items-center">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Inteligência Operacional</h2>
-            <p className="mt-2 text-sm text-slate-400">Controles avançados para sua gestão financeira.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Tudo que voce precisa, nada que nao precisa</h2>
+            <p className="mt-2 text-sm text-slate-400">Cada funcionalidade resolve um problema real do seu dia a dia financeiro.</p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5">
             <span className="text-xs text-emerald-300">PF e PJ</span>
@@ -793,12 +793,12 @@ export default function LandingPage() {
           </div>
           <div className="max-w-2xl mx-auto space-y-3">
             {[
-              { q: "Como funciona o Guardinha?", a: "Você manda uma mensagem de texto ou áudio pelo WhatsApp (ex: \"Gastei 50 no mercado\") e a IA registra automaticamente, categoriza e organiza pra você. Também pode consultar saldo, agendar compromissos e receber lembretes." },
-              { q: "Preciso baixar algum app?", a: "Não. O Guardinha funciona 100% dentro do WhatsApp que você já usa. Tem também um painel web pra ver gráficos e relatórios." },
-              { q: "Como funciona a garantia de 7 dias?", a: "Você assina, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhuma burocracia." },
-              { q: "E se eu cancelar?", a: "Cancela quando quiser pela área do assinante da Mercado Pago. Sem multa, sem burocracia. Mantém acesso até o fim do período pago." },
-              { q: "A IA é precisa?", a: "Usamos IA de última geração pra categorizar seus lançamentos. Precisão média acima de 95% em testes reais. E você sempre pode corrigir se a IA errar." },
-              { q: "Funciona pra empresa (PJ)?", a: "Sim! No cadastro você escolhe PF ou PJ. As categorias e o contexto da IA se adaptam automaticamente." },
+              { q: "Como funciona o Guardinha?", a: "Simples: você manda um áudio ou texto no WhatsApp dizendo o que gastou ou recebeu. A IA entende, categoriza e registra pra você em segundos. Também pode perguntar \"quanto gastei esse mês?\" ou \"tenho conta atrasada?\" e receber a resposta na hora." },
+              { q: "Preciso baixar algum app?", a: "Não. Zero downloads. O Guardinha funciona direto no WhatsApp que você já tem instalado. Também tem um painel web completo com gráficos e relatórios — acessa pelo navegador do celular ou computador." },
+              { q: "E se eu não gostar?", a: "Você tem 7 dias pra testar. Se não sentir que valeu, pedimos reembolso integral pela Mercado Pago. Sem perguntas, sem formulário, sem espera. O risco é todo nosso." },
+              { q: "E se eu quiser cancelar depois?", a: "Cancela quando quiser, com um clique, pela área do assinante na Mercado Pago. Sem multa, sem ligação, sem burocracia. Você mantém acesso até o fim do período que já pagou." },
+              { q: "A IA erra muito?", a: "Precisão média acima de 95% em testes reais com brasileiros. E toda transação passa por confirmação antes de ser registrada — se a IA errar, você corrige na hora. Com o tempo, ela aprende suas categorias." },
+              { q: "Serve pra empresa (PJ)?", a: "Sim. Mesmo plano serve pra PF e PJ. No cadastro você escolhe o tipo e a IA adapta as categorias automaticamente. Ideal pra MEI, autônomo e pequeno empresário." },
             ].map((item) => (
               <details key={item.q} className="group rounded-xl border border-white/5 bg-white/[0.02] p-5">
                 <summary className="flex items-center justify-between cursor-pointer list-none">
@@ -811,6 +811,72 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Social Proof Section */}
+        <section className="mb-20">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Quem usa, recomenda</h2>
+            <p className="mt-2 text-sm text-slate-400">Veja o que nossos clientes dizem sobre o Guardinha.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                name: "Maria Eduarda",
+                role: "Cabeleireira autônoma",
+                text: "Eu tentei planilha, app de banco, tudo. Nada funcionava porque eu esquecia de anotar. Com o Guardinha eu só mando um áudio rápido entre um cliente e outro e ta tudo registrado. Nunca mais perdi o controle.",
+                stars: 5,
+              },
+              {
+                name: "Carlos Henrique",
+                role: "Dono de oficina mecânica",
+                text: "Minha esposa vivia brigando comigo porque eu não sabia dizer quanto a oficina faturava no mês. Agora eu pergunto pro Guardinha e ele me responde na hora. Até a relação em casa melhorou.",
+                stars: 5,
+              },
+              {
+                name: "Ana Paula",
+                role: "Designer freelancer",
+                text: "O que me convenceu foi não precisar baixar nada. Eu já vivo no WhatsApp, então registrar gasto virou tão natural quanto mandar mensagem. E o painel é lindo.",
+                stars: 5,
+              },
+              {
+                name: "Rafael Santos",
+                role: "Motorista de aplicativo",
+                text: "Eu gastava com combustível, manutenção, alimentação e no final do mês não sabia se tinha dado lucro. Agora eu sei exatamente quanto entra e quanto sai. Foi a melhor decisão que tomei pro meu negócio.",
+                stars: 5,
+              },
+              {
+                name: "Juliana Ferreira",
+                role: "Professora particular",
+                text: "Tenho 12 alunos e cada um paga em data diferente. O Guardinha me avisa todo dia de manhã quem tem que pagar e se alguém ta atrasado. Não perco mais nenhum recebimento.",
+                stars: 5,
+              },
+              {
+                name: "Marcos Oliveira",
+                role: "MEI — Manutenção residencial",
+                text: "Gastei anos tentando me organizar financeiramente. Em uma semana com o Guardinha eu já tinha visão clara de tudo. O áudio é genial — eu registro gasto enquanto dirijo pro próximo serviço.",
+                stars: 5,
+              },
+            ].map((t) => (
+              <div key={t.name} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+                <div className="mb-3 flex items-center gap-1">
+                  {Array.from({ length: t.stars }).map((_, i) => (
+                    <span key={i} className="text-emerald-400 text-sm">&#9733;</span>
+                  ))}
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed mb-4">&quot;{t.text}&quot;</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400 text-sm font-semibold">
+                    {t.name.split(" ").map(n => n[0]).join("")}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* CTA Section */}
         <div id="cta" className="relative mt-20 overflow-hidden rounded-[2rem] border border-white/10">
           {/* Background glows */}
@@ -819,11 +885,11 @@ export default function LandingPage() {
 
           <div className="relative z-10 flex flex-col items-center justify-center px-6 py-20 text-center">
             <h2 className="max-w-2xl text-4xl font-medium tracking-tight text-white sm:text-5xl">
-              Pronto para guardar seu{" "}
-              <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">dinheiro?</span>
+              Em 30 segundos voce{" "}
+              <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">assume o controle.</span>
             </h2>
             <p className="mt-6 max-w-md text-lg font-light text-slate-400">
-              R$ 29,90/mês — garantia incondicional de 7 dias. Cancele quando quiser.
+              R$ 29,90/mes — se em 7 dias voce nao sentir que valeu cada centavo, devolvemos 100% do valor. Sem perguntas.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
               <Link

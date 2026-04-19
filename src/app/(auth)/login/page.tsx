@@ -43,7 +43,7 @@ export default function LoginPage() {
           <Shield className="h-6 w-6 text-black" />
         </div>
         <h1 className="text-xl font-semibold tracking-tight text-white">Entrar no Guarda Dinheiro</h1>
-        <p className="text-sm text-slate-400 mt-1">Acesse seu controle financeiro</p>
+        <p className="text-sm text-slate-400 mt-1">Bom te ver de volta</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

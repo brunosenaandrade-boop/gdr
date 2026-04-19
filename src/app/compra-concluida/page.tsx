@@ -39,17 +39,17 @@ export default function CompraConcluida() {
           </h1>
 
           <p className="mt-4 text-lg text-slate-400 max-w-md mx-auto">
-            Agora você tem acesso ao assistente financeiro e ao painel do Guarda Dinheiro.
+            Falta so um passo: ativar sua conta pelo WhatsApp.
           </p>
 
           <p className="mt-6 text-sm text-slate-400 max-w-md mx-auto">
-            Clique no botão abaixo pra falar com o <strong className="text-emerald-300">Guardinha</strong> no WhatsApp
-            e faça seu cadastro usando o <strong className="text-white">mesmo e-mail da sua compra</strong>.
+            Clique no botao abaixo pra falar com o <strong className="text-emerald-300">Guardinha</strong> no WhatsApp
+            e faca seu cadastro usando o <strong className="text-white">mesmo e-mail da sua compra</strong>.
           </p>
 
           <p className="mt-4 text-sm text-slate-500 max-w-md mx-auto">
-            Você vai criar sua senha, acessar o painel e já começar a usar.
-            Se quiser falar com um humano, basta dizer ao Guardinha: <em>&quot;quero falar com suporte&quot;</em>.
+            Voce vai criar sua senha, acessar o painel e ja comecar a registrar seus gastos.
+            Se precisar de ajuda, diga ao Guardinha: <em>&quot;quero falar com suporte&quot;</em>.
           </p>
 
           <a

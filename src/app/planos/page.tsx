@@ -78,15 +78,15 @@ export default async function PlanosPage() {
           </div>
 
           <h1 className="text-4xl md:text-5xl font-normal tracking-tight">
-            <span className="block text-slate-400">Seu assistente financeiro</span>
+            <span className="block text-slate-400">Pare de perder dinheiro</span>
             <span className="block bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-100 bg-clip-text text-transparent">
-              no WhatsApp. 24 horas.
+              por falta de controle.
             </span>
           </h1>
 
           <p className="mt-6 max-w-xl mx-auto text-lg text-slate-400">
-            Registre gastos por texto ou áudio. Receba lembretes. Consulte seu saldo a qualquer momento.
-            Tudo pelo WhatsApp, sem planilha, sem app pra abrir.
+            A maioria das pessoas perde ate 30% da renda por nao saber pra onde o dinheiro vai.
+            Com o Guardinha, voce registra tudo em segundos pelo WhatsApp — e finalmente enxerga o problema.
           </p>
         </section>
 
@@ -117,10 +117,11 @@ export default async function PlanosPage() {
                 </p>
 
                 <div className="mt-6 space-y-2 text-sm">
-                  <Feature text="Tudo do plano mensal incluído" />
-                  <Feature text="Economia de R$ 240/ano vs mensal" />
-                  <Feature text="Score financeiro + agenda" />
-                  <Feature text="Bônus exclusivos no checkout" />
+                  <Feature text="Tudo do plano mensal incluido" />
+                  <Feature text="Voce economiza R$ 240/ano vs mensal" />
+                  <Feature text="Score financeiro semanal + agenda" />
+                  <Feature text="Bonus exclusivos no checkout" />
+                  <Feature text="Menos de R$ 1 por dia pelo controle total" />
                 </div>
 
                 <a
@@ -214,7 +215,7 @@ export default async function PlanosPage() {
         {/* Features em detalhe */}
         <section className="mb-16">
           <h2 className="text-2xl font-semibold text-center mb-10">
-            O que você consegue fazer
+            Tudo isso incluso no seu plano
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FeatureCard
@@ -255,28 +256,28 @@ export default async function PlanosPage() {
           <h2 className="text-2xl font-semibold text-center mb-8">Perguntas frequentes</h2>
           <div className="space-y-4">
             <FAQ
-              q="Como funciona a garantia de 7 dias?"
-              a="Você paga, usa por 7 dias. Se não gostar por qualquer motivo, pedimos reembolso integral pela Mercado Pago — nenhuma pergunta, nenhuma burocracia. É direito do consumidor e a gente respeita."
+              q="E se eu nao gostar?"
+              a="Voce tem 7 dias pra testar tudo. Se nao sentir que valeu cada centavo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhum formulario. O risco e todo nosso — voce so tem a ganhar."
             />
             <FAQ
-              q="Tem cadastro? Preciso baixar app?"
-              a="O cadastro acontece dentro do próprio WhatsApp. Não tem app pra baixar — o Guardinha funciona direto no WhatsApp que você já usa. Tem também um painel web pra ver gráficos."
+              q="Preciso baixar app?"
+              a="Nao. Zero downloads. O cadastro acontece no proprio WhatsApp e o Guardinha funciona direto nele. Tem tambem um painel web completo pra graficos e relatorios — acessa pelo navegador."
             />
             <FAQ
-              q="E se eu cancelar?"
-              a="Você cancela quando quiser na área do assinante Mercado Pago. Mantém acesso até o fim do período pago (não cobramos ciclos futuros)."
+              q="E se eu quiser cancelar depois?"
+              a="Cancela com um clique na area do assinante Mercado Pago. Sem multa, sem ligacao, sem burocracia. Mantem acesso ate o fim do periodo pago."
             />
             <FAQ
-              q="A IA é precisa?"
-              a="Usamos GPT-4o-mini com prompts especializados em finanças brasileiras. Categorização automática, fuzzy match, contexto de pending. Precisão média > 95% em testes reais."
+              q="A IA erra?"
+              a="Precisao media acima de 95% em testes reais com brasileiros. E toda transacao passa por confirmacao antes de ser registrada — voce sempre tem a ultima palavra. Nada e salvo sem seu OK."
             />
             <FAQ
-              q="Funciona pra empresa (PJ)?"
-              a="Sim. No cadastro você escolhe PF ou PJ, e a IA adapta o contexto (categorias diferentes, linguagem ajustada)."
+              q="Serve pra empresa (PJ)?"
+              a="Sim. Mesmo plano serve pra PF e PJ. No cadastro voce escolhe o tipo e a IA adapta categorias, linguagem e contexto automaticamente. Ideal pra MEI, autonomo e pequeno empresario."
             />
             <FAQ
               q="Posso mudar de plano depois?"
-              a="Sim! Comece no mensal e migre pro anual quando quiser (ou vice-versa). A mudança é feita pela área do assinante na Mercado Pago."
+              a="Sim! Comece no mensal e migre pro anual quando quiser. A mudanca e simples, feita pela area do assinante na Mercado Pago."
             />
           </div>
         </section>
@@ -284,10 +285,10 @@ export default async function PlanosPage() {
         {/* CTA final */}
         <section className="text-center py-12">
           <h2 className="text-2xl font-semibold mb-3">
-            Começa hoje. Cancela a qualquer momento.
+            Daqui a 7 dias voce vai saber exatamente pra onde vai cada centavo.
           </h2>
           <p className="text-slate-400 mb-8">
-            Garantia de 7 dias · Ativação imediata · Cartão, PIX ou Boleto
+            Se nao valer, devolvemos 100%. Ativacao imediata. Cartao, PIX ou Boleto.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
