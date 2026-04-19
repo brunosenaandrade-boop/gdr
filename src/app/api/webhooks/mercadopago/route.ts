@@ -7,17 +7,47 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
 
 export const dynamic = "force-dynamic";
 
+// Rate limiter: max 10 req/min por IP (proteção contra DoS/spam)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60_000;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
+// Limpar entradas expiradas a cada 5 minutos
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of rateLimitMap) {
+    if (now > val.resetAt) rateLimitMap.delete(key);
+  }
+}, 300_000);
+
 /**
  * Webhook Mercado Pago — recebe IPN (Instant Payment Notification).
  *
- * Eventos tratados:
- * - payment → verifica se approved → ativa subscription
- *
- * O MP envia: { action, data: { id }, type }
- * Precisamos buscar os detalhes do pagamento via API.
+ * Segurança:
+ * - Rate limiting por IP (10 req/min)
+ * - Sanitização de payment ID (só números)
+ * - Validação via payment.get() na API oficial do MP (nosso access token)
+ * - Idempotência via gateway_event_id único no banco
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (isRateLimited(ip)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body = await request.json();
     const { type, data, action } = body;
 
@@ -31,8 +61,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "ignored", type });
     }
 
-    const paymentId = String(data.id);
-    console.log(`[mercadopago] Webhook: type=${type} action=${action} payment_id=${paymentId}`);
+    // Sanitizar payment ID: só aceitar números (previne injection)
+    const rawId = String(data.id).replace(/\D/g, "");
+    if (!rawId || rawId.length > 20) {
+      return NextResponse.json({ error: "Invalid payment ID" }, { status: 400 });
+    }
+    const paymentId = rawId;
+
+    console.log("[mercadopago] Webhook: type=%s action=%s payment_id=%s", type, action, paymentId);
 
     const supabase = await createServiceClient();
 
