@@ -93,6 +93,9 @@ export function CategoryBreakdown({ data, title = "Despesas por Categoria" }: Ca
               </div>
             </div>
           ))}
+          {data.length > 5 && (
+            <p className="text-[0.65rem] text-slate-600 mt-1">+{data.length - 5} {data.length - 5 === 1 ? "outra" : "outras"}</p>
+          )}
         </div>
       </div>
       )}

@@ -9,7 +9,7 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 };
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-white/5 border-white/10 text-slate-300",
+  default: "bg-white/10 border-white/15 text-slate-300",
   success: "bg-emerald-500/10 border-emerald-500/20 text-emerald-300",
   warning: "bg-amber-500/10 border-amber-500/20 text-amber-300",
   danger: "bg-red-500/10 border-red-500/20 text-red-300",

@@ -18,9 +18,10 @@ type CashFlowChartProps = {
 };
 
 function formatTick(value: number) {
-  if (value >= 100000) return `${(value / 100000).toFixed(0)}k`;
-  if (value >= 1000) return `${(value / 100).toFixed(0)}`;
-  return String(value / 100);
+  const reais = value / 100;
+  if (reais >= 1000) return `R$ ${(reais / 1000).toFixed(0)}k`;
+  if (reais >= 1) return `R$ ${reais.toFixed(0)}`;
+  return `R$ 0`;
 }
 
 function CustomTooltip({ active, payload, label }: any) {

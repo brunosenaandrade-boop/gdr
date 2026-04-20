@@ -25,7 +25,13 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
       </CardHeader>
       <div className="space-y-1">
         {transactions.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">Nenhum lançamento ainda</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-10">
+            <ArrowUpRight className="h-10 w-10 text-emerald-500/30" />
+            <div className="text-center">
+              <p className="text-sm text-slate-400">Nenhum lançamento ainda</p>
+              <p className="text-xs text-slate-600 mt-1">Seus últimos lançamentos aparecerão aqui</p>
+            </div>
+          </div>
         )}
         {transactions.map((tx) => {
           const badge = statusBadge[tx.status];

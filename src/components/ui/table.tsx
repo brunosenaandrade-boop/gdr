@@ -13,7 +13,7 @@ function Table({ className, children, ...props }: HTMLAttributes<HTMLTableElemen
 
 function TableHeader({ className, children, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
   return (
-    <thead className={cn("border-b border-white/5", className)} {...props}>
+    <thead className={cn("border-b border-white/8 sticky top-0 bg-black/95 backdrop-blur-sm z-10", className)} {...props}>
       {children}
     </thead>
   );
@@ -31,7 +31,7 @@ function TableRow({ className, children, ...props }: HTMLAttributes<HTMLTableRow
   return (
     <tr
       className={cn(
-        "border-b border-white/5 transition-colors hover:bg-white/[0.02]",
+        "border-b border-white/8 transition-colors hover:bg-white/[0.02]",
         className,
       )}
       {...props}
