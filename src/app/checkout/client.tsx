@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { CheckCircle, AlertTriangle, Loader2, Gift } from "lucide-react";
@@ -41,8 +41,17 @@ export function CheckoutClient({
 
   const totalAmount = addBump ? planAmount + bumpAmount : planAmount;
 
-  // Inicializar Mercado Pago SDK
-  initMercadoPago(publicKey, { locale: "pt-BR" });
+  // Inicializar Mercado Pago SDK (uma única vez)
+  const [mpReady, setMpReady] = useState(false);
+  const mpInitialized = useRef(false);
+  useEffect(() => {
+    if (!mpInitialized.current) {
+      initMercadoPago(publicKey, { locale: "pt-BR" });
+      mpInitialized.current = true;
+      // Dar tempo pro SDK carregar
+      setTimeout(() => setMpReady(true), 500);
+    }
+  }, [publicKey]);
 
   // Ref com bump flag no external_reference (separador __)
   const finalRef = addBump
@@ -166,7 +175,13 @@ export function CheckoutClient({
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
         <h2 className="text-base font-semibold mb-4">Pagamento</h2>
 
-        {status === "error" && (
+        {!mpReady && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
+          </div>
+        )}
+
+        {mpReady && status === "error" && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 mb-4">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
@@ -178,7 +193,7 @@ export function CheckoutClient({
           </div>
         )}
 
-        <Payment
+        {mpReady && <Payment
           key={`payment-${totalAmount}`}
           initialization={{
             amount: totalAmount,
@@ -204,7 +219,7 @@ export function CheckoutClient({
           onSubmit={onSubmit as any}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onError={onError as any}
-        />
+        />}
       </div>
 
       {/* Trust badges */}
