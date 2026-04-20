@@ -124,11 +124,11 @@ export async function updateAffiliateProfile(input: {
  */
 export async function requestAffiliatePasswordReset(
   email: string,
-  origin: string,
 ): Promise<ActionResult> {
+  const affiliateDomain = process.env.AFFILIATE_DOMAIN ?? "afiliado.guardadinheiro.com.br";
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/afiliado/redefinir-senha`,
+    redirectTo: `https://${affiliateDomain}/afiliado/redefinir-senha`,
   });
   if (error) return { ok: false, error: "Não foi possível enviar o email" };
   return { ok: true };

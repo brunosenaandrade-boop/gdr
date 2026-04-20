@@ -3,12 +3,12 @@ import { z } from "zod";
 // ===== Auth =====
 export const loginSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Minimo 6 caracteres"),
+  password: z.string().min(8, "Mínimo 8 caracteres"),
 });
 
 export const registerSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Minimo 6 caracteres"),
+  password: z.string().min(8, "Mínimo 8 caracteres"),
   confirmPassword: z.string().min(6, "Minimo 6 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não conferem",
@@ -76,6 +76,14 @@ export const aiParsedTransactionSchema = z.object({
   due_date: z.string().nullable().optional(),
   is_recurring: z.boolean().optional(),
   day_of_month: z.number().int().min(1).max(31).optional(),
+});
+
+// ===== Tenant =====
+export const tenantUpdateSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(200),
+  document: z.string().min(11, "Documento inválido").max(20),
+  trade_name: z.string().max(200).nullable(),
+  phone: z.string().max(20).nullable(),
 });
 
 // ===== Type exports =====

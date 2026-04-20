@@ -1,9 +1,12 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Verifica o header `Authorization: Bearer <CRON_SECRET>` que a Vercel
  * Cron envia automaticamente. Retorna uma NextResponse 401/500 em caso
  * de falha, ou null em caso de sucesso.
+ *
+ * Usa timing-safe compare para prevenir timing attacks.
  */
 export function verifyCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
@@ -14,7 +17,12 @@ export function verifyCronAuth(request: NextRequest): NextResponse | null {
     );
   }
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${secret}`) {
+  const token = authHeader?.replace("Bearer ", "") ?? "";
+
+  if (
+    token.length !== secret.length ||
+    !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret))
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return null;

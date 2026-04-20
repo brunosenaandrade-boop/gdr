@@ -70,11 +70,21 @@ export async function handleFlowResponse(
     return;
   }
 
-  // VAR 2: Verificar se email já existe
-  const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const emailExists = existingUsers?.users?.some(
-    (u) => u.email?.toLowerCase() === email.toLowerCase(),
-  );
+  // VAR 2: Verificar se email já existe (paginação limitada para evitar carregar todos)
+  let emailExists = false;
+  let page = 1;
+  const perPage = 500;
+  while (true) {
+    const { data: authPage } = await supabase.auth.admin.listUsers({ page, perPage });
+    const users = authPage?.users ?? [];
+    if (users.some((u) => u.email?.toLowerCase() === email.toLowerCase())) {
+      emailExists = true;
+      break;
+    }
+    if (users.length < perPage) break; // última página
+    page++;
+    if (page > 20) break; // safety: max 10k users
+  }
 
   if (emailExists) {
     const { sendWhatsAppMessage } = await import("./meta-api");

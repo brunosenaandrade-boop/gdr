@@ -30,8 +30,8 @@ export default function RedefinirSenhaPage() {
     e.preventDefault();
     setError("");
 
-    if (password.length < 6) {
-      setError("Senha deve ter pelo menos 6 caracteres");
+    if (password.length < 8) {
+      setError("Senha deve ter pelo menos 8 caracteres");
       return;
     }
 

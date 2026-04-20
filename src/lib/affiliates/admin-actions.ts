@@ -29,9 +29,10 @@ function generateTempPassword(length = 16): string {
   // Removidos caracteres ambíguos visualmente:
   // 0/O/o, 1/l/I, 2/Z/z, 5/S/s, 8/B, 6/G, 9/g/q, vV, uU, wW
   const chars = "ACDEFHJKMNPRTXYabcdefhjkmnprtxy347";
+  const crypto = require("crypto");
   let password = "";
   for (let i = 0; i < length; i++) {
-    password += chars[Math.floor(Math.random() * chars.length)];
+    password += chars[crypto.randomInt(chars.length)];
   }
   return password;
 }

@@ -16,7 +16,7 @@ export function EsqueciSenhaClient() {
     setError("");
     setLoading(true);
 
-    const res = await requestAffiliatePasswordReset(email, window.location.origin);
+    const res = await requestAffiliatePasswordReset(email);
     setLoading(false);
 
     if (!res.ok) {

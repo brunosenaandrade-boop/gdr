@@ -11,25 +11,25 @@ import {
 
 describe("loginSchema", () => {
   it("aceita email e senha validos", () => {
-    expect(loginSchema.safeParse({ email: "a@b.com", password: "123456" }).success).toBe(true);
+    expect(loginSchema.safeParse({ email: "a@b.com", password: "12345678" }).success).toBe(true);
   });
 
   it("rejeita email invalido", () => {
-    expect(loginSchema.safeParse({ email: "invalid", password: "123456" }).success).toBe(false);
+    expect(loginSchema.safeParse({ email: "invalid", password: "12345678" }).success).toBe(false);
   });
 
   it("rejeita senha curta", () => {
-    expect(loginSchema.safeParse({ email: "a@b.com", password: "12345" }).success).toBe(false);
+    expect(loginSchema.safeParse({ email: "a@b.com", password: "1234567" }).success).toBe(false);
   });
 });
 
 describe("registerSchema", () => {
   it("aceita dados validos", () => {
-    expect(registerSchema.safeParse({ email: "a@b.com", password: "123456", confirmPassword: "123456" }).success).toBe(true);
+    expect(registerSchema.safeParse({ email: "a@b.com", password: "12345678", confirmPassword: "12345678" }).success).toBe(true);
   });
 
   it("rejeita senhas que nao conferem", () => {
-    expect(registerSchema.safeParse({ email: "a@b.com", password: "123456", confirmPassword: "654321" }).success).toBe(false);
+    expect(registerSchema.safeParse({ email: "a@b.com", password: "12345678", confirmPassword: "654321" }).success).toBe(false);
   });
 });
 

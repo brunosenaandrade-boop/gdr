@@ -3,7 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
 import { createClient } from "./server";
-import { transactionSchema, categorySchema } from "@/lib/validators/schemas";
+import { transactionSchema, categorySchema, tenantUpdateSchema } from "@/lib/validators/schemas";
 import type { TransactionType, TransactionStatus } from "@/types";
 
 // ===== Transactions =====
@@ -186,13 +186,16 @@ export async function updateTenant(formData: {
   trade_name: string | null;
   phone: string | null;
 }): Promise<{ error?: string }> {
+  const parsed = tenantUpdateSchema.safeParse(formData);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Não autenticado." };
 
   const { error } = await supabase
     .from("tenants")
-    .update(formData)
+    .update(parsed.data)
     .eq("user_id", user.id);
 
   if (error) {
@@ -215,8 +218,8 @@ export async function changePassword(formData: {
   newPassword: string;
   confirmPassword: string;
 }): Promise<{ error?: string; success?: string }> {
-  if (formData.newPassword.length < 6) {
-    return { error: "A nova senha deve ter pelo menos 6 caracteres." };
+  if (formData.newPassword.length < 8) {
+    return { error: "A nova senha deve ter pelo menos 8 caracteres." };
   }
   if (formData.newPassword !== formData.confirmPassword) {
     return { error: "As senhas não conferem." };
