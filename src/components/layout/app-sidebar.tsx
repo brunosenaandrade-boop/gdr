@@ -19,6 +19,7 @@ import {
   X,
   CalendarDays,
   Repeat,
+  FolderDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/dashboard/categorias", label: "Categorias", icon: Tag },
   { href: "/dashboard/recorrencias", label: "Recorrências", icon: Repeat },
   { href: "/dashboard/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/dashboard/materiais", label: "Meus Materiais", icon: FolderDown },
   { href: "/dashboard/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ];
