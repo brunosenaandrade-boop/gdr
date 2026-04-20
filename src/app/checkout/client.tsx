@@ -44,9 +44,9 @@ export function CheckoutClient({
   // Inicializar Mercado Pago SDK
   initMercadoPago(publicKey, { locale: "pt-BR" });
 
-  // Ref com bump info no external_reference
+  // Ref com bump flag no external_reference (separador __)
   const finalRef = addBump
-    ? externalReference.replace("_none_", "_BUMP_ARQUITETURA_LIBERDADE_")
+    ? externalReference.replace("__none__", "__BUMP__")
     : externalReference;
 
   async function onSubmit(formData: Record<string, unknown>) {
@@ -72,9 +72,12 @@ export function CheckoutClient({
         return;
       }
 
-      if (data.status === "approved" || data.status === "in_process" || data.status === "pending") {
+      if (data.status === "approved") {
         setStatus("approved");
         setTimeout(() => router.push("/compra-concluida"), 2000);
+      } else if (data.status === "in_process" || data.status === "pending") {
+        setStatus("approved");
+        setTimeout(() => router.push("/compra-concluida?status=pending"), 2000);
       } else {
         setErrorMsg(getStatusMessage(data.status_detail || data.status));
         setStatus("error");

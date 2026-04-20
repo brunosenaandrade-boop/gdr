@@ -60,7 +60,7 @@ export default async function CheckoutPage({
     }
   }
 
-  const baseRef = `${tenantId ?? "none"}_${plan}_none_${Date.now()}`;
+  const baseRef = `${tenantId ?? "none"}__${plan}__none__${Date.now()}`;
 
   return (
     <div className="min-h-screen bg-black text-white">

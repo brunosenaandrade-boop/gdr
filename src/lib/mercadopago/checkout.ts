@@ -29,11 +29,11 @@ export async function createCheckoutPreference(opts: {
 
     // external_reference identifica a compra no nosso sistema
     const externalRef = [
-      opts.tenantId ?? "new",
+      opts.tenantId ?? "none",
       opts.planType,
       opts.couponCode ?? "none",
       String(Date.now()),
-    ].join("_");
+    ].join("__");
 
     const preference = getPreference();
 
@@ -80,16 +80,28 @@ export async function createCheckoutPreference(opts: {
 
 /**
  * Parseia o external_reference que nós criamos.
+ * Formato: tenantId__planType__couponOrBump__timestamp
+ * Separador: "__" (double underscore) para evitar conflito com IDs que contêm "_"
+ *
+ * Exemplos:
+ * - "uuid__mensal__none__1713456000" → plano mensal, sem bump/cupom
+ * - "none__anual__BUMP__1713456000" → plano anual com bump, sem login
+ * - "uuid__anual__CUPOM10__1713456000" → plano anual com cupom
  */
 export function parseExternalReference(ref: string): {
   tenantId: string | null;
   planType: PlanType;
   couponCode: string | null;
+  hasBump: boolean;
 } {
-  const parts = ref.split("_");
+  const parts = ref.split("__");
+  const tenantRaw = parts[0] ?? "none";
+  const couponOrBump = parts[2] ?? "none";
+
   return {
-    tenantId: parts[0] === "new" ? null : parts[0] ?? null,
+    tenantId: tenantRaw === "none" || tenantRaw === "new" ? null : tenantRaw,
     planType: (parts[1] === "mensal" ? "mensal" : "anual") as PlanType,
-    couponCode: parts[2] === "none" ? null : parts[2] ?? null,
+    couponCode: couponOrBump === "none" || couponOrBump === "BUMP" ? null : couponOrBump,
+    hasBump: couponOrBump === "BUMP",
   };
 }

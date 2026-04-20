@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     const amountPaid = paymentData.transaction_amount ?? 0;
 
     // Salvar evento (sempre, pra auditoria)
-    const { tenantId: refTenantId, planType, couponCode } = parseExternalReference(externalRef);
+    const { tenantId: refTenantId, planType, couponCode, hasBump } = parseExternalReference(externalRef);
 
     // Resolver tenant pelo external_reference ou email do pagador
     let tenantId = refTenantId;
@@ -200,6 +200,42 @@ export async function POST(request: NextRequest) {
       .from("subscription_events")
       .update({ processed: true })
       .eq("gateway_event_id", paymentId);
+
+    // Registrar bump se incluído no pagamento
+    if (hasBump && tenantId) {
+      try {
+        const { data: bumpProduct } = await supabase
+          .from("bump_products")
+          .select("id, name, amount_cents")
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (bumpProduct) {
+          const { data: sub } = await supabase
+            .from("subscriptions")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .maybeSingle();
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase.from("purchase_bumps") as any).insert({
+            subscription_id: sub?.id ?? null,
+            tenant_id: tenantId,
+            bump_product_id: bumpProduct.id,
+            product_id: "BUMP_ARQUITETURA_LIBERDADE",
+            bump_name: bumpProduct.name,
+            amount_cents: bumpProduct.amount_cents,
+            gateway_transaction_id: paymentId,
+            delivery_status: "pending",
+          });
+
+          console.log(`[mercadopago] Bump registrado: tenant=${tenantId} product=${bumpProduct.name}`);
+        }
+      } catch (err) {
+        console.error("[mercadopago] Erro ao registrar bump:", err);
+      }
+    }
 
     // Atribuir afiliado via cupom
     if (couponCode) {

@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
     }
 
-    // Extrair planType do external_reference para validar amount
+    // Extrair planType do external_reference (separador __)
     const ref = String(external_reference ?? "");
-    const parts = ref.split("_");
+    const parts = ref.split("__");
     const planType = parts[1] ?? "";
 
     const expectedAmount = VALID_AMOUNTS[planType];
