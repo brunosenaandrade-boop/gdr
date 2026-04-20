@@ -46,7 +46,7 @@ export default async function CheckoutPage({
     // Usuário não logado
   }
 
-  const externalReference = `${tenantId ?? "none"}__${plan}__none__${Date.now()}`;
+  const externalReference = `${tenantId ?? "none"}_${plan}_none_${Date.now()}`;
 
   return (
     <div className="min-h-screen bg-black text-white">
