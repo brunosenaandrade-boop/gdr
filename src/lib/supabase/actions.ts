@@ -207,6 +207,18 @@ export async function updateTenant(formData: {
   return {};
 }
 
+// ===== Password Reset =====
+
+export async function requestPasswordReset(email: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const appDomain = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.guardadinheiro.com.br";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${appDomain}/redefinir-senha`,
+  });
+  if (error) return { error: "Não foi possível enviar o e-mail. Verifique o endereço." };
+  return {};
+}
+
 // ===== Password =====
 
 /**

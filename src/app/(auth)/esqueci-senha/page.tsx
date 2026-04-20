@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
+import { requestPasswordReset } from "@/lib/supabase/actions";
 import { Shield, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 
 export default function EsqueciSenhaPage() {
@@ -19,13 +19,9 @@ export default function EsqueciSenhaPage() {
     setError("");
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
-    });
-
-    if (resetError) {
-      setError("Não foi possível enviar o e-mail. Verifique o endereço.");
+    const result = await requestPasswordReset(email);
+    if (result.error) {
+      setError(result.error);
       setLoading(false);
       return;
     }

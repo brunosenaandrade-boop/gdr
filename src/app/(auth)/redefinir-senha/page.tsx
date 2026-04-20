@@ -87,7 +87,7 @@ export default function RedefinirSenhaPage() {
           type="password"
           value={password}
           onChange={(e) => { setPassword(e.target.value); setError(""); }}
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 8 caracteres"
           icon={<Lock className="h-4 w-4" />}
           required
         />

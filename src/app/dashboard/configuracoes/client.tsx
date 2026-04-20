@@ -179,7 +179,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
               value={newPassword}
               onChange={(e) => { setNewPassword(e.target.value); setPasswordErr(""); }}
               icon={<Lock className="h-4 w-4" />}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
               disabled={changingPassword}
               required
               autoComplete="new-password"

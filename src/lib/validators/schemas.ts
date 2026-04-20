@@ -9,7 +9,7 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(8, "Mínimo 8 caracteres"),
-  confirmPassword: z.string().min(6, "Minimo 6 caracteres"),
+  confirmPassword: z.string().min(8, "Mínimo 8 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não conferem",
   path: ["confirmPassword"],

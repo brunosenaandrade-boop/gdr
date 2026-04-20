@@ -45,7 +45,7 @@ export default function RegisterPage() {
       password,
       options: {
         data: { full_name: name.trim() },
-        emailRedirectTo: `${window.location.origin}/login?confirmed=1`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.guardadinheiro.com.br"}/login?confirmed=1`,
       },
     });
 
@@ -124,7 +124,7 @@ export default function RegisterPage() {
           type="password"
           value={password}
           onChange={(e) => { setPassword(e.target.value); setError(""); }}
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 8 caracteres"
           icon={<Lock className="h-4 w-4" />}
           required
         />

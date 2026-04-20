@@ -14,8 +14,10 @@ const BOT_DISPLAY = "+55 48 2027-0106";
 function generateCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "GD-";
+  const randomValues = new Uint32Array(6);
+  crypto.getRandomValues(randomValues);
   for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += chars[randomValues[i] % chars.length];
   }
   return code;
 }
