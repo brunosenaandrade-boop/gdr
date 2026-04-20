@@ -255,6 +255,7 @@ export function ConfiguracoesClient({ tenant }: Props) {
                   disabled={deleteConfirmText !== "EXCLUIR" || deleting}
                   loading={deleting}
                   onClick={async () => {
+                    if (!confirm("Tem certeza? Todos os seus dados serão excluídos permanentemente. Esta ação não pode ser desfeita.")) return;
                     setDeleting(true);
                     const result = await deleteAccount();
                     if (result.ok) {

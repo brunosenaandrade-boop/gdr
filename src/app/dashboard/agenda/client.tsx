@@ -261,6 +261,7 @@ function Section({
                     onClick={() => onStatus(apt.id, "realizado")}
                     className="p-1.5 text-slate-400 hover:text-emerald-400 transition-colors"
                     title="Marcar como realizado"
+                    aria-label="Marcar como realizado"
                   >
                     <Check className="h-4 w-4" />
                   </button>
@@ -270,6 +271,7 @@ function Section({
                     onClick={() => onStatus(apt.id, "cancelado")}
                     className="p-1.5 text-slate-400 hover:text-amber-400 transition-colors"
                     title="Cancelar"
+                    aria-label="Cancelar compromisso"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -278,6 +280,7 @@ function Section({
                   onClick={() => onEdit(apt)}
                   className="p-1.5 text-slate-400 hover:text-white transition-colors"
                   title="Editar"
+                  aria-label="Editar compromisso"
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
@@ -285,6 +288,7 @@ function Section({
                   onClick={() => onDelete(apt.id)}
                   className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
                   title="Excluir"
+                  aria-label="Excluir compromisso"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

@@ -5,6 +5,7 @@ import { verifyCronAuth } from "@/lib/cron/auth";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("pt-BR", {

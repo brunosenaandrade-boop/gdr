@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { verifyCronAuth } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * Cron diário (09h UTC = 06h BRT):
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     // 1. Assinaturas expirando em 7 dias (que ainda não receberam lembrete)
     const { data: expiring } = await supabase
       .from("subscriptions")
-      .select("tenant_id, plan_type, current_period_end")
+      .select("tenant_id, plan_type, current_period_end, buyer_email, tenants(name)")
       .eq("status", "active")
       .is("renewal_link_sent_at", null)
       .lte("current_period_end", sevenDaysFromNow)
@@ -37,16 +38,10 @@ export async function GET(request: NextRequest) {
       const { SubscriptionExpiringEmail } = await import("@/lib/email/templates/subscription-expiring");
 
       for (const sub of expiring) {
-        const { data: tenant } = await supabase
-          .from("tenants")
-          .select("name, user_id")
-          .eq("id", sub.tenant_id)
-          .maybeSingle();
+        if (!sub.current_period_end) continue;
 
-        if (!tenant?.user_id || !sub.current_period_end) continue;
-
-        const { data: authData } = await supabase.auth.admin.getUserById(tenant.user_id);
-        const email = authData?.user?.email;
+        const tenant = Array.isArray(sub.tenants) ? sub.tenants[0] : sub.tenants;
+        const email = sub.buyer_email;
         if (!email) continue;
 
         const periodEnd = sub.current_period_end;
@@ -58,7 +53,7 @@ export async function GET(request: NextRequest) {
           to: email,
           subject: `Sua assinatura expira em ${daysRemaining} dias - Guarda Dinheiro`,
           react: SubscriptionExpiringEmail({
-            name: tenant.name,
+            name: tenant?.name ?? null,
             planType: (sub.plan_type ?? "mensal") as "mensal" | "anual",
             expiresAt: periodEnd,
             daysRemaining,
@@ -81,7 +76,7 @@ export async function GET(request: NextRequest) {
     // 2. Assinaturas expiradas (active mas current_period_end < now)
     const { data: expired } = await supabase
       .from("subscriptions")
-      .select("tenant_id, plan_type, current_period_end")
+      .select("tenant_id, plan_type, current_period_end, buyer_email, tenants(name)")
       .eq("status", "active")
       .lt("current_period_end", nowISO);
 
@@ -90,23 +85,15 @@ export async function GET(request: NextRequest) {
       const { SubscriptionExpiredEmail } = await import("@/lib/email/templates/subscription-expired");
 
       for (const sub of expired) {
-        const { data: tenant } = await supabase
-          .from("tenants")
-          .select("name, user_id")
-          .eq("id", sub.tenant_id)
-          .maybeSingle();
-
-        if (!tenant?.user_id) continue;
-
-        const { data: authData } = await supabase.auth.admin.getUserById(tenant.user_id);
-        const email = authData?.user?.email;
+        const tenant = Array.isArray(sub.tenants) ? sub.tenants[0] : sub.tenants;
+        const email = sub.buyer_email;
         if (!email) continue;
 
         await sendEmail({
           to: email,
           subject: "Sua assinatura expirou - Guarda Dinheiro",
           react: SubscriptionExpiredEmail({
-            name: tenant.name,
+            name: tenant?.name ?? null,
             reactivationUrl: "https://www.guardadinheiro.com.br/planos",
           }),
           idempotencyKey: `sub-expired-${sub.tenant_id}`,

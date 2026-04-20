@@ -5,6 +5,7 @@ import { verifyCronAuth } from "@/lib/cron/auth";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * Cron rodando a cada 10 minutos. Para cada compromisso pendente com

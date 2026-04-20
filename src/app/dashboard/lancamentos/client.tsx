@@ -70,8 +70,11 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
   }
 
   async function handleDelete(id: string) {
+    if (!confirm("Excluir este lançamento? Esta ação não pode ser desfeita.")) return;
     const result = await deleteTransaction(id);
-    if (!result.error) {
+    if (result.error) {
+      alert(result.error);
+    } else {
       startTransition(() => router.refresh());
     }
   }
@@ -212,12 +215,14 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
                                 setFormOpen(true);
                               }}
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-colors"
+                              aria-label="Editar lançamento"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => handleDelete(tx.id)}
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                              aria-label="Excluir lançamento"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>

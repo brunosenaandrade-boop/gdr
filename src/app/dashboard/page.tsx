@@ -14,13 +14,23 @@ import { getDashboardScore } from "@/lib/supabase/score-actions";
 import { Wallet, TrendingUp, TrendingDown, AlertTriangle, MessageSquare } from "lucide-react";
 
 export default async function DashboardPage() {
-  const [stats, transactions, cashFlow, categoryData, score] = await Promise.all([
-    getDashboardStats(),
-    getRecentTransactions(10),
-    getCashFlow(30),
-    getCategoryBreakdown(),
-    getDashboardScore(),
-  ]);
+  let stats = { saldo: 0, total_receitas: 0, total_despesas: 0, contas_vencidas: 0 };
+  let transactions: Awaited<ReturnType<typeof getRecentTransactions>> = [];
+  let cashFlow: Awaited<ReturnType<typeof getCashFlow>> = [];
+  let categoryData: Awaited<ReturnType<typeof getCategoryBreakdown>> = [];
+  let score: Awaited<ReturnType<typeof getDashboardScore>> = null;
+
+  try {
+    [stats, transactions, cashFlow, categoryData, score] = await Promise.all([
+      getDashboardStats(),
+      getRecentTransactions(10),
+      getCashFlow(30),
+      getCategoryBreakdown(),
+      getDashboardScore(),
+    ]);
+  } catch (err) {
+    console.error("Dashboard data fetch error:", err);
+  }
 
   return (
     <>

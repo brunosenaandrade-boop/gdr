@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { verifyCronAuth } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const unauth = verifyCronAuth(request);
@@ -30,14 +31,14 @@ export async function GET(request: NextRequest) {
     const todayDate = new Date().toISOString().split("T")[0];
 
     for (const rec of recurrences) {
-      // Verificar se já foi criada hoje (dedup)
+      // Dedup: usar recurring ID + data para evitar duplicatas (mesmo com descrição/valor iguais)
+      const dedupTag = `recur:${rec.id}`;
       const { data: existing } = await supabase
         .from("transactions")
         .select("id")
         .eq("tenant_id", rec.tenant_id)
-        .eq("description", rec.description)
-        .eq("amount", rec.amount)
         .eq("due_date", todayDate)
+        .eq("notes", dedupTag)
         .maybeSingle();
 
       if (existing) continue; // Já existe, pular
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
         status: "pendente",
         due_date: todayDate,
         source: rec.source ?? "web",
+        notes: dedupTag,
       });
 
       if (insertError) {

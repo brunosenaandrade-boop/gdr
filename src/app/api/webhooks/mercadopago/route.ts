@@ -107,18 +107,30 @@ export async function POST(request: NextRequest) {
     // Salvar evento (sempre, pra auditoria)
     const { tenantId: refTenantId, planType, couponCode } = parseExternalReference(externalRef);
 
-    // Resolver tenant pelo external_reference ou email
+    // Resolver tenant pelo external_reference ou email do pagador
     let tenantId = refTenantId;
     if (!tenantId && payerEmail) {
-      const { data: authData } = await supabase.auth.admin.listUsers();
-      const user = authData?.users?.find((u) => u.email?.toLowerCase() === payerEmail);
-      if (user) {
-        const { data: tenant } = await supabase
-          .from("tenants")
-          .select("id")
-          .eq("user_id", user.id)
+      // Buscar tenant via buyer_email em subscription_events (evita listUsers() que carrega todos)
+      const { data: existingEvent } = await supabase
+        .from("subscription_events")
+        .select("tenant_id")
+        .eq("buyer_email", payerEmail)
+        .not("tenant_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingEvent?.tenant_id) {
+        tenantId = existingEvent.tenant_id;
+      } else {
+        // Fallback: buscar na tabela subscriptions
+        const { data: existingSub } = await supabase
+          .from("subscriptions")
+          .select("tenant_id")
+          .eq("buyer_email", payerEmail)
+          .limit(1)
           .maybeSingle();
-        tenantId = tenant?.id ?? null;
+        tenantId = existingSub?.tenant_id ?? null;
       }
     }
 

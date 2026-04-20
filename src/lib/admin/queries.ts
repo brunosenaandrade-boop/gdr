@@ -15,6 +15,15 @@ export type AdminMetrics = {
   aiCostMonthCents: number;
   aiCallsToday: number;
   botFailuresToday: number;
+  // Métricas expandidas
+  aiTokensToday: number;
+  aiTokensMonth: number;
+  aiCallsMonth: number;
+  emailsSentToday: number;
+  emailsSentMonth: number;
+  totalTransactions: number;
+  totalAppointments: number;
+  totalWhatsAppMessages: number;
 };
 
 const PLAN_PRICE_CENTS = 29_90; // R$ 29,90/mês em centavos
@@ -74,19 +83,21 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   const churnBase = active.length + canceledInMonth;
   const churnRateMonth = churnBase > 0 ? (canceledInMonth / churnBase) * 100 : 0;
 
-  // AI usage
+  // AI usage (custo + tokens)
   const { data: aiToday } = await supabase
     .from("ai_usage")
-    .select("estimated_cost_cents")
+    .select("estimated_cost_cents, input_tokens, output_tokens")
     .gte("created_at", startOfDay);
 
   const { data: aiMonth } = await supabase
     .from("ai_usage")
-    .select("estimated_cost_cents")
+    .select("estimated_cost_cents, input_tokens, output_tokens")
     .gte("created_at", startOfMonth);
 
   const aiCostTodayCents = (aiToday ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
   const aiCostMonthCents = (aiMonth ?? []).reduce((s, r) => s + (r.estimated_cost_cents ?? 0), 0);
+  const aiTokensToday = (aiToday ?? []).reduce((s, r) => s + (r.input_tokens ?? 0) + (r.output_tokens ?? 0), 0);
+  const aiTokensMonth = (aiMonth ?? []).reduce((s, r) => s + (r.input_tokens ?? 0) + (r.output_tokens ?? 0), 0);
 
   // Bot failures today (fallback responses)
   const { count: botFailuresToday = 0 } = await supabase
@@ -95,6 +106,40 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
     .eq("direction", "out")
     .gte("created_at", startOfDay)
     .like("content", "%Não consegui identificar%");
+
+  // Emails enviados (Resend) — contagem via tag na tabela de logs internos
+  // Como não temos tabela de email logs, usamos a API do Resend se disponível
+  let emailsSentToday = 0;
+  let emailsSentMonth = 0;
+  try {
+    if (process.env.RESEND_API_KEY) {
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { data: emails } = await resend.emails.list();
+      if (emails?.data) {
+        const todayDate = startOfDay.split("T")[0];
+        const monthDate = startOfMonth.split("T")[0];
+        for (const e of emails.data) {
+          const emailDate = e.created_at?.split("T")[0] ?? "";
+          if (emailDate >= todayDate) emailsSentToday++;
+          if (emailDate >= monthDate) emailsSentMonth++;
+        }
+      }
+    }
+  } catch {
+    // Resend API indisponível — ignora silenciosamente
+  }
+
+  // Contagens do banco de dados
+  const [
+    { count: totalTransactions = 0 },
+    { count: totalAppointments = 0 },
+    { count: totalWhatsAppMessages = 0 },
+  ] = await Promise.all([
+    supabase.from("transactions").select("*", { count: "exact", head: true }),
+    supabase.from("appointments").select("*", { count: "exact", head: true }),
+    supabase.from("whatsapp_conversation_log").select("*", { count: "exact", head: true }),
+  ]);
 
   return {
     mrr,
@@ -111,6 +156,14 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
     aiCostMonthCents,
     aiCallsToday: (aiToday ?? []).length,
     botFailuresToday: botFailuresToday ?? 0,
+    aiTokensToday,
+    aiTokensMonth,
+    aiCallsMonth: (aiMonth ?? []).length,
+    emailsSentToday,
+    emailsSentMonth,
+    totalTransactions: totalTransactions ?? 0,
+    totalAppointments: totalAppointments ?? 0,
+    totalWhatsAppMessages: totalWhatsAppMessages ?? 0,
   };
 }
 

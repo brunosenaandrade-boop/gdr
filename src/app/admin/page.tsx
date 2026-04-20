@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getAdminMetrics } from "@/lib/admin/queries";
 import { getCurrentAdmin } from "@/lib/admin/auth";
 import { AdminShell } from "./layout";
-import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus, ShieldAlert, Brain } from "lucide-react";
+import { TrendingUp, Users, CreditCard, AlertCircle, TrendingDown, UserPlus, ShieldAlert, Brain, Mail, Database, Zap, MessageSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -176,18 +176,94 @@ export default async function AdminOverviewPage() {
               accent="amber"
             />
             <Card
+              title="Custo/assinante"
+              value={m.activeSubscriptions > 0 ? formatCurrency(Math.round(m.aiCostMonthCents / m.activeSubscriptions)) : "N/A"}
+              subtitle={m.activeSubscriptions > 0 ? "por assinante ativo" : "sem assinantes"}
+              icon={Brain}
+              accent={m.activeSubscriptions > 0 && m.aiCostMonthCents / m.activeSubscriptions > 500 ? "red" : "emerald"}
+            />
+          </div>
+        </div>
+        {/* OpenAI Tokens */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">OpenAI — Tokens</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card
+              title="Tokens hoje"
+              value={m.aiTokensToday.toLocaleString("pt-BR")}
+              subtitle={`${m.aiCallsToday} chamadas`}
+              icon={Zap}
+              accent="amber"
+            />
+            <Card
+              title="Tokens do mês"
+              value={m.aiTokensMonth.toLocaleString("pt-BR")}
+              subtitle={`${m.aiCallsMonth} chamadas`}
+              icon={Zap}
+              accent="amber"
+            />
+            <Card
+              title="Média tokens/chamada"
+              value={m.aiCallsMonth > 0 ? Math.round(m.aiTokensMonth / m.aiCallsMonth).toLocaleString("pt-BR") : "N/A"}
+              icon={Brain}
+              accent="blue"
+            />
+            <Card
               title="Falhas do bot hoje"
               value={m.botFailuresToday.toString()}
               subtitle="msgs não compreendidas"
               icon={Brain}
               accent={m.botFailuresToday > 5 ? "red" : m.botFailuresToday > 0 ? "amber" : "emerald"}
             />
+          </div>
+        </div>
+
+        {/* Resend — Emails */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Resend — Emails</h2>
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <Card
-              title="Custo/assinante"
-              value={m.activeSubscriptions > 0 ? formatCurrency(Math.round(m.aiCostMonthCents / m.activeSubscriptions)) : "N/A"}
-              subtitle={m.activeSubscriptions > 0 ? "por assinante ativo" : "sem assinantes"}
-              icon={Brain}
-              accent={m.activeSubscriptions > 0 && m.aiCostMonthCents / m.activeSubscriptions > 500 ? "red" : "emerald"}
+              title="Emails enviados hoje"
+              value={m.emailsSentToday.toString()}
+              icon={Mail}
+              accent="blue"
+            />
+            <Card
+              title="Emails enviados no mês"
+              value={m.emailsSentMonth.toString()}
+              icon={Mail}
+              accent="blue"
+            />
+          </div>
+        </div>
+
+        {/* Banco de Dados */}
+        <div>
+          <h2 className="text-sm font-medium text-zinc-300 mb-3">Banco de Dados</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card
+              title="Transações"
+              value={m.totalTransactions.toLocaleString("pt-BR")}
+              icon={Database}
+              accent="blue"
+            />
+            <Card
+              title="Compromissos"
+              value={m.totalAppointments.toLocaleString("pt-BR")}
+              icon={Database}
+              accent="blue"
+            />
+            <Card
+              title="Mensagens WhatsApp"
+              value={m.totalWhatsAppMessages.toLocaleString("pt-BR")}
+              icon={MessageSquare}
+              accent="emerald"
+            />
+            <Card
+              title="Total de rows (estimado)"
+              value={(m.totalTransactions + m.totalAppointments + m.totalWhatsAppMessages + m.totalTenants).toLocaleString("pt-BR")}
+              icon={Database}
+              accent="blue"
             />
           </div>
         </div>

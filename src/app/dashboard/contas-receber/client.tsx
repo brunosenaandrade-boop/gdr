@@ -78,6 +78,7 @@ export function ContasReceberClient({ transactions, categories, tenantId }: Prop
           {transactions.length === 0 ? (
             <div className="py-20 text-center text-sm text-slate-500">Nenhuma conta a receber pendente</div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -112,6 +113,7 @@ export function ContasReceberClient({ transactions, categories, tenantId }: Prop
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </Card>
       </div>

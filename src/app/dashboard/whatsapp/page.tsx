@@ -59,11 +59,24 @@ export default function WhatsAppPage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Polling: verifica a cada 3s se o número foi vinculado
+  // Polling: verifica a cada 3s se o número foi vinculado (timeout de 10 min)
+  const [codeExpired, setCodeExpired] = useState(false);
+
   useEffect(() => {
     if (step !== "waiting" || !tenantId) return;
 
+    const startedAt = Date.now();
+    const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutos
+
     pollingRef.current = setInterval(async () => {
+      // Timeout do código
+      if (Date.now() - startedAt > TIMEOUT_MS) {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        setCodeExpired(true);
+        setStep("idle");
+        return;
+      }
+
       const { data } = await supabase
         .from("whatsapp_links")
         .select("*")
@@ -180,6 +193,13 @@ export default function WhatsAppPage() {
 
               {step === "idle" && (
                 <div className="space-y-4">
+                  {codeExpired && (
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                      <p className="text-xs text-amber-200 leading-relaxed">
+                        O código anterior expirou (10 minutos). Gere um novo código para continuar.
+                      </p>
+                    </div>
+                  )}
                   <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
                     <p className="text-xs text-emerald-200 leading-relaxed">
                       Ao clicar em Gerar Código, você receberá um código único.
@@ -187,9 +207,9 @@ export default function WhatsAppPage() {
                     </p>
                   </div>
                   {error && <p className="text-sm text-red-400">{error}</p>}
-                  <Button onClick={handleGenerateCode} loading={saving}>
+                  <Button onClick={() => { setCodeExpired(false); handleGenerateCode(); }} loading={saving}>
                     <MessageSquare className="h-4 w-4" />
-                    Gerar Código de Vinculação
+                    {codeExpired ? "Gerar Novo Código" : "Gerar Código de Vinculação"}
                   </Button>
                 </div>
               )}
