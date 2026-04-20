@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import UnicornBackground from "@/components/landing/unicorn-background";
 import MobileNav from "@/components/landing/mobile-nav";
+import { FAQAccordion } from "@/components/marketing/faq-accordion";
+import { landingFAQs, faqsToJsonLd } from "@/data/faqs";
 
 const mesAtual = new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
 
@@ -790,24 +792,11 @@ export default function LandingPage() {
           <div className="mb-10 text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-white">Perguntas frequentes</h2>
           </div>
-          <div className="max-w-2xl mx-auto space-y-3">
-            {[
-              { q: "Como funciona o Guardinha?", a: "Simples: você manda um áudio ou texto no WhatsApp dizendo o que gastou ou recebeu. A IA entende, categoriza e registra pra você em segundos. Também pode perguntar \"quanto gastei esse mês?\" ou \"tenho conta atrasada?\" e receber a resposta na hora." },
-              { q: "Preciso baixar algum app?", a: "Não. Zero downloads. O Guardinha funciona direto no WhatsApp que você já tem instalado. Também tem um painel web completo com gráficos e relatórios — acessa pelo navegador do celular ou computador." },
-              { q: "E se eu não gostar?", a: "Você tem 7 dias pra testar. Se não sentir que valeu, pedimos reembolso integral pela Mercado Pago. Sem perguntas, sem formulário, sem espera. O risco é todo nosso." },
-              { q: "E se eu quiser cancelar depois?", a: "Cancela quando quiser, com um clique, pela área do assinante na Mercado Pago. Sem multa, sem ligação, sem burocracia. Você mantém acesso até o fim do período que já pagou." },
-              { q: "A IA erra muito?", a: "Precisão média acima de 95% em testes reais com brasileiros. E toda transação passa por confirmação antes de ser registrada — se a IA errar, você corrige na hora. Com o tempo, ela aprende suas categorias." },
-              { q: "Serve pra empresa (PJ)?", a: "Sim. Mesmo plano serve pra PF e PJ. Quando você acessa o painel pela primeira vez, escolhe o tipo (PF ou PJ) e a IA adapta as categorias automaticamente. Ideal pra MEI, autônomo e pequeno empresário." },
-            ].map((item) => (
-              <details key={item.q} className="group rounded-xl border border-white/5 bg-white/[0.02] p-5">
-                <summary className="flex items-center justify-between cursor-pointer list-none">
-                  <span className="text-sm font-semibold pr-4">{item.q}</span>
-                  <span className="text-emerald-400 transition-transform group-open:rotate-45">+</span>
-                </summary>
-                <p className="text-sm text-slate-400 mt-3 leading-relaxed">{item.a}</p>
-              </details>
-            ))}
-          </div>
+          <FAQAccordion items={landingFAQs} page="landing" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqsToJsonLd(landingFAQs)) }}
+          />
         </section>
 
         {/* Social Proof Section */}

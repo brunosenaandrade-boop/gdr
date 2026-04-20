@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { FAQAccordion } from "@/components/marketing/faq-accordion";
+import { comoFuncionaFAQs } from "@/data/faqs";
 
 type Slide = {
   icon: string;
@@ -321,6 +323,19 @@ const slides: Slide[] = [
           Você pode perguntar literalmente tudo da forma que quiser que eu irei
           lhe responder.
         </p>
+      </>
+    ),
+  },
+  {
+    icon: "❓",
+    title: "Dúvidas comuns",
+    content: (
+      <>
+        <p className="mb-5">
+          Antes de começar, as perguntas que mais recebemos de quem tá
+          conhecendo o Guarda Dinheiro:
+        </p>
+        <FAQAccordion items={comoFuncionaFAQs} page="como-funciona" />
       </>
     ),
   },

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
 import { SubscribeForm, SubscribeProvider } from "./subscribe-form";
+import { FAQAccordion } from "@/components/marketing/faq-accordion";
+import { planosFAQs, faqsToJsonLd } from "@/data/faqs";
 
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
@@ -216,32 +218,11 @@ export default async function PlanosPage() {
         {/* FAQ */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-center mb-6">Perguntas frequentes</h2>
-          <div className="space-y-3">
-            <FAQ
-              q="E se eu não gostar?"
-              a="Você tem 7 dias pra testar tudo. Se não sentir que valeu cada centavo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhum formulário. O risco é todo nosso — você só tem a ganhar."
-            />
-            <FAQ
-              q="Preciso baixar app?"
-              a="Não. Zero downloads. O cadastro acontece no próprio WhatsApp e o Guardinha funciona direto nele. Tem também um painel web completo pra gráficos e relatórios — acessa pelo navegador."
-            />
-            <FAQ
-              q="E se eu quiser cancelar?"
-              a="Cancela com um clique na área do assinante Mercado Pago. Sem multa, sem ligação, sem burocracia. Mantém acesso até o fim do período pago."
-            />
-            <FAQ
-              q="A IA erra?"
-              a="Precisão acima de 95% em testes reais. E toda transação passa por confirmação antes de ser registrada — você sempre tem a última palavra."
-            />
-            <FAQ
-              q="Serve pra empresa (PJ)?"
-              a="Sim. Mesmo plano serve pra PF e PJ. Quando você acessa o painel pela primeira vez, escolhe o tipo (PF ou PJ) e a IA adapta tudo automaticamente. Ideal pra MEI, autônomo e pequeno empresário."
-            />
-            <FAQ
-              q="Posso mudar de plano depois?"
-              a="Sim! Comece no mensal e migre pro anual quando quiser. A mudança é simples, feita pela área do assinante."
-            />
-          </div>
+          <FAQAccordion items={planosFAQs} page="planos" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqsToJsonLd(planosFAQs)) }}
+          />
         </section>
 
         {/* CTA final */}
@@ -327,14 +308,3 @@ function FeatureCard({
   );
 }
 
-function FAQ({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="group rounded-xl border border-white/5 bg-white/[0.02] p-4">
-      <summary className="flex items-center justify-between cursor-pointer list-none">
-        <span className="text-sm font-semibold pr-4">{q}</span>
-        <span className="text-emerald-400 transition-transform group-open:rotate-45">+</span>
-      </summary>
-      <p className="text-sm text-slate-400 mt-3 leading-relaxed">{a}</p>
-    </details>
-  );
-}
