@@ -27,9 +27,9 @@ export default function LandingPage() {
               <span className="text-sm font-semibold tracking-tight text-white">Guarda Dinheiro</span>
             </Link>
             <div className="hidden md:flex mx-4 items-center gap-1">
-              <a href="#painel" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Dashboard</a>
-              <a href="#funcionalidades" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Funcionalidades</a>
-              <a href="#inteligencia" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Inteligência</a>
+              <a href="#funcionalidades" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Como funciona</a>
+              <a href="#inteligencia" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Recursos</a>
+              <a href="#depoimentos" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Depoimentos</a>
               <a href="#cta" className="hidden lg:block rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Começar</a>
             </div>
           </div>
@@ -45,7 +45,7 @@ export default function LandingPage() {
               href="/planos"
               className="inline-flex h-7 items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 text-xs font-medium text-black transition-all hover:bg-emerald-400 hover:scale-105"
             >
-              Criar conta
+              Começar
             </Link>
           </div>
           {/* Mobile hamburger menu */}
@@ -66,44 +66,43 @@ export default function LandingPage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <span className="text-xs tracking-tight text-emerald-300">Lance via WhatsApp com IA</span>
-              <span className="mx-1 text-emerald-500/30">|</span>
-              <span className="text-xs tracking-tight text-slate-400">PF e PJ</span>
+              <span className="text-xs tracking-tight text-emerald-300">Controle financeiro pelo WhatsApp</span>
             </div>
 
-            <h1 className="text-5xl font-normal tracking-tight text-white sm:text-6xl">
+            <h1 className="text-4xl font-normal tracking-tight text-white sm:text-5xl lg:text-6xl">
               <span className="block text-slate-400">Saiba pra onde vai</span>
               <span className="block bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-100 bg-clip-text text-transparent animate-gradient-text">
                 cada centavo seu.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-lg font-light leading-relaxed text-slate-400">
-              Manda um áudio no WhatsApp dizendo &quot;gastei 50 no mercado&quot; e a IA registra, categoriza e
-              organiza pra você. Sem planilha, sem app, sem digitar nada.
+            <p className="mt-5 max-w-lg text-base font-light leading-relaxed text-slate-400 sm:text-lg">
+              Manda um áudio ou texto no WhatsApp dizendo o que gastou.
+              A IA registra, categoriza e organiza tudo pra você — sem planilha, sem app.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href="/planos"
-                className="group relative inline-flex h-10 min-w-[140px] items-center justify-center gap-2 overflow-hidden rounded-full px-5 text-sm font-medium tracking-tight text-white aura-button-green-beam transition-all hover:scale-105 active:scale-95"
+                className="group relative inline-flex h-11 items-center justify-center gap-2 overflow-hidden rounded-full px-6 text-sm font-medium tracking-tight text-white aura-button-green-beam transition-all hover:scale-105 active:scale-95"
               >
                 <div className="points_wrapper">
                   <i className="point" /><i className="point" /><i className="point" /><i className="point" /><i className="point" />
                   <i className="point" /><i className="point" /><i className="point" /><i className="point" /><i className="point" />
                 </div>
                 <span className="relative z-10 flex items-center gap-2">
-                  Começar por R$ 29,90/mês
+                  Começar agora
                   <ArrowRight className="h-4 w-4 text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                 </span>
               </Link>
               <Link
-                href="/login"
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 text-sm text-slate-200 transition-all hover:bg-white/10 hover:border-white/20 hover:scale-105 active:scale-95"
+                href="/planos"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 text-sm text-slate-300 transition-all hover:bg-white/10 hover:border-white/20"
               >
-                Já tenho conta
+                Ver planos e preços
               </Link>
             </div>
+            <p className="mt-3 text-xs text-slate-500">A partir de R$ 29,90/mês · Garantia de 7 dias · Cancele quando quiser</p>
           </div>
 
           {/* Floating Financial Card */}
@@ -812,7 +811,7 @@ export default function LandingPage() {
         </section>
 
         {/* Social Proof Section */}
-        <section className="mb-20">
+        <section id="depoimentos" className="mb-20">
           <div className="mb-10 text-center">
             <h2 className="text-2xl font-semibold tracking-tight text-white">Quem usa, recomenda</h2>
             <p className="mt-2 text-sm text-slate-400">Veja o que nossos clientes dizem sobre o Guardinha.</p>
@@ -943,25 +942,25 @@ export default function LandingPage() {
                 <div>
                   <h4 className="text-xs font-medium text-white">Produto</h4>
                   <ul className="mt-4 space-y-2.5 text-xs text-slate-500">
-                    <li><a href="#painel" className="transition-colors hover:text-emerald-400">Dashboard</a></li>
-                    <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">Lançamentos</a></li>
-                    <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">Categorias</a></li>
-                    <li><a href="#inteligencia" className="transition-colors hover:text-emerald-400">Fluxo de Caixa</a></li>
+                    <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">Como funciona</a></li>
+                    <li><a href="#inteligencia" className="transition-colors hover:text-emerald-400">Recursos</a></li>
+                    <li><a href="#depoimentos" className="transition-colors hover:text-emerald-400">Depoimentos</a></li>
+                    <li><Link href="/planos" className="transition-colors hover:text-emerald-400">Preços</Link></li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-xs font-medium text-white">Recursos</h4>
+                  <h4 className="text-xs font-medium text-white">Funcionalidades</h4>
                   <ul className="mt-4 space-y-2.5 text-xs text-slate-500">
-                    <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">WhatsApp</a></li>
-                    <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Pagar</a></li>
-                    <li><a href="#painel" className="transition-colors hover:text-emerald-400">Contas a Receber</a></li>
-                    <li><Link href="/login" className="transition-colors hover:text-emerald-400">Configurações</Link></li>
+                    <li><a href="#funcionalidades" className="transition-colors hover:text-emerald-400">WhatsApp + IA</a></li>
+                    <li><a href="#inteligencia" className="transition-colors hover:text-emerald-400">Painel financeiro</a></li>
+                    <li><a href="#inteligencia" className="transition-colors hover:text-emerald-400">Lembretes diários</a></li>
+                    <li><a href="#inteligencia" className="transition-colors hover:text-emerald-400">Score financeiro</a></li>
                   </ul>
                 </div>
                 <div>
                   <h4 className="text-xs font-medium text-white">Conta</h4>
                   <ul className="mt-4 space-y-2.5 text-xs text-slate-500">
-                    <li><Link href="/planos" className="transition-colors hover:text-emerald-400">Criar conta</Link></li>
+                    <li><Link href="/planos" className="transition-colors hover:text-emerald-400">Ver planos</Link></li>
                     <li><Link href="/login" className="transition-colors hover:text-emerald-400">Entrar</Link></li>
                   </ul>
                 </div>
