@@ -884,7 +884,7 @@ export default function LandingPage() {
 
           <div className="relative z-10 flex flex-col items-center justify-center px-6 py-20 text-center">
             <h2 className="max-w-2xl text-4xl font-medium tracking-tight text-white sm:text-5xl">
-              Em 30 segundos voce{" "}
+              Em 30 segundos você{" "}
               <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">assume o controle.</span>
             </h2>
             <p className="mt-6 max-w-md text-lg font-light text-slate-400">
