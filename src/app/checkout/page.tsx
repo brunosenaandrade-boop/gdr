@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { Shield } from "lucide-react";
 import Link from "next/link";
 import { CheckoutClient } from "./client";
@@ -16,7 +15,7 @@ export default async function CheckoutPage({
   const params = await searchParams;
   const plan = params.plan === "mensal" ? "mensal" : "anual";
 
-  const amount = plan === "mensal" ? 49.90 : 358.80;
+  const planAmount = plan === "mensal" ? 49.90 : 358.80;
   const installments = plan === "mensal" ? 1 : 12;
   const label = plan === "mensal" ? "Mensal" : "Anual";
   const monthlyPrice = plan === "mensal" ? "R$ 49,90" : "R$ 29,90";
@@ -30,7 +29,6 @@ export default async function CheckoutPage({
     );
   }
 
-  // Gerar external_reference
   let email: string | undefined;
   let tenantId: string | undefined;
   try {
@@ -46,7 +44,7 @@ export default async function CheckoutPage({
     // Usuário não logado
   }
 
-  const externalReference = `${tenantId ?? "none"}_${plan}_none_${Date.now()}`;
+  const baseRef = `${tenantId ?? "none"}_${plan}_none_${Date.now()}`;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -64,53 +62,20 @@ export default async function CheckoutPage({
         </div>
       </nav>
 
-      <div className="mx-auto max-w-lg px-4 py-12">
-        {/* Resumo do pedido */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 mb-8">
-          <h1 className="text-xl font-semibold mb-4">Resumo do pedido</h1>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-400">Plano</span>
-              <span className="text-white font-medium">{label}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Valor mensal</span>
-              <span className="text-emerald-400 font-medium">{monthlyPrice}/mês</span>
-            </div>
-            {plan === "anual" && (
-              <div className="flex justify-between">
-                <span className="text-slate-400">Parcelamento</span>
-                <span className="text-white">12x de R$ 29,90</span>
-              </div>
-            )}
-            <div className="border-t border-white/10 pt-3 flex justify-between">
-              <span className="text-white font-semibold">Total</span>
-              <span className="text-white font-semibold">
-                R$ {amount.toFixed(2).replace(".", ",")}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Brick */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-lg font-semibold mb-4">Pagamento</h2>
-          <CheckoutClient
-            publicKey={publicKey}
-            amount={amount}
-            installments={installments}
-            planType={plan}
-            externalReference={externalReference}
-            email={email}
-          />
-        </div>
-
-        {/* Trust badges */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-[10px] text-slate-500">
-          <span>🔒 Pagamento seguro</span>
-          <span>✓ Garantia 7 dias</span>
-          <span>✓ Cancele quando quiser</span>
-        </div>
+      <div className="mx-auto max-w-lg px-4 py-10">
+        <CheckoutClient
+          publicKey={publicKey}
+          planAmount={planAmount}
+          installments={installments}
+          planType={plan}
+          planLabel={label}
+          monthlyPrice={monthlyPrice}
+          externalReference={baseRef}
+          email={email}
+          bumpAmount={67}
+          bumpName="Pacote Arquitetura da Liberdade"
+          bumpDesc="eBook + Workbook + Planilha de Cenários"
+        />
       </div>
     </div>
   );

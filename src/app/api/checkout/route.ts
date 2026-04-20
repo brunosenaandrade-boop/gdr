@@ -9,6 +9,8 @@ const VALID_AMOUNTS: Record<string, number> = {
   anual: 358.80,
 };
 
+const BUMP_AMOUNT = 67.00;
+
 // Rate limiter: max 5 req/min por IP
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 5;
@@ -51,6 +53,7 @@ export async function POST(request: NextRequest) {
       installments,
       payer,
       external_reference,
+      has_bump,
     } = body;
 
     if (!token || !payment_method_id || !transaction_amount || !payer?.email) {
@@ -67,9 +70,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Plano inválido" }, { status: 400 });
     }
 
+    // Calcular expected total (plano + bump se selecionado)
+    const hasBump = !!has_bump;
+    const expectedTotal = hasBump ? expectedAmount + BUMP_AMOUNT : expectedAmount;
+
     // Validar que o amount enviado é o correto (tolerância de R$ 0,01 para arredondamento)
-    if (Math.abs(Number(transaction_amount) - expectedAmount) > 0.01) {
-      console.error(`[checkout] Amount mismatch: received=${transaction_amount} expected=${expectedAmount} plan=${planType}`);
+    if (Math.abs(Number(transaction_amount) - expectedTotal) > 0.01) {
+      console.error(`[checkout] Amount mismatch: received=${transaction_amount} expected=${expectedTotal} plan=${planType} bump=${hasBump}`);
       return NextResponse.json({ error: "Valor incorreto" }, { status: 400 });
     }
 
@@ -84,7 +91,7 @@ export async function POST(request: NextRequest) {
         token,
         issuer_id: issuer_id || undefined,
         payment_method_id,
-        transaction_amount: expectedAmount, // Usar o valor server-side, não o do client
+        transaction_amount: expectedTotal, // Usar o valor server-side, não o do client
         installments: Number(installments) || 1,
         payer: {
           email: payer.email,
