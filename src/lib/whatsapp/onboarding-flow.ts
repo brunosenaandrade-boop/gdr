@@ -117,14 +117,14 @@ export async function handleFlowResponse(
     return;
   }
 
-  // Criar tenant
+  // Criar tenant (PF/PJ e documento serão preenchidos no painel via OnboardingModal)
   const { data: tenant, error: tenantError } = await supabase
     .from("tenants")
     .insert({
       user_id: newUser.user.id,
       name: nome,
-      type: "pf",
-      document: "",
+      type: null,
+      document: null,
     })
     .select("id")
     .maybeSingle();
@@ -155,10 +155,12 @@ export async function handleFlowResponse(
     await sendWhatsAppMessage(
       phone,
       `Conta criada e assinatura ativada com sucesso! 🎉🛡️\n\n` +
-      `*Seus dados de acesso ao painel:*\n` +
+      `*Último passo:* acesse o painel para informar se você é PF ou PJ (CPF ou CNPJ). Leva 30 segundos:\n` +
+      `guardadinheiro.com.br/dashboard\n\n` +
+      `*Seus dados de acesso:*\n` +
       `📧 E-mail: ${email.toLowerCase()}\n` +
       `🔑 Senha: a que você escolheu no cadastro\n\n` +
-      `Seu WhatsApp já está vinculado. Pode começar a lançar agora mesmo! 💚\n\n` +
+      `Seu WhatsApp já está vinculado. Depois de completar o cadastro, pode começar a lançar! 💚\n\n` +
       `_Ao usar o Guardinha, você concorda com nossos Termos de Uso e Política de Privacidade: guardadinheiro.com.br/termos_`,
     );
   } else {
@@ -166,11 +168,13 @@ export async function handleFlowResponse(
     await sendWhatsAppMessage(
       phone,
       `Conta criada com sucesso! 🎉\n\n` +
-      `*Seus dados de acesso ao painel:*\n` +
+      `*Último passo:* acesse o painel para informar se você é PF ou PJ (CPF ou CNPJ):\n` +
+      `guardadinheiro.com.br/dashboard\n\n` +
+      `*Seus dados de acesso:*\n` +
       `📧 E-mail: ${email.toLowerCase()}\n` +
       `🔑 Senha: a que você escolheu no cadastro\n\n` +
       `Seu WhatsApp já está vinculado automaticamente.\n\n` +
-      `Se você já fez a compra no Mercado Pago, seu acesso será ativado automaticamente em alguns minutos.\n` +
+      `Se você já fez a compra no Mercado Pago, seu acesso será ativado em alguns minutos.\n` +
       `Se ainda não assinou: guardadinheiro.com.br/planos\n\n` +
       `_Ao usar o Guardinha, você concorda com nossos Termos de Uso e Política de Privacidade: guardadinheiro.com.br/termos_`,
     );

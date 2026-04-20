@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,21 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Pré-preencher nome se tenant já existe (criado via WhatsApp signup)
+  useEffect(() => {
+    if (!open) return;
+    const supabase = createClient();
+    (async () => {
+      const { data: existing } = await supabase
+        .from("tenants")
+        .select("name, phone")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (existing?.name) setName(existing.name);
+      if (existing?.phone) setPhone(maskPhone(existing.phone));
+    })();
+  }, [open, userId]);
+
   async function handleSubmit() {
     if (loading) return; // Impede double-click
     setError("");
@@ -39,29 +54,39 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
     setLoading(true);
     const supabase = createClient();
 
-    // 1. Verifica se ja existe tenant para esse usuario
+    // 1. Verifica se ja existe tenant para esse usuario (criado via WhatsApp signup)
     const { data: existing } = await supabase
       .from("tenants")
-      .select("id")
+      .select("id, type, document")
       .eq("user_id", userId)
       .maybeSingle();
 
+    let dbError;
     if (existing) {
-      // Ja existe - pula direto pro dashboard
-      setLoading(false);
-      onComplete();
-      return;
+      // Tenant já existe (WhatsApp signup) → UPDATE completando PF/PJ + documento
+      const { error } = await supabase
+        .from("tenants")
+        .update({
+          type,
+          name: name.trim(),
+          document: document.trim(),
+          trade_name: type === "pj" ? tradeName.trim() : null,
+          phone: phone.replace(/\D/g, "") || null,
+        })
+        .eq("user_id", userId);
+      dbError = error;
+    } else {
+      // Tenant não existe → INSERT (fluxo web puro)
+      const { error } = await supabase.from("tenants").insert({
+        user_id: userId,
+        type,
+        name: name.trim(),
+        document: document.trim(),
+        trade_name: type === "pj" ? tradeName.trim() : null,
+        phone: phone.replace(/\D/g, "") || null,
+      });
+      dbError = error;
     }
-
-    // 2. Insere o tenant
-    const { error: dbError } = await supabase.from("tenants").insert({
-      user_id: userId,
-      type,
-      name: name.trim(),
-      document: document.trim(),
-      trade_name: type === "pj" ? tradeName.trim() : null,
-      phone: phone.replace(/\D/g, "") || null,
-    });
 
     if (dbError) {
       if (dbError.code === "23505") {

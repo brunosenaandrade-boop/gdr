@@ -235,7 +235,7 @@ export default async function PlanosPage() {
             />
             <FAQ
               q="Serve pra empresa (PJ)?"
-              a="Sim. Mesmo plano serve pra PF e PJ. No cadastro você escolhe o tipo e a IA adapta tudo automaticamente. Ideal pra MEI, autônomo e pequeno empresário."
+              a="Sim. Mesmo plano serve pra PF e PJ. Quando você acessa o painel pela primeira vez, escolhe o tipo (PF ou PJ) e a IA adapta tudo automaticamente. Ideal pra MEI, autônomo e pequeno empresário."
             />
             <FAQ
               q="Posso mudar de plano depois?"

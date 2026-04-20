@@ -10,12 +10,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const { data: tenant } = await supabase
     .from("tenants")
-    .select("id")
+    .select("id, type, document")
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // Tenant existe mas está incompleto (sem PF/PJ ou documento) → mostrar OnboardingModal
+  const needsOnboarding = !tenant || !tenant.type || !tenant.document;
+
   return (
-    <DashboardShell userId={user.id} hasTenant={!!tenant}>
+    <DashboardShell userId={user.id} needsOnboarding={needsOnboarding}>
       {children}
     </DashboardShell>
   );

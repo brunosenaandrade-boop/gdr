@@ -8,11 +8,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   userId: string;
-  hasTenant: boolean;
+  needsOnboarding: boolean;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ userId, hasTenant, children }: Props) {
+export function DashboardShell({ userId, needsOnboarding, children }: Props) {
   const router = useRouter();
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function DashboardShell({ userId, hasTenant, children }: Props) {
       <AppSidebar />
       <main className="flex-1 lg:ml-64">{children}</main>
 
-      {!hasTenant && (
+      {needsOnboarding && (
         <OnboardingModal
           open
           userId={userId}

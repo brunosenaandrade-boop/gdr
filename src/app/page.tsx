@@ -797,7 +797,7 @@ export default function LandingPage() {
               { q: "E se eu não gostar?", a: "Você tem 7 dias pra testar. Se não sentir que valeu, pedimos reembolso integral pela Mercado Pago. Sem perguntas, sem formulário, sem espera. O risco é todo nosso." },
               { q: "E se eu quiser cancelar depois?", a: "Cancela quando quiser, com um clique, pela área do assinante na Mercado Pago. Sem multa, sem ligação, sem burocracia. Você mantém acesso até o fim do período que já pagou." },
               { q: "A IA erra muito?", a: "Precisão média acima de 95% em testes reais com brasileiros. E toda transação passa por confirmação antes de ser registrada — se a IA errar, você corrige na hora. Com o tempo, ela aprende suas categorias." },
-              { q: "Serve pra empresa (PJ)?", a: "Sim. Mesmo plano serve pra PF e PJ. No cadastro você escolhe o tipo e a IA adapta as categorias automaticamente. Ideal pra MEI, autônomo e pequeno empresário." },
+              { q: "Serve pra empresa (PJ)?", a: "Sim. Mesmo plano serve pra PF e PJ. Quando você acessa o painel pela primeira vez, escolhe o tipo (PF ou PJ) e a IA adapta as categorias automaticamente. Ideal pra MEI, autônomo e pequeno empresário." },
             ].map((item) => (
               <details key={item.q} className="group rounded-xl border border-white/5 bg-white/[0.02] p-5">
                 <summary className="flex items-center justify-between cursor-pointer list-none">
