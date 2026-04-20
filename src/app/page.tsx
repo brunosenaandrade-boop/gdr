@@ -822,7 +822,7 @@ export default function LandingPage() {
               {
                 name: "Maria Eduarda",
                 role: "Cabeleireira autônoma",
-                text: "Eu tentei planilha, app de banco, tudo. Nada funcionava porque eu esquecia de anotar. Com o Guardinha eu só mando um áudio rápido entre um cliente e outro e ta tudo registrado. Nunca mais perdi o controle.",
+                text: "Eu tentei planilha, app de banco, tudo. Nada funcionava porque eu esquecia de anotar. Com o Guardinha eu só mando um áudio rápido entre um cliente e outro e tá tudo registrado. Nunca mais perdi o controle.",
                 stars: 5,
               },
               {
@@ -846,7 +846,7 @@ export default function LandingPage() {
               {
                 name: "Juliana Ferreira",
                 role: "Professora particular",
-                text: "Tenho 12 alunos e cada um paga em data diferente. O Guardinha me avisa todo dia de manhã quem tem que pagar e se alguém ta atrasado. Não perco mais nenhum recebimento.",
+                text: "Tenho 12 alunos e cada um paga em data diferente. O Guardinha me avisa todo dia de manhã quem tem que pagar e se alguém tá atrasado. Não perco mais nenhum recebimento.",
                 stars: 5,
               },
               {

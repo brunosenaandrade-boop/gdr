@@ -30,7 +30,7 @@ export function FluxoCaixaClient({ data, currentDays }: Props) {
 
   return (
     <>
-      <AppHeader title="Fluxo de Caixa" description="Visualize entradas e saidas ao longo do tempo">
+      <AppHeader title="Fluxo de Caixa" description="Visualize entradas e saídas ao longo do tempo">
         <Select
           value={String(currentDays)}
           onChange={(e) => changePeriod(e.target.value)}
@@ -60,7 +60,7 @@ export function FluxoCaixaClient({ data, currentDays }: Props) {
               <TrendingDown className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Saidas</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Saídas</p>
               <p className="text-lg font-semibold text-red-400 tabular-nums">{formatCurrency(totalDespesas)}</p>
             </div>
           </Card>
