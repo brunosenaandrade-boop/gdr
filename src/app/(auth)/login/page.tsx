@@ -81,9 +81,9 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Não tem conta?{" "}
-        <a href="/planos" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+        <Link href="/planos" className="text-emerald-400 hover:text-emerald-300 transition-colors">
           Ver planos
-        </a>
+        </Link>
       </p>
     </Card>
   );

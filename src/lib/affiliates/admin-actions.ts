@@ -79,15 +79,22 @@ export async function createAffiliate(input: {
     user_metadata: { full_name: name, role: "affiliate" },
   });
 
-  if (authError || !authUser?.user) {
-    // Se o user já existe no auth (ex: era tenant), continua só criando affiliate vinculado
+  let userId: string | null = authUser?.user?.id ?? null;
+
+  if (authError || !userId) {
+    // Se o user já existe no auth (ex: era tenant), buscar o ID existente
     const emailExists = authError?.message?.toLowerCase().includes("already");
     if (!emailExists) {
       return { ok: false, error: authError?.message ?? "Erro ao criar usuário" };
     }
+    // Buscar user existente pelo email (pagina até encontrar)
+    const { data: authList } = await service.auth.admin.listUsers({ perPage: 500 });
+    const existing = authList?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    userId = existing?.id ?? null;
+    if (!userId) {
+      return { ok: false, error: "Usuário existe no auth mas não foi possível encontrar. Tente novamente." };
+    }
   }
-
-  const userId = authUser?.user?.id ?? null;
 
   // Criar afiliado
   const { data: affiliate, error } = await service

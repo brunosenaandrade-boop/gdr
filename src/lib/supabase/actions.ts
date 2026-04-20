@@ -57,10 +57,14 @@ export async function updateTransaction(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+  if (!tenant) return { error: "Tenant não encontrado" };
+
   const { error } = await supabase
     .from("transactions")
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenant.id);
 
   if (error) {
     Sentry.captureException(error);
@@ -73,7 +77,10 @@ export async function updateTransaction(
 
 export async function deleteTransaction(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+  if (!tenant) return { error: "Tenant não encontrado" };
+
+  const { error } = await supabase.from("transactions").delete().eq("id", id).eq("tenant_id", tenant.id);
   if (error) {
     Sentry.captureException(error);
     console.error("deleteTransaction DB error:", error.message);
@@ -155,7 +162,10 @@ export async function updateCategory(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("categories").update(parsed.data).eq("id", id);
+  const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+  if (!tenant) return { error: "Tenant não encontrado" };
+
+  const { error } = await supabase.from("categories").update(parsed.data).eq("id", id).eq("tenant_id", tenant.id);
 
   if (error) {
     Sentry.captureException(error);
@@ -168,7 +178,10 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+  if (!tenant) return { error: "Tenant não encontrado" };
+
+  const { error } = await supabase.from("categories").delete().eq("id", id).eq("tenant_id", tenant.id);
   if (error) {
     Sentry.captureException(error);
     console.error("deleteCategory DB error:", error.message);
