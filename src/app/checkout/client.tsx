@@ -17,6 +17,7 @@ interface CheckoutClientProps {
   bumpAmount: number;
   bumpName: string;
   bumpDesc: string;
+  showBump: boolean;
 }
 
 export function CheckoutClient({
@@ -31,6 +32,7 @@ export function CheckoutClient({
   bumpAmount,
   bumpName,
   bumpDesc,
+  showBump,
 }: CheckoutClientProps) {
   const [addBump, setAddBump] = useState(false);
   const [status, setStatus] = useState<"idle" | "processing" | "approved" | "error">("idle");
@@ -125,7 +127,8 @@ export function CheckoutClient({
             </div>
           )}
 
-          {/* Upsell checkbox */}
+          {/* Upsell checkbox — só mostra se ainda não comprou */}
+          {showBump && (
           <div className="border-t border-white/10 pt-3 mt-3">
             <label className="flex items-start gap-3 cursor-pointer group rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-3 transition-colors hover:bg-amber-500/[0.06]">
               <input
@@ -144,6 +147,7 @@ export function CheckoutClient({
               </div>
             </label>
           </div>
+          )}
 
           {/* Total */}
           <div className="border-t border-white/10 pt-3 flex justify-between">

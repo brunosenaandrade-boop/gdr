@@ -44,6 +44,22 @@ export default async function CheckoutPage({
     // Usuário não logado
   }
 
+  // Verificar se já comprou o bump
+  let alreadyHasBump = false;
+  if (tenantId) {
+    try {
+      const { createServiceClient } = await import("@/lib/supabase/server");
+      const service = await createServiceClient();
+      const { count } = await service
+        .from("purchase_bumps")
+        .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId);
+      alreadyHasBump = (count ?? 0) > 0;
+    } catch {
+      // Ignora erro
+    }
+  }
+
   const baseRef = `${tenantId ?? "none"}_${plan}_none_${Date.now()}`;
 
   return (
@@ -75,6 +91,7 @@ export default async function CheckoutPage({
           bumpAmount={67}
           bumpName="Pacote Arquitetura da Liberdade"
           bumpDesc="eBook + Workbook + Planilha de Cenários"
+          showBump={!alreadyHasBump}
         />
       </div>
     </div>
