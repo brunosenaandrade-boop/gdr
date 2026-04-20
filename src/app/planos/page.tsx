@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
-import { SubscribeForm } from "./subscribe-form";
+import { SubscribeForm, SubscribeProvider } from "./subscribe-form";
 
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function PlanosPage() {
   return (
+    <SubscribeProvider>
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <nav className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
@@ -284,6 +285,7 @@ export default async function PlanosPage() {
         </div>
       </footer>
     </div>
+    </SubscribeProvider>
   );
 }
 
