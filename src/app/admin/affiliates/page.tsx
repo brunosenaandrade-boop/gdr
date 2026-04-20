@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllAffiliates } from "@/lib/affiliates/queries";
 import { AdminShell } from "../layout";
+import { InviteForm } from "./invite-form";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +42,16 @@ export default async function AdminAffiliatesPage({
           </div>
           <Link
             href="/admin/affiliates/new"
-            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-medium rounded-lg"
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium rounded-lg"
           >
-            + Novo afiliado
+            + Formulário completo
           </Link>
+        </div>
+
+        {/* Convite rápido por email */}
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Convite rápido</p>
+          <InviteForm />
         </div>
 
         <form className="flex gap-2">

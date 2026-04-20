@@ -8,6 +8,7 @@ export type AffiliateContext = {
   status: "active" | "suspended" | "blocked";
   commissionRate: number;
   mustChangePassword: boolean;
+  termsAcceptedAt: string | null;
 };
 
 /**
@@ -22,20 +23,21 @@ export async function getCurrentAffiliate(): Promise<AffiliateContext | null> {
   const service = await createServiceClient();
   const { data } = await service
     .from("affiliates")
-    .select("id, user_id, email, name, status, commission_rate, must_change_password")
+    .select("id, user_id, email, name, status, commission_rate, must_change_password, terms_accepted_at")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .maybeSingle() as { data: Record<string, unknown> | null };
 
   if (!data) return null;
 
   return {
-    affiliateId: data.id,
-    userId: data.user_id ?? user.id,
-    email: data.email,
-    name: data.name,
+    affiliateId: data.id as string,
+    userId: (data.user_id as string) ?? user.id,
+    email: data.email as string,
+    name: data.name as string,
     status: data.status as AffiliateContext["status"],
     commissionRate: Number(data.commission_rate),
-    mustChangePassword: data.must_change_password ?? false,
+    mustChangePassword: (data.must_change_password as boolean) ?? false,
+    termsAcceptedAt: (data.terms_accepted_at as string) ?? null,
   };
 }
 

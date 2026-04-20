@@ -17,6 +17,12 @@ export async function AfiliadoShell({ children }: { children: React.ReactNode })
   const affiliate = await getCurrentAffiliate();
   if (!affiliate) redirect("/afiliado/login");
 
+  // Redirecionar para aceitar termos se ainda não aceitou
+  // A página de termos (/afiliado/termos) NÃO usa AfiliadoShell, então não há loop
+  if (!affiliate.termsAcceptedAt) {
+    redirect("/afiliado/termos");
+  }
+
   if (affiliate.status !== "active") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">

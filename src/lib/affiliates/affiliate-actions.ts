@@ -6,6 +6,22 @@ import { getCurrentAffiliate } from "./auth";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
+export async function acceptAffiliateTerms(): Promise<ActionResult> {
+  const affiliate = await getCurrentAffiliate();
+  if (!affiliate) return { ok: false, error: "Não autenticado" };
+
+  const service = await createServiceClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (service.from("affiliates") as any)
+    .update({ terms_accepted_at: new Date().toISOString() })
+    .eq("id", affiliate.affiliateId);
+
+  if (error) return { ok: false, error: "Erro ao aceitar termos" };
+
+  revalidatePath("/afiliado");
+  return { ok: true };
+}
+
 export async function signInAffiliate(
   email: string,
   password: string,
