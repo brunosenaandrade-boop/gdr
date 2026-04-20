@@ -12,6 +12,7 @@
     "supabase:gen-types": "npx -y supabase gen types typescript --project-id ecojxxmsdmhqtmwvkjwg --schema public > src/types/supabase.ts"
   },
   "dependencies": {
+    "@mercadopago/sdk-react": "^1.0.7",
     "@react-email/render": "^2.0.7",
     "@sentry/nextjs": "^10.47.0",
     "@supabase/ssr": "^0.10.0",

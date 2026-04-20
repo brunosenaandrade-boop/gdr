@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
-
-// Checkout via Mercado Pago — URLs serão geradas dinamicamente via server action
 // Fallback: página /planos com botão que redireciona
 
 export const metadata = {
@@ -11,40 +8,11 @@ export const metadata = {
     "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 49,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
 };
 
-async function getCheckoutUrls(): Promise<{ anual: string; mensal: string }> {
-  try {
-    const { createCheckoutPreference } = await import("@/lib/mercadopago/checkout");
-    let email: string | undefined;
-    let tenantId: string | undefined;
-
-    try {
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      email = user?.email ?? undefined;
-      if (user) {
-        const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
-        tenantId = tenant?.id;
-      }
-    } catch {
-      // Usuário não logado
-    }
-
-    const [anualResult, mensalResult] = await Promise.all([
-      createCheckoutPreference({ tenantId, planType: "anual", email }),
-      createCheckoutPreference({ tenantId, planType: "mensal", email }),
-    ]);
-
-    return {
-      anual: anualResult.ok ? anualResult.url : "/planos",
-      mensal: mensalResult.ok ? mensalResult.url : "/planos",
-    };
-  } catch {
-    return { anual: "/planos", mensal: "/planos" };
-  }
-}
-
 export default async function PlanosPage() {
-  const checkoutUrl = await getCheckoutUrls();
+  const checkoutUrl = {
+    anual: "/checkout?plan=anual",
+    mensal: "/checkout?plan=mensal",
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -126,8 +94,6 @@ export default async function PlanosPage() {
 
                 <a
                   href={checkoutUrl.anual}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="mt-8 block w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full text-center transition-all hover:scale-[1.02]"
                 >
                   Assinar anual por R$ 29,90/mês
@@ -165,8 +131,6 @@ export default async function PlanosPage() {
 
                 <a
                   href={checkoutUrl.mensal}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="mt-8 block w-full py-4 bg-white/10 hover:bg-white/15 text-white font-bold text-base rounded-full text-center transition-all hover:scale-[1.02] border border-white/10"
                 >
                   Assinar mensal por R$ 49,90/mês
@@ -293,16 +257,12 @@ export default async function PlanosPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href={checkoutUrl.anual}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-block px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-full transition-all hover:scale-105"
             >
               Anual — R$ 29,90/mês
             </a>
             <a
               href={checkoutUrl.mensal}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-block px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-medium text-base rounded-full transition-all hover:scale-105 border border-white/10"
             >
               Mensal — R$ 49,90/mês
