@@ -10,7 +10,7 @@ interface AffiliateReportEmailProps {
 
 export function AffiliateReportEmail({ name, period, salesCount, totalCommission, dashboardUrl }: AffiliateReportEmailProps) {
   return (
-    <BaseLayout preview={`Relatorio mensal: ${salesCount} vendas, ${totalCommission} em comissoes.`}>
+    <BaseLayout preview={`Relatório mensal: ${salesCount} vendas, ${totalCommission} em comissões.`}>
       {/* Chart icon */}
       <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
         <tr>
@@ -20,15 +20,15 @@ export function AffiliateReportEmail({ name, period, salesCount, totalCommission
         </tr>
       </table>
 
-      <EmailHeading>Relatorio mensal de comissoes</EmailHeading>
+      <EmailHeading>Relatório mensal de comissões</EmailHeading>
 
-      <EmailText>Oi {name}, aqui esta o resumo das suas vendas no periodo.</EmailText>
+      <EmailText>Oi {name}, aqui está o resumo das suas vendas no período.</EmailText>
 
       <InfoCard
         rows={[
-          { label: "Periodo", value: period },
+          { label: "Período", value: period },
           { label: "Vendas", value: String(salesCount) },
-          { label: "Comissao total", value: totalCommission },
+          { label: "Comissão total", value: totalCommission },
         ]}
       />
 
@@ -38,8 +38,8 @@ export function AffiliateReportEmail({ name, period, salesCount, totalCommission
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>
         {salesCount > 0
-          ? "Continue divulgando seu cupom para aumentar suas comissoes!"
-          : "Nenhuma venda registrada neste periodo. Compartilhe seu cupom para comecar a ganhar comissoes."}
+          ? "Continue divulgando seu cupom para aumentar suas comissões!"
+          : "Nenhuma venda registrada neste período. Compartilhe seu cupom para começar a ganhar comissões."}
       </EmailText>
     </BaseLayout>
   );

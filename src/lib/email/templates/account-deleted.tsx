@@ -7,8 +7,8 @@ interface AccountDeletedEmailProps {
 
 export function AccountDeletedEmail({ name, email }: AccountDeletedEmailProps) {
   return (
-    <BaseLayout preview="Sua conta no Guarda Dinheiro foi excluida com sucesso.">
-      <EmailHeading>Conta excluida com sucesso</EmailHeading>
+    <BaseLayout preview="Sua conta no Guarda Dinheiro foi excluída com sucesso.">
+      <EmailHeading>Conta excluída com sucesso</EmailHeading>
 
       <EmailText>
         {name ? `Oi ${name}, sua` : "Sua"} conta ({email}) e todos os dados associados foram permanentemente removidos
@@ -17,8 +17,8 @@ export function AccountDeletedEmail({ name, email }: AccountDeletedEmailProps) {
 
       <InfoCard
         rows={[
-          { label: "Removido", value: "Dados financeiros (transacoes, categorias)" },
-          { label: "", value: "Historico de conversas no WhatsApp" },
+          { label: "Removido", value: "Dados financeiros (transações, categorias)" },
+          { label: "", value: "Histórico de conversas no WhatsApp" },
           { label: "", value: "Compromissos e lembretes" },
           { label: "", value: "Dados pessoais e credenciais" },
         ]}
@@ -27,8 +27,8 @@ export function AccountDeletedEmail({ name, email }: AccountDeletedEmailProps) {
       <EmailDivider />
 
       <EmailText style={{ fontSize: "13px" }}>
-        Em conformidade com a Lei Geral de Protecao de Dados (Lei 13.709/2018), todos os seus dados pessoais foram
-        permanentemente removidos dos nossos servidores. Esta acao nao pode ser desfeita.
+        Em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018), todos os seus dados pessoais foram
+        permanentemente removidos dos nossos servidores. Esta ação não pode ser desfeita.
       </EmailText>
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>

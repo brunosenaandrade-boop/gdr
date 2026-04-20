@@ -43,7 +43,7 @@ export function PasswordChangedEmail({ name, email, changedAt }: PasswordChanged
         <tr>
           <td style={{ padding: "16px 20px" }}>
             <p style={{ color: "#F87171", fontSize: "14px", fontWeight: 600, margin: "0 0 6px" }}>
-              Voce NAO fez essa alteracao?
+              Você NÃO fez essa alteração?
             </p>
             <p style={{ color: "#94A3B8", fontSize: "13px", margin: 0, lineHeight: "1.6" }}>
               Entre em contato imediatamente pelo WhatsApp ou em contato@guardadinheiro.com.br para proteger sua conta.

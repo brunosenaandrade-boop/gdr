@@ -19,7 +19,7 @@ export function SubscriptionExpiringEmail({
   const formattedDate = new Date(expiresAt).toLocaleDateString("pt-BR");
 
   return (
-    <BaseLayout preview={`Sua assinatura expira em ${daysRemaining} dias. Renove para nao perder acesso.`}>
+    <BaseLayout preview={`Sua assinatura expira em ${daysRemaining} dias. Renove para não perder acesso.`}>
       {/* Clock icon */}
       <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
         <tr>
@@ -34,8 +34,8 @@ export function SubscriptionExpiringEmail({
       </EmailHeading>
 
       <EmailText>
-        {name ? `Oi ${name}, sua` : "Sua"} assinatura do Guarda Dinheiro esta prestes a vencer. Renove agora para
-        continuar usando o Guardinha sem interrupcao.
+        {name ? `Oi ${name}, sua` : "Sua"} assinatura do Guarda Dinheiro está prestes a vencer. Renove agora para
+        continuar usando o Guardinha sem interrupção.
       </EmailText>
 
       <InfoCard
@@ -48,7 +48,7 @@ export function SubscriptionExpiringEmail({
       <EmailButton href={renewalUrl}>Renovar Agora</EmailButton>
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>
-        Apos o vencimento, voce perdera acesso ao painel e ao Guardinha no WhatsApp. Seus dados ficam seguros por 90
+        Após o vencimento, você perderá acesso ao painel e ao Guardinha no WhatsApp. Seus dados ficam seguros por 90
         dias.
       </EmailText>
     </BaseLayout>

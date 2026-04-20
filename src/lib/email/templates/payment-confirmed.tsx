@@ -41,7 +41,7 @@ export function PaymentConfirmedEmail({ name, planType, amount, periodEnd, trans
       <EmailHeading>Pagamento Confirmado!</EmailHeading>
 
       <EmailText>
-        {name ? `Oi ${name}, seu` : "Seu"} pagamento foi processado com sucesso. Seu plano esta ativo e voce ja pode
+        {name ? `Oi ${name}, seu` : "Seu"} pagamento foi processado com sucesso. Seu plano está ativo e você já pode
         usar todas as funcionalidades do Guarda Dinheiro.
       </EmailText>
 
@@ -49,15 +49,15 @@ export function PaymentConfirmedEmail({ name, planType, amount, periodEnd, trans
         rows={[
           { label: "Plano", value: planLabel },
           { label: "Valor", value: formattedAmount },
-          { label: "Acesso ate", value: formattedDate },
-          { label: "ID transacao", value: transactionId },
+          { label: "Acesso até", value: formattedDate },
+          { label: "ID transação", value: transactionId },
         ]}
       />
 
       <EmailButton href="https://www.guardadinheiro.com.br/dashboard">Acessar o Painel</EmailButton>
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>
-        Este email serve como comprovante de pagamento. Guarde-o para referencia futura.
+        Este email serve como comprovante de pagamento. Guarde-o para referência futura.
       </EmailText>
     </BaseLayout>
   );

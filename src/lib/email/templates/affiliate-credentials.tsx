@@ -21,7 +21,7 @@ export function AffiliateCredentialsEmail({ name, email, tempPassword, loginUrl 
         rows={[
           { label: "Painel", value: loginUrl },
           { label: "E-mail", value: email },
-          { label: "Senha temporaria", value: tempPassword },
+          { label: "Senha temporária", value: tempPassword },
         ]}
       />
 
@@ -41,7 +41,7 @@ export function AffiliateCredentialsEmail({ name, email, tempPassword, loginUrl 
         <tr>
           <td style={{ padding: "14px 20px" }}>
             <p style={{ color: "#FBBF24", fontSize: "13px", fontWeight: 600, margin: 0 }}>
-              Altere sua senha no primeiro acesso por seguranca.
+              Altere sua senha no primeiro acesso por segurança.
             </p>
           </td>
         </tr>
@@ -52,7 +52,7 @@ export function AffiliateCredentialsEmail({ name, email, tempPassword, loginUrl 
       <EmailDivider />
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>
-        Comissao de 40% sobre cada venda realizada com seu cupom. Acompanhe suas vendas e comissoes pelo painel.
+        Comissão de 40% sobre cada venda realizada com seu cupom. Acompanhe suas vendas e comissões pelo painel.
       </EmailText>
     </BaseLayout>
   );

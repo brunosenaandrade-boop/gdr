@@ -97,7 +97,7 @@ export default function RegisterPage() {
           <Shield className="h-6 w-6 text-black" />
         </div>
         <h1 className="text-xl font-semibold tracking-tight text-white">Criar Conta</h1>
-        <p className="text-sm text-slate-400 mt-1">Em 1 minuto voce assume o controle das suas financas</p>
+        <p className="text-sm text-slate-400 mt-1">Em 1 minuto você assume o controle das suas finanças</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

@@ -93,7 +93,7 @@ export default function LandingPage() {
                   <i className="point" /><i className="point" /><i className="point" /><i className="point" /><i className="point" />
                 </div>
                 <span className="relative z-10 flex items-center gap-2">
-                  Comecar por R$ 29,90/mes
+                  Começar por R$ 29,90/mês
                   <ArrowRight className="h-4 w-4 text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                 </span>
               </Link>
@@ -480,7 +480,7 @@ export default function LandingPage() {
               </div>
               <h2 className="text-4xl font-medium leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Suas finanças no{" "}
-                <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">piloto automatico.</span>
+                <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">piloto automático.</span>
               </h2>
               {/* Feature pills */}
               <div className="relative mt-10">
@@ -569,7 +569,7 @@ export default function LandingPage() {
         {/* Section Header */}
         <div className="mb-10 mt-4 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-10 sm:flex-row sm:items-center">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Tudo que voce precisa, nada que nao precisa</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Tudo que você precisa, nada que não precisa</h2>
             <p className="mt-2 text-sm text-slate-400">Cada funcionalidade resolve um problema real do seu dia a dia financeiro.</p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5">
@@ -889,7 +889,7 @@ export default function LandingPage() {
               <span className="bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200 bg-clip-text text-transparent">assume o controle.</span>
             </h2>
             <p className="mt-6 max-w-md text-lg font-light text-slate-400">
-              R$ 29,90/mes — se em 7 dias voce nao sentir que valeu cada centavo, devolvemos 100% do valor. Sem perguntas.
+              R$ 29,90/mês — se em 7 dias você não sentir que valeu cada centavo, devolvemos 100% do valor. Sem perguntas.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
               <Link

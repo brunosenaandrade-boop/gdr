@@ -24,8 +24,8 @@ export function SubscriptionExpiredEmail({ name, reactivationUrl }: Subscription
       </EmailText>
 
       <EmailText>
-        Nao se preocupe — seus dados financeiros estao seguros e serao mantidos por 90 dias. Voce pode reativar a
-        qualquer momento e tudo estara como voce deixou.
+        Não se preocupe — seus dados financeiros estão seguros e serão mantidos por 90 dias. Você pode reativar a
+        qualquer momento e tudo estará como você deixou.
       </EmailText>
 
       <EmailButton href={reactivationUrl}>Reativar Agora</EmailButton>
@@ -33,7 +33,7 @@ export function SubscriptionExpiredEmail({ name, reactivationUrl }: Subscription
       <EmailDivider />
 
       <EmailText style={{ fontSize: "13px", color: "#64748B" }}>
-        Apos 90 dias sem reativacao, seus dados serao permanentemente removidos em conformidade com a LGPD (Lei
+        Após 90 dias sem reativação, seus dados serão permanentemente removidos em conformidade com a LGPD (Lei
         13.709/2018). Se precisar de ajuda, fale conosco em contato@guardadinheiro.com.br.
       </EmailText>
     </BaseLayout>

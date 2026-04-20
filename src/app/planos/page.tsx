@@ -85,8 +85,8 @@ export default async function PlanosPage() {
           </h1>
 
           <p className="mt-6 max-w-xl mx-auto text-lg text-slate-400">
-            A maioria das pessoas perde ate 30% da renda por nao saber pra onde o dinheiro vai.
-            Com o Guardinha, voce registra tudo em segundos pelo WhatsApp — e finalmente enxerga o problema.
+            A maioria das pessoas perde até 30% da renda por não saber pra onde o dinheiro vai.
+            Com o Guardinha, você registra tudo em segundos pelo WhatsApp — e finalmente enxerga o problema.
           </p>
         </section>
 
@@ -117,8 +117,8 @@ export default async function PlanosPage() {
                 </p>
 
                 <div className="mt-6 space-y-2 text-sm">
-                  <Feature text="Tudo do plano mensal incluido" />
-                  <Feature text="Voce economiza R$ 240/ano vs mensal" />
+                  <Feature text="Tudo do plano mensal incluído" />
+                  <Feature text="Você economiza R$ 240/ano vs mensal" />
                   <Feature text="Score financeiro semanal + agenda" />
                   <Feature text="Bonus exclusivos no checkout" />
                   <Feature text="Menos de R$ 1 por dia pelo controle total" />
@@ -256,28 +256,28 @@ export default async function PlanosPage() {
           <h2 className="text-2xl font-semibold text-center mb-8">Perguntas frequentes</h2>
           <div className="space-y-4">
             <FAQ
-              q="E se eu nao gostar?"
-              a="Voce tem 7 dias pra testar tudo. Se nao sentir que valeu cada centavo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhum formulario. O risco e todo nosso — voce so tem a ganhar."
+              q="E se eu não gostar?"
+              a="Você tem 7 dias pra testar tudo. Se não sentir que valeu cada centavo, pedimos reembolso integral pela Mercado Pago. Nenhuma pergunta, nenhum formulário. O risco é todo nosso — você só tem a ganhar."
             />
             <FAQ
               q="Preciso baixar app?"
-              a="Nao. Zero downloads. O cadastro acontece no proprio WhatsApp e o Guardinha funciona direto nele. Tem tambem um painel web completo pra graficos e relatorios — acessa pelo navegador."
+              a="Não. Zero downloads. O cadastro acontece no próprio WhatsApp e o Guardinha funciona direto nele. Tem também um painel web completo pra gráficos e relatórios — acessa pelo navegador."
             />
             <FAQ
               q="E se eu quiser cancelar depois?"
-              a="Cancela com um clique na area do assinante Mercado Pago. Sem multa, sem ligacao, sem burocracia. Mantem acesso ate o fim do periodo pago."
+              a="Cancela com um clique na área do assinante Mercado Pago. Sem multa, sem ligação, sem burocracia. Mantém acesso até o fim do período pago."
             />
             <FAQ
               q="A IA erra?"
-              a="Precisao media acima de 95% em testes reais com brasileiros. E toda transacao passa por confirmacao antes de ser registrada — voce sempre tem a ultima palavra. Nada e salvo sem seu OK."
+              a="Precisão média acima de 95% em testes reais com brasileiros. E toda transação passa por confirmação antes de ser registrada — você sempre tem a última palavra. Nada é salvo sem seu OK."
             />
             <FAQ
               q="Serve pra empresa (PJ)?"
-              a="Sim. Mesmo plano serve pra PF e PJ. No cadastro voce escolhe o tipo e a IA adapta categorias, linguagem e contexto automaticamente. Ideal pra MEI, autonomo e pequeno empresario."
+              a="Sim. Mesmo plano serve pra PF e PJ. No cadastro você escolhe o tipo e a IA adapta categorias, linguagem e contexto automaticamente. Ideal pra MEI, autônomo e pequeno empresário."
             />
             <FAQ
               q="Posso mudar de plano depois?"
-              a="Sim! Comece no mensal e migre pro anual quando quiser. A mudanca e simples, feita pela area do assinante na Mercado Pago."
+              a="Sim! Comece no mensal e migre pro anual quando quiser. A mudança é simples, feita pela área do assinante na Mercado Pago."
             />
           </div>
         </section>
@@ -285,10 +285,10 @@ export default async function PlanosPage() {
         {/* CTA final */}
         <section className="text-center py-12">
           <h2 className="text-2xl font-semibold mb-3">
-            Daqui a 7 dias voce vai saber exatamente pra onde vai cada centavo.
+            Daqui a 7 dias você vai saber exatamente pra onde vai cada centavo.
           </h2>
           <p className="text-slate-400 mb-8">
-            Se nao valer, devolvemos 100%. Ativacao imediata. Cartao, PIX ou Boleto.
+            Se não valer, devolvemos 100%. Ativação imediata. Cartão, PIX ou Boleto.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
