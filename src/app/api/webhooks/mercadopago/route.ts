@@ -56,6 +56,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "ok" });
     }
 
+    // === PREAPPROVAL (Assinaturas) ===
+    if (type === "preapproval" && data?.id) {
+      return await handlePreapproval(String(data.id), action);
+    }
+
     // Só processar pagamentos
     if (type !== "payment" || !data?.id) {
       return NextResponse.json({ status: "ignored", type });
@@ -338,4 +343,169 @@ export async function POST(request: NextRequest) {
 // GET pra verificação do MP
 export async function GET() {
   return NextResponse.json({ status: "ok" });
+}
+
+/**
+ * Processa eventos de PreApproval (Assinaturas).
+ * - authorized: assinatura ativada, criar subscription + opcional bump payment
+ * - cancelled: assinatura cancelada pelo cliente
+ * - paused: suspensa
+ */
+async function handlePreapproval(preapprovalId: string, action?: string) {
+  try {
+    console.log("[mercadopago] Preapproval event:", preapprovalId, action);
+    const supabase = await createServiceClient();
+
+    // Idempotência
+    const { data: existingEvent } = await supabase
+      .from("subscription_events")
+      .select("id")
+      .eq("gateway_event_id", `preapproval_${preapprovalId}`)
+      .maybeSingle();
+
+    if (existingEvent) {
+      return NextResponse.json({ status: "already_processed" });
+    }
+
+    // Buscar dados reais da assinatura na API do MP
+    const { MercadoPagoConfig, PreApproval } = await import("mercadopago");
+    const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN! });
+    const preapproval = new PreApproval(client);
+
+    const data = await preapproval.get({ id: preapprovalId });
+    if (!data || !data.id) {
+      return NextResponse.json({ error: "Preapproval not found" }, { status: 404 });
+    }
+
+    const status = data.status; // pending | authorized | paused | cancelled
+    const externalRef = data.external_reference ?? "";
+    const payerEmail = data.payer_email?.toLowerCase() ?? null;
+    const planAmount = data.auto_recurring?.transaction_amount ?? 0;
+    const frequencyType = data.auto_recurring?.frequency_type; // months | years
+
+    const { tenantId: refTenantId, planType, hasBump } = parseExternalReference(externalRef);
+
+    let tenantId = refTenantId;
+    if (!tenantId && payerEmail) {
+      const { data: existingSub } = await supabase
+        .from("subscriptions")
+        .select("tenant_id")
+        .eq("buyer_email", payerEmail)
+        .limit(1)
+        .maybeSingle();
+      tenantId = existingSub?.tenant_id ?? null;
+    }
+
+    // Salvar evento para auditoria
+    await supabase.from("subscription_events").insert({
+      tenant_id: tenantId,
+      event_type: `preapproval.${status}`,
+      gateway_event_id: `preapproval_${preapprovalId}`,
+      buyer_email: payerEmail,
+      payload: data as unknown as import("@/types/supabase").Json,
+      processed: false,
+    });
+
+    if (status !== "authorized") {
+      return NextResponse.json({ status: "ok", preapproval_status: status });
+    }
+
+    if (!tenantId) {
+      console.warn(`[mercadopago] Preapproval autorizada sem tenant: ${preapprovalId} email=${payerEmail}`);
+      return NextResponse.json({ status: "ok", warning: "tenant_not_found" });
+    }
+
+    // Calcular current_period_end baseado na frequência
+    const now = new Date();
+    const periodEnd = new Date(now);
+    if (frequencyType === "years") {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    // Ativar subscription
+    await supabase.from("subscriptions").upsert({
+      tenant_id: tenantId,
+      status: "active",
+      gateway: "mercadopago",
+      gateway_transaction_id: preapprovalId,
+      buyer_email: payerEmail,
+      plan_type: planType,
+      current_period_end: periodEnd.toISOString(),
+      canceled_at: null,
+      refunded_at: null,
+      past_due_since: null,
+      updated_at: now.toISOString(),
+    }, { onConflict: "tenant_id" });
+
+    // Marcar evento como processado
+    await supabase
+      .from("subscription_events")
+      .update({ processed: true })
+      .eq("gateway_event_id", `preapproval_${preapprovalId}`);
+
+    // Se tem bump, criar Payment único de R$ 67
+    if (hasBump && payerEmail) {
+      try {
+        const { Payment } = await import("mercadopago");
+        const paymentClient = new Payment(client);
+
+        const bumpPayment = await paymentClient.create({
+          body: {
+            transaction_amount: 67.0,
+            description: "Pacote Arquitetura da Liberdade — Guarda Dinheiro",
+            payment_method_id: "pix",
+            payer: { email: payerEmail },
+            external_reference: `${tenantId}__bump__${preapprovalId}__${Date.now()}`,
+            notification_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.guardadinheiro.com.br"}/api/webhooks/mercadopago`,
+          },
+        });
+
+        console.log(`[mercadopago] Bump payment criado: ${bumpPayment.id} para tenant ${tenantId}`);
+      } catch (err) {
+        console.error("[mercadopago] Erro ao criar bump payment:", err);
+        Sentry.captureException(err);
+      }
+    }
+
+    // Email de confirmação
+    try {
+      const { data: tenantData } = await supabase
+        .from("tenants")
+        .select("name, user_id")
+        .eq("id", tenantId)
+        .maybeSingle();
+
+      const recipientEmail = payerEmail ?? (tenantData?.user_id
+        ? (await supabase.auth.admin.getUserById(tenantData.user_id)).data?.user?.email
+        : null);
+
+      if (recipientEmail) {
+        const { sendEmail } = await import("@/lib/email/resend");
+        const { PaymentConfirmedEmail } = await import("@/lib/email/templates/payment-confirmed");
+        await sendEmail({
+          to: recipientEmail,
+          subject: "Assinatura ativada - Guarda Dinheiro",
+          react: PaymentConfirmedEmail({
+            name: tenantData?.name,
+            planType: planType as "mensal" | "anual",
+            amount: planAmount,
+            periodEnd: periodEnd.toISOString(),
+            transactionId: preapprovalId,
+          }),
+          idempotencyKey: `preapproval-${preapprovalId}`,
+          tags: [{ name: "category", value: "preapproval-authorized" }],
+        });
+      }
+    } catch (err) {
+      console.error("[mercadopago] Erro ao enviar email de confirmação:", err);
+    }
+
+    return NextResponse.json({ status: "ok" });
+  } catch (err) {
+    Sentry.captureException(err);
+    console.error("[mercadopago] Preapproval handler error:", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
+import { SubscribeForm } from "./subscribe-form";
 
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
@@ -8,11 +9,6 @@ export const metadata = {
 };
 
 export default async function PlanosPage() {
-  const checkoutUrl = {
-    anual: "/checkout?plan=anual",
-    mensal: "/checkout?plan=mensal",
-  };
-
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -90,12 +86,16 @@ export default async function PlanosPage() {
                   <Feature text="Menos de R$ 1 por dia" />
                 </div>
 
-                <a
-                  href={checkoutUrl.anual}
-                  className="mt-6 block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm sm:text-base rounded-full text-center transition-all hover:scale-[1.02]"
-                >
-                  Quero o plano anual
-                </a>
+                <div className="mt-6">
+                  <SubscribeForm
+                    plan="anual"
+                    planLabel="Anual"
+                    monthlyPrice="R$ 29,90"
+                    totalPrice="R$ 358,80"
+                    buttonLabel="Quero o plano anual"
+                    buttonClass="block w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm sm:text-base rounded-full text-center transition-all hover:scale-[1.02]"
+                  />
+                </div>
                 <p className="text-center text-[11px] text-slate-500 mt-2">Cartão, PIX · Garantia 7 dias · Cancele quando quiser</p>
               </div>
             </div>
@@ -127,12 +127,16 @@ export default async function PlanosPage() {
                   <Feature text="PF e PJ no mesmo plano" />
                 </div>
 
-                <a
-                  href={checkoutUrl.mensal}
-                  className="mt-6 block w-full py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base rounded-full text-center transition-all hover:scale-[1.02] border border-white/10"
-                >
-                  Quero o plano mensal
-                </a>
+                <div className="mt-6">
+                  <SubscribeForm
+                    plan="mensal"
+                    planLabel="Mensal"
+                    monthlyPrice="R$ 49,90"
+                    totalPrice="R$ 49,90"
+                    buttonLabel="Quero o plano mensal"
+                    buttonClass="block w-full py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base rounded-full text-center transition-all hover:scale-[1.02] border border-white/10"
+                  />
+                </div>
                 <p className="text-center text-[11px] text-slate-500 mt-2">Cartão, PIX · Garantia 7 dias · Cancele quando quiser</p>
               </div>
             </div>
@@ -248,18 +252,22 @@ export default async function PlanosPage() {
             Se não valer, devolvemos 100%. Ativação imediata. Cartão ou PIX.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href={checkoutUrl.anual}
-              className="w-full sm:w-auto inline-block px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-full transition-all hover:scale-105 text-center"
-            >
-              Anual — R$ 29,90/mês
-            </a>
-            <a
-              href={checkoutUrl.mensal}
-              className="w-full sm:w-auto inline-block px-8 py-3.5 bg-white/10 hover:bg-white/15 text-white font-medium text-sm rounded-full transition-all hover:scale-105 border border-white/10 text-center"
-            >
-              Mensal — R$ 49,90/mês
-            </a>
+            <SubscribeForm
+              plan="anual"
+              planLabel="Anual"
+              monthlyPrice="R$ 29,90"
+              totalPrice="R$ 358,80"
+              buttonLabel="Anual — R$ 29,90/mês"
+              buttonClass="w-full sm:w-auto inline-block px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-full transition-all hover:scale-105 text-center cursor-pointer"
+            />
+            <SubscribeForm
+              plan="mensal"
+              planLabel="Mensal"
+              monthlyPrice="R$ 49,90"
+              totalPrice="R$ 49,90"
+              buttonLabel="Mensal — R$ 49,90/mês"
+              buttonClass="w-full sm:w-auto inline-block px-8 py-3.5 bg-white/10 hover:bg-white/15 text-white font-medium text-sm rounded-full transition-all hover:scale-105 border border-white/10 text-center cursor-pointer"
+            />
           </div>
         </section>
       </div>

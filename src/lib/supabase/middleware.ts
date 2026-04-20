@@ -172,7 +172,6 @@ export async function updateSession(request: NextRequest) {
     "/redefinir-senha",
     "/verificar-email",
     "/planos",
-    "/checkout",
     "/como-funciona",
     "/compra-concluida",
   ];

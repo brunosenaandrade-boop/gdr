@@ -1,8 +1,7 @@
 /**
- * Mercado Pago Checkout — cria preferência de pagamento.
- * Suporta PIX, cartão e boleto. Redireciona pro ambiente MP.
+ * Mercado Pago Checkout — cria preferência de pagamento e assinaturas.
  */
-import { getPreference } from "./client";
+import { getPreference, getPreApproval } from "./client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.guardadinheiro.com.br";
 
@@ -74,6 +73,64 @@ export async function createCheckoutPreference(opts: {
     return { ok: true, url, preferenceId: result.id! };
   } catch (err) {
     console.error("[mercadopago] Erro ao criar preferência:", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+  }
+}
+
+/**
+ * Cria uma Assinatura (PreApproval) no Mercado Pago.
+ * Diferente de createCheckoutPreference (pagamento único), este é recorrente.
+ *
+ * - Mensal: R$ 49,90/mês recorrente mensal
+ * - Anual: R$ 358,80/ano recorrente anual (uma cobrança por ano)
+ *
+ * O bump (R$ 67) NÃO é incluído aqui — é cobrado separadamente via payment.create()
+ * pelo webhook quando a assinatura for autorizada. external_reference indica hasBump.
+ */
+export async function createPreApprovalPlan(opts: {
+  tenantId?: string;
+  planType: PlanType;
+  email: string;
+  hasBump?: boolean;
+  couponCode?: string;
+}): Promise<{ ok: true; url: string; preapprovalId: string } | { ok: false; error: string }> {
+  try {
+    const plan = PLANS[opts.planType];
+    const couponOrBump = opts.hasBump ? "BUMP" : (opts.couponCode ?? "none");
+
+    const externalRef = [
+      opts.tenantId ?? "none",
+      opts.planType,
+      couponOrBump,
+      String(Date.now()),
+    ].join("__");
+
+    const preapproval = getPreApproval();
+
+    const result = await preapproval.create({
+      body: {
+        reason: plan.title,
+        external_reference: externalRef,
+        payer_email: opts.email,
+        back_url: `${SITE_URL}/compra-concluida`,
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: opts.planType === "anual" ? "years" : "months",
+          transaction_amount: plan.price,
+          currency_id: "BRL",
+        },
+        status: "pending",
+      },
+    });
+
+    const url = result.init_point;
+    if (!url) {
+      return { ok: false, error: "Mercado Pago não retornou URL de assinatura" };
+    }
+
+    return { ok: true, url, preapprovalId: result.id! };
+  } catch (err) {
+    console.error("[mercadopago] Erro ao criar assinatura:", err);
     return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
   }
 }
