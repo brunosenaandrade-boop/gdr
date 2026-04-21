@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getPayment } from "@/lib/mercadopago/client";
 import { parseExternalReference, getPlanDetails } from "@/lib/mercadopago/checkout";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/meta-api";
+import { markLeadCompleted } from "@/lib/leads/leads";
 
 export const dynamic = "force-dynamic";
 
@@ -252,6 +253,9 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
 
+    // Marca lead como concluído (checkout-pro / pagamento único)
+    await markLeadCompleted(externalRef);
+
     // Marcar evento como processado
     await supabase
       .from("subscription_events")
@@ -497,6 +501,9 @@ async function handlePreapproval(preapprovalId: string, action?: string) {
       past_due_since: null,
       updated_at: now.toISOString(),
     }, { onConflict: "tenant_id" });
+
+    // Marca lead como concluído (preapproval / assinatura recorrente)
+    await markLeadCompleted(externalRef);
 
     // Marcar evento como processado
     await supabase

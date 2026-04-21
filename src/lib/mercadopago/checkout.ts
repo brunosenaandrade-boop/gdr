@@ -35,7 +35,10 @@ export async function createCheckoutPreference(opts: {
   name?: string;
   couponCode?: string;
   hasBump?: boolean;
-}): Promise<{ ok: true; url: string; preferenceId: string } | { ok: false; error: string }> {
+}): Promise<
+  | { ok: true; url: string; preferenceId: string; externalReference: string }
+  | { ok: false; error: string }
+> {
   try {
     const plan = PLANS[opts.planType];
     const couponOrBump = opts.hasBump ? "BUMP" : (opts.couponCode ?? "none");
@@ -105,7 +108,7 @@ export async function createCheckoutPreference(opts: {
       return { ok: false, error: "Mercado Pago não retornou URL de checkout" };
     }
 
-    return { ok: true, url, preferenceId: result.id! };
+    return { ok: true, url, preferenceId: result.id!, externalReference: externalRef };
   } catch (err) {
     console.error("[mercadopago] Erro ao criar preferência:", err);
     return { ok: false, error: extractMpError(err) };
@@ -128,7 +131,10 @@ export async function createPreApprovalPlan(opts: {
   email: string;
   hasBump?: boolean;
   couponCode?: string;
-}): Promise<{ ok: true; url: string; preapprovalId: string } | { ok: false; error: string }> {
+}): Promise<
+  | { ok: true; url: string; preapprovalId: string; externalReference: string }
+  | { ok: false; error: string }
+> {
   try {
     const plan = PLANS[opts.planType];
     const couponOrBump = opts.hasBump ? "BUMP" : (opts.couponCode ?? "none");
@@ -169,7 +175,7 @@ export async function createPreApprovalPlan(opts: {
       return { ok: false, error: "Mercado Pago não retornou URL de assinatura" };
     }
 
-    return { ok: true, url, preapprovalId: result.id! };
+    return { ok: true, url, preapprovalId: result.id!, externalReference: externalRef };
   } catch (err) {
     console.error("[mercadopago] Erro ao criar assinatura:", err);
     return { ok: false, error: extractMpError(err) };

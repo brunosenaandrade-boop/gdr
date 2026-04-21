@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { createPreApprovalPlan, type PlanType } from "@/lib/mercadopago/checkout";
+import { recordCheckoutLead } from "@/lib/leads/leads";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,21 @@ export async function POST(request: NextRequest) {
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
+
+    // Captura lead ANTES do redirect pro MP. Webhook marca como completed
+    // quando o pagamento for aprovado; leads pendentes permitem recuperar
+    // carrinhos abandonados.
+    await recordCheckoutLead({
+      email,
+      planType: plan as PlanType,
+      paymentMethod: "recurring",
+      hasBump: !!hasBump,
+      tenantId: tenantId ?? null,
+      externalReference: result.externalReference,
+      mpPreferenceId: result.preapprovalId,
+      ipAddress: ip,
+      userAgent: request.headers.get("user-agent") ?? null,
+    });
 
     return NextResponse.json({ url: result.url });
   } catch (err) {
