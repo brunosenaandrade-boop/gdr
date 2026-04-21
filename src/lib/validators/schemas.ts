@@ -15,19 +15,29 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// ===== Nome (PF/PJ) =====
+// Allowlist: letras Unicode (com acentos), espaço, apóstrofo, hífen, ponto. 2-60 chars.
+// Bloqueia HTML/scripts ("<script>", "{alert}", etc).
+export const nameSchema = z
+  .string()
+  .trim()
+  .min(2, "Nome deve ter pelo menos 2 caracteres")
+  .max(60, "Nome muito longo (máx. 60 caracteres)")
+  .regex(/^[\p{L}\p{M}\s'\-.]+$/u, "Nome inválido. Use apenas letras, espaços, apóstrofo ou hífen.");
+
 // ===== Onboarding =====
 export const onboardingPFSchema = z.object({
   type: z.literal("pf"),
-  name: z.string().min(3, "Minimo 3 caracteres"),
+  name: nameSchema,
   document: z.string().min(14, "CPF inválido"), // com mascara
   phone: z.string().optional(),
 });
 
 export const onboardingPJSchema = z.object({
   type: z.literal("pj"),
-  name: z.string().min(3, "Minimo 3 caracteres"),
+  name: nameSchema,
   document: z.string().min(18, "CNPJ inválido"), // com mascara
-  trade_name: z.string().min(3, "Minimo 3 caracteres"),
+  trade_name: nameSchema,
   phone: z.string().optional(),
 });
 
@@ -80,9 +90,9 @@ export const aiParsedTransactionSchema = z.object({
 
 // ===== Tenant =====
 export const tenantUpdateSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(200),
+  name: nameSchema,
   document: z.string().min(11, "Documento inválido").max(20),
-  trade_name: z.string().max(200).nullable(),
+  trade_name: nameSchema.nullable(),
   phone: z.string().max(20).nullable(),
 });
 

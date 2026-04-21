@@ -44,12 +44,25 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
     if (loading) return; // Impede double-click
     setError("");
 
-    if (!name.trim()) { setError("Nome obrigatório"); return; }
+    const NAME_REGEX = /^[\p{L}\p{M}\s'\-.]{2,60}$/u;
+    const trimmedName = name.trim();
+    if (!trimmedName) { setError("Nome obrigatório"); return; }
+    if (!NAME_REGEX.test(trimmedName)) {
+      setError("Nome inválido. Use apenas letras, espaços, apóstrofo ou hífen.");
+      return;
+    }
 
     const cleanDoc = document.replace(/\D/g, "");
     if (type === "pf" && !isValidCPF(cleanDoc)) { setError("CPF inválido"); return; }
     if (type === "pj" && !isValidCNPJ(cleanDoc)) { setError("CNPJ inválido"); return; }
-    if (type === "pj" && !tradeName.trim()) { setError("Razão social obrigatória"); return; }
+    if (type === "pj") {
+      const trimmedTrade = tradeName.trim();
+      if (!trimmedTrade) { setError("Razão social obrigatória"); return; }
+      if (!NAME_REGEX.test(trimmedTrade)) {
+        setError("Razão social inválida. Use apenas letras, espaços, apóstrofo ou hífen.");
+        return;
+      }
+    }
 
     setLoading(true);
     const supabase = createClient();
@@ -114,7 +127,7 @@ export function OnboardingModal({ open, userId, onComplete }: OnboardingModalPro
   }
 
   return (
-    <Modal open={open} onClose={() => {}} title="" size="md">
+    <Modal open={open} onClose={() => {}} title="" size="md" hideClose>
       <div className="text-center mb-6">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] mx-auto mb-4">
           <Shield className="h-6 w-6 text-black" />

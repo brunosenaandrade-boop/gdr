@@ -148,21 +148,13 @@ export async function updateSession(request: NextRequest) {
 
   // ============================================================
   // Domínio principal: auth flow padrão
+  //
+  // Estratégia allowlist-de-protegidos: só interceptamos rotas
+  // que sabemos ser protegidas (/dashboard). Qualquer outro path
+  // passa pelo middleware livremente — se não casar com nenhuma
+  // rota existente, o Next renderiza not-found.tsx (não /login).
   // ============================================================
-  const publicRoutes = [
-    "/",
-    "/login",
-    "/register",
-    "/privacidade",
-    "/termos",
-    "/esqueci-senha",
-    "/redefinir-senha",
-    "/verificar-email",
-    "/planos",
-    "/como-funciona",
-    "/compra-concluida",
-  ];
-  const isPublicRoute = publicRoutes.includes(path);
+  const isProtectedRoute = path.startsWith("/dashboard");
   const isApiRoute = path.startsWith("/api/");
   const isVerifyPage = path === "/verificar-email";
 
@@ -173,13 +165,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (!user && !isPublicRoute && !isApiRoute) {
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && !user.email_confirmed_at && !isPublicRoute && !isApiRoute && !isVerifyPage) {
+  if (user && !user.email_confirmed_at && isProtectedRoute && !isApiRoute && !isVerifyPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/verificar-email";
     return NextResponse.redirect(url);

@@ -2,13 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { Mail, Lock, User, CheckCircle } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+
+const NAME_REGEX = /^[\p{L}\p{M}\s'\-.]{2,60}$/u;
+
+const FRIENDLY_ERRORS: Record<string, string> = {
+  "User already registered": "Este e-mail já está cadastrado. Faça login.",
+  "Failed to fetch": "Erro de conexão. Verifique sua internet e tente novamente.",
+  "Password should be at least 6 characters": "A senha deve ter ao menos 8 caracteres.",
+  "Unable to validate email address: invalid format": "E-mail inválido.",
+};
+
+function friendlyError(msg: string): string {
+  return FRIENDLY_ERRORS[msg] ?? "Não foi possível criar a conta. Tente novamente.";
+}
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -18,14 +30,19 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       setError("Nome é obrigatório");
+      return;
+    }
+
+    if (!NAME_REGEX.test(trimmedName)) {
+      setError("Nome inválido. Use apenas letras, espaços, apóstrofo ou hífen (2-60 caracteres).");
       return;
     }
 
@@ -41,30 +58,37 @@ export default function RegisterPage() {
 
     setLoading(true);
     const supabase = createClient();
-    const { data, error: authError } = await supabase.auth.signUp({
+    const { error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name.trim() },
+        data: { full_name: trimmedName },
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://www.guardadinheiro.com.br"}/login?confirmed=1`,
       },
     });
 
     if (authError) {
-      setError(authError.message);
+      setError(friendlyError(authError.message));
       setLoading(false);
       return;
     }
 
-    // Se retornou user sem session, email confirmation está ativo
-    if (data.user && !data.session) {
-      setAwaitingConfirmation(true);
-      setLoading(false);
-      return;
-    }
+    // Defesa em profundidade: se o Supabase estiver com "Confirm email" OFF,
+    // signUp retorna sessão automática. Deslogamos e forçamos tela de verificação.
+    await supabase.auth.signOut();
+    setAwaitingConfirmation(true);
+    setLoading(false);
+  }
 
-    // Fallback: confirmation desativado → vai direto ao dashboard
-    router.push("/dashboard");
+  async function handleResend() {
+    setError("");
+    setLoading(true);
+    const supabase = createClient();
+    const { error: resendErr } = await supabase.auth.resend({ type: "signup", email });
+    setLoading(false);
+    if (resendErr) {
+      setError("Não foi possível reenviar agora. Tente novamente em alguns minutos.");
+    }
   }
 
   if (awaitingConfirmation) {
@@ -81,12 +105,23 @@ export default function RegisterPage() {
         <p className="text-xs text-slate-500 mt-4">
           Não esqueça de verificar a pasta de spam.
         </p>
-        <Link
-          href="/login"
-          className="mt-6 inline-block text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-        >
-          Voltar ao login
-        </Link>
+        {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={loading}
+            className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Reenviando..." : "Reenviar email de confirmação"}
+          </button>
+          <Link
+            href="/login"
+            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Voltar ao login
+          </Link>
+        </div>
       </Card>
     );
   }
