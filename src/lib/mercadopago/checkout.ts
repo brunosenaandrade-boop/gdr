@@ -34,31 +34,54 @@ export async function createCheckoutPreference(opts: {
   email?: string;
   name?: string;
   couponCode?: string;
+  hasBump?: boolean;
 }): Promise<{ ok: true; url: string; preferenceId: string } | { ok: false; error: string }> {
   try {
     const plan = PLANS[opts.planType];
+    const couponOrBump = opts.hasBump ? "BUMP" : (opts.couponCode ?? "none");
 
-    // external_reference identifica a compra no nosso sistema
+    // external_reference identifica a compra no nosso sistema.
+    // Usa marker "BUMP" (igual ao PreApproval) pra webhook reconhecer order bump.
     const externalRef = [
       opts.tenantId ?? "none",
       opts.planType,
-      opts.couponCode ?? "none",
+      couponOrBump,
       String(Date.now()),
     ].join("__");
+
+    type PreferenceItem = {
+      id: string;
+      title: string;
+      quantity: number;
+      unit_price: number;
+      currency_id: string;
+    };
+
+    const items: PreferenceItem[] = [
+      {
+        id: opts.planType,
+        title: plan.title,
+        quantity: 1,
+        unit_price: plan.price,
+        currency_id: "BRL",
+      },
+    ];
+
+    if (opts.hasBump) {
+      items.push({
+        id: "bump-arquitetura-liberdade",
+        title: "Pacote Arquitetura da Liberdade",
+        quantity: 1,
+        unit_price: 67,
+        currency_id: "BRL",
+      });
+    }
 
     const preference = getPreference();
 
     const result = await preference.create({
       body: {
-        items: [
-          {
-            id: opts.planType,
-            title: plan.title,
-            quantity: 1,
-            unit_price: plan.price,
-            currency_id: "BRL",
-          },
-        ],
+        items,
         external_reference: externalRef,
         back_urls: {
           success: `${SITE_URL}/compra-concluida`,

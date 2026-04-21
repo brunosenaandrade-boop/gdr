@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, createContext, useContext, useCallback } from "react";
-import { Gift, Loader2, Mail, X } from "lucide-react";
+import { Gift, Loader2, Mail, X, CreditCard, Zap, Shield } from "lucide-react";
 
 type PlanSelection = {
   plan: "mensal" | "anual";
@@ -70,9 +70,11 @@ function SubscribeModal({
 }) {
   const [email, setEmail] = useState("");
   const [addBump, setAddBump] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"recurring" | "one-time">("recurring");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const isAnual = selection.plan === "anual";
   const totalWithBump = parseFloat(selection.totalPrice.replace("R$ ", "").replace(".", "").replace(",", ".")) + 67;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -82,8 +84,14 @@ function SubscribeModal({
     setLoading(true);
     setError("");
 
+    // Mensal sempre usa PreApproval (recurring). Anual pode escolher.
+    const useOneTime = isAnual && paymentMethod === "one-time";
+    const endpoint = useOneTime
+      ? "/api/subscriptions/checkout-pro"
+      : "/api/subscriptions/preapproval";
+
     try {
-      const res = await fetch("/api/subscriptions/preapproval", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -128,6 +136,50 @@ function SubscribeModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isAnual && (
+            <div>
+              <label className="text-xs text-slate-400 mb-2 block">Como você quer pagar?</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("recurring")}
+                  disabled={loading}
+                  className={`rounded-xl border p-3 text-left transition-colors ${
+                    paymentMethod === "recurring"
+                      ? "border-emerald-500/50 bg-emerald-500/5"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-xs font-semibold text-white">Recorrente</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Cartão cobrado automaticamente a cada 12 meses
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("one-time")}
+                  disabled={loading}
+                  className={`rounded-xl border p-3 text-left transition-colors ${
+                    paymentMethod === "one-time"
+                      ? "border-emerald-500/50 bg-emerald-500/5"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Zap className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-xs font-semibold text-white">À vista</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    PIX ou até 12x no cartão. Renova manualmente em 1 ano
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm">
             <div className="flex justify-between mb-2">
               <span className="text-slate-400">Plano {selection.planLabel}</span>
@@ -201,9 +253,12 @@ function SubscribeModal({
             )}
           </button>
 
-          <p className="text-[10px] text-center text-slate-500">
-            Você será redirecionado para o Mercado Pago para completar o pagamento
-          </p>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+            <Shield className="h-3 w-3 text-emerald-400" />
+            <span>
+              Pagamento seguro pelo <span className="font-semibold text-slate-200">Mercado Pago</span> — você será redirecionado
+            </span>
+          </div>
         </form>
       </div>
     </div>

@@ -85,6 +85,7 @@ export default async function PlanosPage() {
                 <div className="mt-5 space-y-2 text-sm">
                   <Feature text="Tudo do plano mensal incluído" />
                   <Feature text="Economia de R$ 600 por ano" />
+                  <Feature text="PIX à vista ou até 12x no cartão" />
                   <Feature text="Score financeiro semanal + agenda" />
                   <Feature text="Menos de R$ 1 por dia" />
                 </div>
