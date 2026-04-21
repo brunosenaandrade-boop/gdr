@@ -53,12 +53,39 @@ Confirmar que:
 - **Confirm signup** usa o template HTML em [supabase/email-templates/confirm-signup.html](../supabase/email-templates/confirm-signup.html)
 - **Reset password** está em PT-BR
 
-## 4. URL do site
+## 4. URL do site — 🚨 CRÍTICO (QA Round 3 flagou isso)
 
 **Caminho:** Authentication → URL Configuration
 
 - **Site URL:** `https://www.guardadinheiro.com.br`
-- **Redirect URLs:** adicionar `https://www.guardadinheiro.com.br/login?confirmed=1` e `https://www.guardadinheiro.com.br/redefinir-senha`
+- **Redirect URLs (wildcard):** `https://www.guardadinheiro.com.br/**,https://guardadinheiro.com.br/**`
+
+### Por quê isso importa
+
+O template de email em [supabase/email-templates/confirm-signup.html](../supabase/email-templates/confirm-signup.html) usa `{{ .ConfirmationURL }}`. Essa variável é montada pelo Supabase combinando **Site URL** + token de confirmação. Se o Site URL estiver apontando pra `http://localhost:3000` (default quando o projeto é criado em dev), TODOS os emails de cadastro em produção vão pra localhost → `ERR_CONNECTION_REFUSED` → onboarding quebrado.
+
+O `emailRedirectTo` passado pelo código (`src/app/(auth)/register/page.tsx:66`) só é honrado se o domínio estiver na **URI Allow List**. Wildcard `/**` libera qualquer path sob o domínio.
+
+### Aplicar via Management API (rastreável)
+
+```bash
+SUPABASE_TOKEN=sbp_xxx PROJECT_REF=ecojxxmsdmhqtmwvkjwg \
+  curl -X PATCH \
+    "https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth" \
+    -H "Authorization: Bearer ${SUPABASE_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "site_url": "https://www.guardadinheiro.com.br",
+      "uri_allow_list": "https://www.guardadinheiro.com.br/**,https://guardadinheiro.com.br/**"
+    }'
+```
+
+### Re-verificar sempre que
+
+- Criar projeto Supabase novo
+- Trocar domínio
+- Fizer migração/restore do projeto
+- QA reportar email com link quebrado
 
 ## 5. Rate limits
 
