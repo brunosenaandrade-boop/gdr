@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { Shield, Mail, Lock, User, CheckCircle } from "lucide-react";
+import { Mail, Lock, User, CheckCircle } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -93,8 +94,8 @@ export default function RegisterPage() {
   return (
     <Card className="p-8">
       <div className="text-center mb-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] mx-auto mb-4">
-          <Shield className="h-6 w-6 text-black" />
+        <div className="flex justify-center mb-4">
+          <Logo size={48} />
         </div>
         <h1 className="text-xl font-semibold tracking-tight text-white">Criar Conta</h1>
         <p className="text-sm text-slate-400 mt-1">Em 1 minuto você assume o controle das suas finanças</p>

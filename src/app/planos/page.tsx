@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Shield, Check, Gift, MessageSquare, Mic, BrainCircuit, TrendingUp, Bell } from "lucide-react";
 import { SubscribeForm, SubscribeProvider } from "./subscribe-form";
 import { FAQAccordion } from "@/components/marketing/faq-accordion";
+import { Logo } from "@/components/brand/logo";
 import { planosFAQs, faqsToJsonLd } from "@/data/faqs";
 
 export const metadata = {
@@ -17,11 +18,8 @@ export default async function PlanosPage() {
       {/* Header */}
       <nav className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-              <Shield className="h-3.5 w-3.5 text-black fill-black" />
-            </div>
-            <span className="text-sm font-semibold tracking-tight">Guarda Dinheiro</span>
+          <Link href="/">
+            <Logo size={24} withText />
           </Link>
           <Link
             href="/login"

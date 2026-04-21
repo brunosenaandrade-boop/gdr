@@ -7,6 +7,7 @@ import {
 import UnicornBackground from "@/components/landing/unicorn-background";
 import MobileNav from "@/components/landing/mobile-nav";
 import { FAQAccordion } from "@/components/marketing/faq-accordion";
+import { Logo } from "@/components/brand/logo";
 import { landingFAQs, faqsToJsonLd } from "@/data/faqs";
 
 const mesAtual = new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
@@ -22,11 +23,8 @@ export default function LandingPage() {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
           {/* Left: Logo & Nav */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                <Shield className="h-3.5 w-3.5 text-black fill-black" />
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-white">Guarda Dinheiro</span>
+            <Link href="/">
+              <Logo size={24} withText />
             </Link>
             <div className="hidden md:flex mx-4 items-center gap-1">
               <a href="#funcionalidades" className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">Como funciona</a>
@@ -120,12 +118,8 @@ export default function LandingPage() {
                 {/* Content */}
                 <div className="relative z-10 flex h-full flex-col justify-between">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                        <Shield className="h-5 w-5" />
-                      </div>
-                      <span className="text-lg font-semibold tracking-tight text-white">Guarda Dinheiro</span>
-                    </div>
+                    <Logo size={40} withText textClassName="text-lg font-semibold tracking-tight text-white" />
+
                     <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 border border-emerald-400/30">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       <span className="text-[10px] text-emerald-200">Online</span>
@@ -915,11 +909,8 @@ export default function LandingPage() {
         <footer className="border-t border-white/5 pt-12">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="col-span-1">
-              <Link href="/" className="flex items-center gap-2.5">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                  <Shield className="h-3.5 w-3.5 text-black fill-black" />
-                </div>
-                <span className="text-sm font-semibold tracking-tight text-slate-100">Guarda Dinheiro</span>
+              <Link href="/">
+                <Logo size={24} withText textClassName="text-sm font-semibold tracking-tight text-slate-100" />
               </Link>
               <p className="mt-4 text-xs leading-relaxed text-slate-500">
                 O sistema financeiro inteligente para pessoas físicas e jurídicas.

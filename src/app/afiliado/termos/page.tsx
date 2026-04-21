@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { acceptAffiliateTerms } from "@/lib/affiliates/affiliate-actions";
 
@@ -30,8 +31,8 @@ export default function AffiliateTermsPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)] mx-auto mb-4">
-            <Shield className="h-7 w-7 text-black" />
+          <div className="flex justify-center mb-4">
+            <Logo size={56} />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">Termos de Adesão ao Programa de Afiliados</h1>
           <p className="text-sm text-slate-400 mt-2">Leia com atenção antes de continuar</p>

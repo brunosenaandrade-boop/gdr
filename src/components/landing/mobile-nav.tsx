@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 const navLinks = [
   { label: "Dashboard", href: "#painel" },
@@ -40,14 +41,7 @@ export default function MobileNav() {
           <div className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/95 backdrop-blur-xl">
             {/* Header */}
             <div className="flex h-14 items-center justify-between px-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                  <Shield className="h-3.5 w-3.5 text-black fill-black" />
-                </div>
-                <span className="text-sm font-semibold tracking-tight text-white">
-                  Guarda Dinheiro
-                </span>
-              </div>
+              <Logo size={24} withText />
               <button
                 onClick={close}
                 aria-label="Fechar menu"

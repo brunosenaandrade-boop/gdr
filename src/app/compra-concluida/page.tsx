@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Shield, MessageSquare, UserPlus, Rocket, CheckCircle2 } from "lucide-react";
+import { MessageSquare, UserPlus, Rocket, CheckCircle2 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 const BOT_NUMBER = "554820270106";
 const WA_LINK = `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent("Acabei de assinar! Quero ativar minha conta.")}`;
@@ -15,11 +16,8 @@ export default function CompraConcluida() {
       {/* Nav */}
       <nav className="border-b border-white/5 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-              <Shield className="h-3.5 w-3.5 text-black fill-black" />
-            </div>
-            <span className="text-sm font-semibold tracking-tight">Guarda Dinheiro</span>
+          <Link href="/">
+            <Logo size={24} withText />
           </Link>
           <Link href="/login" className="text-xs text-slate-400 hover:text-slate-200">
             Já ativei minha conta →

@@ -208,14 +208,58 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
                       borderBottom: "1px solid rgba(255,255,255,0.08)",
                     }}
                   >
-                    <div style={{ fontSize: "36px", lineHeight: "1" }}>🛡️</div>
+                    {/* Brand mark — mesmo escudo do favicon e da confirmação de email */}
+                    <table role="presentation" cellPadding={0} cellSpacing={0} style={{ margin: "0 auto 12px" }}>
+                      <tr>
+                        <td
+                          align="center"
+                          valign="middle"
+                          style={{
+                            width: "56px",
+                            height: "56px",
+                            borderRadius: "50%",
+                            background: "linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%)",
+                            backgroundColor: "#10B981",
+                          }}
+                        >
+                          <table role="presentation" cellPadding={0} cellSpacing={0} style={{ margin: "0 auto" }}>
+                            <tr>
+                              <td
+                                align="center"
+                                valign="middle"
+                                style={{
+                                  width: "24px",
+                                  height: "28px",
+                                  border: "3px solid #ffffff",
+                                  borderRadius: "4px 4px 12px 12px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "8px",
+                                    height: "8px",
+                                    backgroundColor: "#ffffff",
+                                    borderRadius: "50%",
+                                    margin: "0 auto",
+                                    fontSize: 0,
+                                    lineHeight: 0,
+                                  }}
+                                >
+                                  &nbsp;
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                     <h1
                       style={{
                         color: "#10B981",
-                        fontSize: "18px",
+                        fontSize: "13px",
                         fontWeight: 700,
-                        margin: "10px 0 0",
-                        letterSpacing: "1.5px",
+                        margin: "0",
+                        letterSpacing: "2px",
                         textTransform: "uppercase" as const,
                       }}
                     >
