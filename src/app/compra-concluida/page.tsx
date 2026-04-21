@@ -6,7 +6,7 @@ const BOT_NUMBER = "554820270106";
 const WA_LINK = `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent("Acabei de assinar! Quero ativar minha conta.")}`;
 
 export const metadata = {
-  title: "Compra concluída — Guarda Dinheiro",
+  title: "Compra concluída",
   description: "Sua compra foi confirmada. Ative sua conta pelo WhatsApp.",
 };
 

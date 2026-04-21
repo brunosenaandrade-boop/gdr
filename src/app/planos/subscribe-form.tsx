@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, createContext, useContext, useCallback } from "react";
+import { useState, createContext, useContext, useCallback, useEffect } from "react";
 import { Gift, Loader2, Mail, X, CreditCard, Zap, Shield, MessageSquare } from "lucide-react";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,6 +99,37 @@ function SubscribeModal({
       return;
     }
     setEmailError(EMAIL_REGEX.test(trimmed) ? "" : "E-mail inválido");
+  }
+
+  // Fecha modal ao pressionar Escape
+  useEffect(() => {
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.key === "Escape" && !loading) onClose();
+    }
+    document.addEventListener("keydown", handleKeydown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "";
+    };
+  }, [loading, onClose]);
+
+  function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const next = e.target.value;
+    setEmail(next);
+    setError("");
+    const trimmed = next.trim();
+    if (!trimmed) {
+      setEmailError("");
+      return;
+    }
+    // Validação em tempo real: só mostra erro quando já há algo parecido com email
+    // (evita "E-mail inválido" piscando enquanto o usuário ainda está digitando o @)
+    if (trimmed.includes("@") && trimmed.includes(".")) {
+      setEmailError(EMAIL_REGEX.test(trimmed) ? "" : "E-mail inválido");
+    } else {
+      setEmailError("");
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -256,7 +287,7 @@ function SubscribeModal({
                 id="subscribe-email"
                 type="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setEmailError(""); setError(""); }}
+                onChange={handleEmailChange}
                 onBlur={validateEmail}
                 placeholder="seu@email.com"
                 className={`w-full bg-white/5 border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white outline-none focus:ring-1 ${
@@ -283,7 +314,7 @@ function SubscribeModal({
           <button
             type="submit"
             disabled={loading || !email.trim() || !!emailError}
-            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-sm rounded-full transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-black font-bold text-sm rounded-full transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

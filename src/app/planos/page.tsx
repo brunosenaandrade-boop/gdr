@@ -6,7 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import { planosFAQs, faqsToJsonLd } from "@/data/faqs";
 
 export const metadata = {
-  title: "Planos — Guarda Dinheiro",
+  title: "Planos",
   description:
     "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 79,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
 };

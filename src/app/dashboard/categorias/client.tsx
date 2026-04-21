@@ -156,7 +156,7 @@ export function CategoriasClient({ categories, tenantId }: Props) {
 
       <Modal open={formOpen} onClose={() => setFormOpen(false)} title={editId ? "Editar Categoria" : "Nova Categoria"} size="sm">
         <div className="space-y-4">
-          <Input label="Nome" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Alimentacao" disabled={saving} />
+          <Input label="Nome" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Alimentação" disabled={saving} />
           <Select
             label="Tipo"
             value={type}

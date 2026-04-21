@@ -21,11 +21,22 @@ const DAY_MS = 24 * 3600 * 1000;
  * Retorna o score atual do tenant logado.
  * Se o último cálculo foi há mais de 24h (ou nunca), recalcula on-demand e persiste.
  */
+// Mínimo de lançamentos para considerar que há dados suficientes para um score representativo.
+// Abaixo disso exibimos empty state (em vez de "200 - Muito baixo" que confunde o usuário).
+const MIN_TRANSACTIONS_FOR_SCORE = 5;
+
 export async function getDashboardScore(): Promise<DashboardScore | null> {
   try {
     const supabase = await createClient();
     const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
     if (!tenant) return null;
+
+    const { count: txCount } = await supabase
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenant.id);
+
+    if ((txCount ?? 0) < MIN_TRANSACTIONS_FOR_SCORE) return null;
 
     const { data: history } = await supabase
       .from("financial_scores")

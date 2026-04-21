@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { Download, FileText, Table2, Image, File } from "lucide-react";
+import { Download, FileText, Table2, Image, File, ExternalLink } from "lucide-react";
 import { MateriaisClient } from "./client";
 
 export default async function MateriaisPage() {
@@ -50,9 +51,16 @@ export default async function MateriaisPage() {
           <Card className="py-20 text-center">
             <FileText className="h-10 w-10 text-slate-600 mx-auto mb-3" />
             <p className="text-sm text-slate-500">Você ainda não tem materiais.</p>
-            <p className="text-xs text-slate-600 mt-2">
+            <p className="text-xs text-slate-600 mt-2 mb-5">
               Materiais adquiridos no checkout aparecerão aqui para download.
             </p>
+            <Link
+              href="/planos"
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-500/15 hover:text-emerald-200 transition-colors"
+            >
+              Ver planos e bônus disponíveis
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
           </Card>
         ) : (
           <div className="space-y-4">

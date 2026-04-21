@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { CashFlowEntry } from "@/types";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
@@ -108,7 +108,7 @@ export function FluxoCaixaClient({ data, currentDays }: Props) {
                     const saldoDia = entry.receitas - entry.despesas;
                     return (
                       <TableRow key={entry.date}>
-                        <TableCell className="font-medium text-slate-200">{formatDate(entry.date)}</TableCell>
+                        <TableCell className="font-medium text-slate-200">{entry.date}</TableCell>
                         <TableCell className="text-right text-emerald-400 tabular-nums">
                           {entry.receitas > 0 ? formatCurrency(entry.receitas) : "-"}
                         </TableCell>
