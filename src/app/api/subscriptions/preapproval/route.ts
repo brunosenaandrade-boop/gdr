@@ -50,7 +50,11 @@ export async function POST(request: NextRequest) {
       const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: tenant } = await supabase.from("tenants").select("id").maybeSingle();
+        const { data: tenant } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
         tenantId = tenant?.id;
       }
     } catch {

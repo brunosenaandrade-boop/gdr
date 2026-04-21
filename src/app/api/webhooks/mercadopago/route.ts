@@ -45,7 +45,11 @@ setInterval(() => {
 function verifyMpSignature(request: NextRequest, dataId: string | undefined): boolean {
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
   if (!secret) {
-    console.warn("[mercadopago] MERCADOPAGO_WEBHOOK_SECRET não configurado — validação de assinatura desabilitada");
+    if (process.env.NODE_ENV === "production") {
+      console.error("[mercadopago] CRÍTICO: MERCADOPAGO_WEBHOOK_SECRET ausente em produção — webhook rejeitado");
+      return false;
+    }
+    console.warn("[mercadopago] MERCADOPAGO_WEBHOOK_SECRET ausente — validação desabilitada (DEV)");
     return true;
   }
 

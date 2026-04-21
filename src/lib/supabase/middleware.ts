@@ -91,6 +91,10 @@ export async function updateSession(request: NextRequest) {
   // ============================================================
   // Segurança: validar que auth user ainda existe no banco
   // Se user foi deletado mas JWT ainda válido → força logout
+  //
+  // OBS: a ausência de tenant NÃO é motivo de logout. Cliente via
+  // web signup começa sem tenant; dashboard/layout.tsx detecta isso
+  // e mostra o OnboardingModal, que cria o tenant na primeira vez.
   // ============================================================
   if (user && !path.startsWith("/api/") && !path.startsWith("/_next")) {
     const isDashboardRoute = path.startsWith("/dashboard");
@@ -98,25 +102,8 @@ export async function updateSession(request: NextRequest) {
       const { createServiceClient } = await import("./server");
       const service = await createServiceClient();
 
-      // Verificar se auth user ainda existe
       const { data: authCheck } = await service.auth.admin.getUserById(user.id);
       if (!authCheck?.user) {
-        // User deletado → limpar sessão e redirecionar
-        await supabase.auth.signOut();
-        const url = request.nextUrl.clone();
-        url.pathname = "/login";
-        return NextResponse.redirect(url);
-      }
-
-      // Verificar se tenant existe
-      const { data: tenantCheck } = await service
-        .from("tenants")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!tenantCheck) {
-        // Tenant deletado → limpar sessão e redirecionar
         await supabase.auth.signOut();
         const url = request.nextUrl.clone();
         url.pathname = "/login";
