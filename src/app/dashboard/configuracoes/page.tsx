@@ -14,15 +14,20 @@ export default async function ConfiguracoesPage() {
     .eq("tenant_id", tenant.id)
     .maybeSingle();
 
-  const subscription: SubscriptionInfo | null = sub
-    ? {
-        status: sub.status,
-        planType: sub.plan_type,
-        currentPeriodEnd: sub.current_period_end,
-        canceledAt: sub.canceled_at,
-        gateway: sub.gateway,
-      }
-    : null;
+  // Trigger legado (migration 014) cria subscription stub com status='expired' pra
+  // todo tenant novo. Tratamos expired/refunded/chargeback como "sem assinatura"
+  // pra não confundir o usuário mostrando "Expirada" em conta recém-criada.
+  const VISIBLE_STATUSES = ["active", "canceled", "past_due"];
+  const subscription: SubscriptionInfo | null =
+    sub && VISIBLE_STATUSES.includes(sub.status)
+      ? {
+          status: sub.status,
+          planType: sub.plan_type,
+          currentPeriodEnd: sub.current_period_end,
+          canceledAt: sub.canceled_at,
+          gateway: sub.gateway,
+        }
+      : null;
 
   return <ConfiguracoesClient tenant={tenant} subscription={subscription} />;
 }

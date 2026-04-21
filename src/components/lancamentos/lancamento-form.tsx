@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -42,6 +42,22 @@ export function LancamentoForm({ open, onClose, onSuccess, categories, tenantId,
   const [paidDate, setPaidDate] = useState(editData?.paid_date ?? "");
   const [status, setStatus] = useState<TransactionStatus>(editData?.status ?? "pendente");
   const [notes, setNotes] = useState(editData?.notes ?? "");
+
+  // Sincroniza state quando modal abre com editData diferente (BUG #4 QA Round 2).
+  // `useState(editData?.x ?? default)` só roda uma vez; editar registros diferentes
+  // em sequência deixaria o form com dados da edição anterior.
+  useEffect(() => {
+    if (!open) return;
+    setType(editData?.type ?? "despesa");
+    setDescription(editData?.description ?? "");
+    setAmount(editData && editData.id !== "" ? String((editData.amount ?? 0) / 100) : "");
+    setCategoryId(editData?.category_id ?? "");
+    setDueDate(editData?.due_date ?? "");
+    setPaidDate(editData?.paid_date ?? "");
+    setStatus(editData?.status ?? "pendente");
+    setNotes(editData?.notes ?? "");
+    setError("");
+  }, [open, editData]);
 
   const filteredCategories = categories.filter((c) => c.type === type);
 

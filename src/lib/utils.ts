@@ -13,9 +13,17 @@ export function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
-/** Formata data ISO para dd/mm/aaaa */
-export function formatDate(dateStr: string): string {
+/** Formata data ISO ou SQL date (YYYY-MM-DD) para dd/mm/aaaa.
+ *  Para strings "YYYY-MM-DD" evita o shift de timezone causado por `new Date()`
+ *  (que interpreta como UTC midnight e em BRT volta um dia).
+ */
+export function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "-";
+  const sqlDate = /^(\d{4})-(\d{2})-(\d{2})$/;
+  const m = dateStr.match(sqlDate);
+  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "-";
   return date.toLocaleDateString("pt-BR");
 }
 

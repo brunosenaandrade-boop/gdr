@@ -2,13 +2,38 @@
 
 Configurações que **precisam** estar ligadas no dashboard do Supabase (`supabase.com` → Project → Authentication) para o fluxo de cadastro funcionar com segurança.
 
-## 1. Confirmação de email obrigatória
+---
+
+## 🚨 AÇÃO IMEDIATA — Round 2 QA flagou isso
+
+> **QA Round 2 confirmou:** se "Confirm email" está OFF, qualquer pessoa cria conta com email falso e entra no sistema. **Vá ligar agora antes de abrir venda.**
+
+### Passo-a-passo (1 minuto):
+
+1. Abrir https://supabase.com/dashboard
+2. Selecionar projeto `guarda-dinheiro` (ou nome equivalente)
+3. Menu lateral → **Authentication** → **Providers**
+4. Clicar em **Email**
+5. Procurar a opção **"Confirm email"** e marcar ✅
+6. Scroll até o fim → **Save**
+
+### Verificação imediata (2 minutos):
+
+1. Criar conta de teste em `https://www.guardadinheiro.com.br/register`
+2. NÃO clicar no link do email
+3. Ir em `/login` e tentar entrar
+4. **Esperado:** banner amarelo "Confirme seu email antes de entrar" + botão "Reenviar email de confirmação"
+5. Se entrou no dashboard sem ver banner → "Confirm email" ainda está OFF. Voltar ao passo 5 acima.
+
+---
+
+## 1. Confirmação de email obrigatória (detalhe técnico)
 
 **Caminho:** Authentication → Providers → Email → **"Confirm email"** = **ON**
 
 **Por quê:** Sem isso, `supabase.auth.signUp()` retorna `session` imediatamente e permite login antes do usuário confirmar o email. Isso abre espaço para fraude (qualquer pessoa cria conta com email falso).
 
-O app tem defesa em profundidade no [src/app/(auth)/register/page.tsx](../src/app/(auth)/register/page.tsx) — faz `signOut()` após `signUp()` mesmo se o Supabase devolver sessão. Mas a configuração correta do Supabase é **requisito de segurança**.
+O app tem defesa em profundidade no [src/app/(auth)/register/page.tsx](../src/app/(auth)/register/page.tsx) — faz `signOut()` após `signUp()` mesmo se o Supabase devolver sessão. MAS: se Supabase estiver com "Confirm email" OFF, o campo `auth.users.email_confirmed_at` é auto-preenchido no signup, o que faz o nosso middleware permitir o acesso depois que o usuário tenta login. Ou seja: **nosso código sozinho não consegue bloquear; a config do Supabase é requisito.**
 
 ## 2. SMTP custom (opcional mas recomendado)
 
@@ -40,6 +65,17 @@ Confirmar que:
 **Caminho:** Authentication → Rate Limits
 
 Manter defaults. O Supabase já tem rate limit em `resend` (1 por 60s) — o botão "Reenviar email" no frontend trata esse erro.
+
+---
+
+## 6. Migrations pendentes de aplicar (Round 2)
+
+Executar no **SQL Editor** do Supabase (copia-cola) em ordem:
+
+1. `supabase/migrations/028_reapply_default_categories.sql` — garante categorias com acento em novos tenants.
+2. `supabase/migrations/029_drop_initial_subscription_trigger.sql` — remove o stub "expired" que confundia usuários.
+
+Idempotentes: podem rodar múltiplas vezes sem quebrar.
 
 ---
 

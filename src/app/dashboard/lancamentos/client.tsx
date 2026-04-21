@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Modal } from "@/components/ui/modal";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { LancamentoForm } from "@/components/lancamentos/lancamento-form";
 import { deleteTransaction } from "@/lib/supabase/actions";
@@ -38,6 +39,9 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
   const router = useRouter();
   const [formOpen, setFormOpen] = useState(false);
   const [editData, setEditData] = useState<any>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; description: string } | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const totalPages = Math.max(1, Math.ceil(totalCount / 25));
@@ -69,14 +73,18 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
     startTransition(() => router.push(`/dashboard/lancamentos?${params.toString()}`));
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Excluir este lançamento? Esta ação não pode ser desfeita.")) return;
-    const result = await deleteTransaction(id);
+  async function handleDeleteConfirmed() {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    setDeleteError("");
+    const result = await deleteTransaction(confirmDelete.id);
+    setDeleting(false);
     if (result.error) {
-      alert(result.error);
-    } else {
-      startTransition(() => router.refresh());
+      setDeleteError(result.error);
+      return;
     }
+    setConfirmDelete(null);
+    startTransition(() => router.refresh());
   }
 
   const hasFilters = !!(filters.type || filters.status || filters.search);
@@ -220,7 +228,7 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
-                              onClick={() => handleDelete(tx.id)}
+                              onClick={() => { setConfirmDelete({ id: tx.id, description: tx.description }); setDeleteError(""); }}
                               className="rounded-lg p-1.5 text-slate-500 hover:bg-red-500/10 hover:text-red-400 transition-colors"
                               aria-label="Excluir lançamento"
                             >
@@ -272,6 +280,45 @@ export function LancamentosClient({ transactions, categories, tenantId, totalCou
         tenantId={tenantId}
         editData={editData}
       />
+
+      <Modal
+        open={!!confirmDelete}
+        onClose={() => !deleting && setConfirmDelete(null)}
+        title="Excluir lançamento"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-300">
+            Tem certeza que deseja excluir{" "}
+            <span className="font-semibold text-white">
+              &quot;{confirmDelete?.description}&quot;
+            </span>
+            ? Esta ação não pode ser desfeita.
+          </p>
+          {deleteError && <p className="text-sm text-red-400">{deleteError}</p>}
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setConfirmDelete(null)}
+              disabled={deleting}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDeleteConfirmed}
+              loading={deleting}
+              disabled={deleting}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

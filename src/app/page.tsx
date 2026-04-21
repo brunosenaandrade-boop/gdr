@@ -951,7 +951,10 @@ export default function LandingPage() {
             <p className="text-[10px] text-slate-600">
               &copy; 2026 Guarda Dinheiro. Todos os direitos reservados.
             </p>
-            <div className="flex items-center gap-6 text-[10px] text-slate-600">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[10px] text-slate-600">
+              <a href="mailto:contato@guardadinheiro.com.br" className="hover:text-emerald-400 transition-colors">
+                contato@guardadinheiro.com.br
+              </a>
               <Link href="/privacidade" className="hover:text-slate-400 transition-colors">Política de Privacidade</Link>
               <Link href="/termos" className="hover:text-slate-400 transition-colors">Termos de Uso</Link>
             </div>

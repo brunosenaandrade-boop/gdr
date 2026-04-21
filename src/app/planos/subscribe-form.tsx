@@ -123,13 +123,7 @@ function SubscribeModal({
       setEmailError("");
       return;
     }
-    // Validação em tempo real: só mostra erro quando já há algo parecido com email
-    // (evita "E-mail inválido" piscando enquanto o usuário ainda está digitando o @)
-    if (trimmed.includes("@") && trimmed.includes(".")) {
-      setEmailError(EMAIL_REGEX.test(trimmed) ? "" : "E-mail inválido");
-    } else {
-      setEmailError("");
-    }
+    setEmailError(EMAIL_REGEX.test(trimmed) ? "" : "E-mail inválido");
   }
 
   async function handleSubmit(e: React.FormEvent) {

@@ -136,7 +136,7 @@ export default function RegisterPage() {
         <p className="text-sm text-slate-400 mt-1">Em 1 minuto você assume o controle das suas finanças</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <Input
           label="Nome completo"
           type="text"
