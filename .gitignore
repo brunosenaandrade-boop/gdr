@@ -45,3 +45,6 @@ next-env.d.ts
 /supabase/.branches/
 .claude/
 tmp_landing_*.png
+
+# scripts e screenshots temporários (playwright, auditorias, etc)
+/.tmp/

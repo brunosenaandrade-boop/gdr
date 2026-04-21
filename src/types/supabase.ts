@@ -191,6 +191,7 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           status: string
+          terms_accepted_at: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -208,6 +209,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           status?: string
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -225,6 +227,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           status?: string
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -391,6 +394,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkout_leads: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email: string
+          external_reference: string
+          has_bump: boolean
+          id: string
+          ip_address: string | null
+          mp_preference_id: string | null
+          payment_method: string
+          plan_type: string
+          status: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email: string
+          external_reference: string
+          has_bump?: boolean
+          id?: string
+          ip_address?: string | null
+          mp_preference_id?: string | null
+          payment_method: string
+          plan_type: string
+          status?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string
+          external_reference?: string
+          has_bump?: boolean
+          id?: string
+          ip_address?: string | null
+          mp_preference_id?: string | null
+          payment_method?: string
+          plan_type?: string
+          status?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_leads_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -720,32 +779,32 @@ export type Database = {
       tenants: {
         Row: {
           created_at: string | null
-          document: string
+          document: string | null
           id: string
           name: string
           phone: string | null
           trade_name: string | null
-          type: string
+          type: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
-          document: string
+          document?: string | null
           id?: string
           name: string
           phone?: string | null
           trade_name?: string | null
-          type: string
+          type?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
-          document?: string
+          document?: string | null
           id?: string
           name?: string
           phone?: string | null
           trade_name?: string | null
-          type?: string
+          type?: string | null
           user_id?: string
         }
         Relationships: []
@@ -909,6 +968,7 @@ export type Database = {
           created_at: string | null
           id: string
           phone_number: string
+          reminder_sent_at: string | null
           tenant_id: string
           verification_code: string | null
           verified: boolean | null
@@ -917,6 +977,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           phone_number: string
+          reminder_sent_at?: string | null
           tenant_id: string
           verification_code?: string | null
           verified?: boolean | null
@@ -925,6 +986,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           phone_number?: string
+          reminder_sent_at?: string | null
           tenant_id?: string
           verification_code?: string | null
           verified?: boolean | null

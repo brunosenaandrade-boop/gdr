@@ -54,7 +54,7 @@ function describePlan(plan: string | null): string {
 export function ConfiguracoesClient({ tenant, subscription }: Props) {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(tenant.name);
-  const [document, setDocument] = useState(tenant.document);
+  const [document, setDocument] = useState(tenant.document ?? "");
   const [tradeName, setTradeName] = useState(tenant.trade_name ?? "");
   const [phone, setPhone] = useState(tenant.phone ?? "");
   const [message, setMessage] = useState("");

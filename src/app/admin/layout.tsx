@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentAdmin } from "@/lib/admin/auth";
 import { adminSignOut } from "@/lib/admin/actions";
-import { LayoutDashboard, Users, CreditCard, AlertTriangle, ScrollText, LogOut, Shield, ShieldCheck, Handshake, Tag, Wallet, Package } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, AlertTriangle, ScrollText, LogOut, Shield, ShieldCheck, Handshake, Tag, Wallet, Package, MailOpen } from "lucide-react";
 
 export const metadata = {
   title: "Admin — Guarda Dinheiro",
@@ -27,6 +27,7 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/users", label: "Usuários", icon: Users },
     { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+    { href: "/admin/leads", label: "Leads Checkout", icon: MailOpen },
     { href: "/admin/affiliates", label: "Afiliados", icon: Handshake },
     { href: "/admin/coupons", label: "Cupons", icon: Tag },
     { href: "/admin/payouts", label: "Pagamentos", icon: Wallet },

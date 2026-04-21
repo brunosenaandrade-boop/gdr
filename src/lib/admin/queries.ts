@@ -254,7 +254,7 @@ export async function getAdminUsers(opts: {
     user_id: string;
     name: string;
     phone: string | null;
-    type: string;
+    type: string | null;
     created_at: string | null;
     subscriptions: { status: string; current_period_end: string | null } | { status: string; current_period_end: string | null }[] | null;
     user_rate_limits: { blocked: boolean | null } | { blocked: boolean | null }[] | null;
@@ -267,7 +267,7 @@ export async function getAdminUsers(opts: {
       name: t.name,
       email: emailByUserId.get(t.user_id) ?? null,
       phone: phoneByTenant.get(t.id) ?? t.phone,
-      type: t.type as "pf" | "pj",
+      type: (t.type ?? "pf") as "pf" | "pj",
       createdAt: t.created_at ?? "",
       subscriptionStatus: sub?.status ?? "no_subscription",
       subscriptionEnd: sub?.current_period_end ?? null,

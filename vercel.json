@@ -35,6 +35,10 @@
     {
       "path": "/api/cron/incomplete-onboarding",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/abandoned-leads",
+      "schedule": "0 13 * * *"
     }
   ]
 }

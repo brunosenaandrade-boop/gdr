@@ -23,9 +23,7 @@ type RecordOpts = {
 export async function recordCheckoutLead(opts: RecordOpts): Promise<void> {
   try {
     const supabase = await createServiceClient();
-    // Table não está nos types gerados ainda (regen via supabase CLI pós-migration).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any).from("checkout_leads").insert({
+    await supabase.from("checkout_leads").insert({
       email: opts.email.toLowerCase().trim(),
       plan_type: opts.planType,
       payment_method: opts.paymentMethod,
@@ -51,8 +49,7 @@ export async function markLeadCompleted(externalReference: string): Promise<void
   if (!externalReference) return;
   try {
     const supabase = await createServiceClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    await supabase
       .from("checkout_leads")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("external_reference", externalReference)
