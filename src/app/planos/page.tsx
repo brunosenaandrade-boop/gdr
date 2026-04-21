@@ -9,6 +9,21 @@ export const metadata = {
   title: "Planos",
   description:
     "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 79,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
+  alternates: { canonical: "/planos" },
+  openGraph: {
+    title: "Planos | Guarda Dinheiro",
+    description:
+      "Plano Anual R$ 29,90/mês ou Mensal R$ 79,90. Assistente financeiro no WhatsApp com IA. Garantia de 7 dias.",
+    url: "/planos",
+    type: "website" as const,
+    locale: "pt_BR",
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    title: "Planos | Guarda Dinheiro",
+    description:
+      "Plano Anual R$ 29,90/mês ou Mensal R$ 79,90. Garantia de 7 dias.",
+  },
 };
 
 export default async function PlanosPage() {

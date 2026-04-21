@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, ArrowLeft } from "lucide-react";
 
-export const metadata: Metadata = { title: "Política de Privacidade" };
+export const metadata: Metadata = {
+  title: "Política de Privacidade",
+  alternates: { canonical: "/privacidade" },
+};
 
 export default function PrivacidadePage() {
   return (

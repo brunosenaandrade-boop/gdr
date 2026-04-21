@@ -8,6 +8,8 @@ const WA_LINK = `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent("Acabei d
 export const metadata = {
   title: "Compra concluída",
   description: "Sua compra foi confirmada. Ative sua conta pelo WhatsApp.",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/compra-concluida" },
 };
 
 export default function CompraConcluida() {

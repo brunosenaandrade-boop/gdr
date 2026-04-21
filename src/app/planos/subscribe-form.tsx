@@ -170,6 +170,9 @@ function SubscribeModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="subscribe-modal-title"
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={() => !loading && onClose()}
     >
@@ -178,7 +181,7 @@ function SubscribeModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-white">Plano {selection.planLabel}</h3>
+          <h3 id="subscribe-modal-title" className="text-lg font-semibold text-white">Plano {selection.planLabel}</h3>
           <button
             onClick={() => !loading && onClose()}
             className="text-slate-500 hover:text-slate-300"

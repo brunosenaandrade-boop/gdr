@@ -20,10 +20,13 @@ export async function GET(request: NextRequest) {
   const planFilter = searchParams.get("plan");
 
   const supabase = await createServiceClient();
+  // NOTA LGPD: ip_address fica armazenado em checkout_leads pra auditoria
+  // interna mas NÃO é exportado via CSV (dado pessoal sensível).
+  // Se precisar pra forense, consultar direto na tabela via Supabase SQL.
   let query = supabase
     .from("checkout_leads")
     .select(
-      "id, email, plan_type, payment_method, has_bump, tenant_id, status, created_at, completed_at, external_reference, mp_preference_id, ip_address",
+      "id, email, plan_type, payment_method, has_bump, tenant_id, status, created_at, completed_at, external_reference, mp_preference_id",
     )
     .order("created_at", { ascending: false });
 
@@ -47,7 +50,6 @@ export async function GET(request: NextRequest) {
     "completed_at",
     "external_reference",
     "mp_preference_id",
-    "ip_address",
   ];
 
   const rows = [
@@ -65,7 +67,6 @@ export async function GET(request: NextRequest) {
         r.completed_at,
         r.external_reference,
         r.mp_preference_id,
-        r.ip_address,
       ]
         .map(csvEscape)
         .join(","),
