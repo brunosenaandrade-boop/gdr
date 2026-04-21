@@ -45,9 +45,9 @@ async function run() {
   const upsellVisible = await upsell.isVisible();
   console.log(`   Upsell checkbox: ${upsellVisible ? "✅" : "❌"}`);
 
-  const total = page.locator("text=R$ 49,90").first();
+  const total = page.locator("text=R$ 79,90").first();
   const totalVisible = await total.isVisible();
-  console.log(`   Total R$ 49,90: ${totalVisible ? "✅" : "❌"}`);
+  console.log(`   Total R$ 79,90: ${totalVisible ? "✅" : "❌"}`);
 
   // Verificar se o Payment Brick carregou (iframe do MP)
   const mpIframe = page.locator("iframe").first();

@@ -7,7 +7,7 @@ import { planosFAQs, faqsToJsonLd } from "@/data/faqs";
 export const metadata = {
   title: "Planos — Guarda Dinheiro",
   description:
-    "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 49,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
+    "Assistente financeiro no WhatsApp com IA. Plano mensal R$ 79,90 ou anual 12x R$ 29,90. Garantia de 7 dias.",
 };
 
 export default async function PlanosPage() {
@@ -69,7 +69,7 @@ export default async function PlanosPage() {
                     <span className="text-[11px] font-semibold text-emerald-300">Mais escolhido</span>
                   </div>
                   <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider shrink-0">
-                    -40%
+                    -62%
                   </span>
                 </div>
 
@@ -84,7 +84,7 @@ export default async function PlanosPage() {
 
                 <div className="mt-5 space-y-2 text-sm">
                   <Feature text="Tudo do plano mensal incluído" />
-                  <Feature text="Economia de R$ 240 por ano" />
+                  <Feature text="Economia de R$ 600 por ano" />
                   <Feature text="Score financeiro semanal + agenda" />
                   <Feature text="Menos de R$ 1 por dia" />
                 </div>
@@ -114,7 +114,7 @@ export default async function PlanosPage() {
 
                 <h2 className="text-2xl font-semibold">Plano Mensal</h2>
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-bold">R$ 49,90</span>
+                  <span className="text-4xl sm:text-5xl font-bold">R$ 79,90</span>
                   <span className="text-base text-slate-400">/mês</span>
                 </div>
                 <p className="text-sm text-slate-400 mt-1">
@@ -134,8 +134,8 @@ export default async function PlanosPage() {
                   <SubscribeForm
                     plan="mensal"
                     planLabel="Mensal"
-                    monthlyPrice="R$ 49,90"
-                    totalPrice="R$ 49,90"
+                    monthlyPrice="R$ 79,90"
+                    totalPrice="R$ 79,90"
                     buttonLabel="Quero o plano mensal"
                     buttonClass="block w-full py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base rounded-full text-center transition-all hover:scale-[1.02] border border-white/10"
                   />
@@ -245,9 +245,9 @@ export default async function PlanosPage() {
             <SubscribeForm
               plan="mensal"
               planLabel="Mensal"
-              monthlyPrice="R$ 49,90"
-              totalPrice="R$ 49,90"
-              buttonLabel="Mensal — R$ 49,90/mês"
+              monthlyPrice="R$ 79,90"
+              totalPrice="R$ 79,90"
+              buttonLabel="Mensal — R$ 79,90/mês"
               buttonClass="w-full sm:w-auto inline-block px-8 py-3.5 bg-white/10 hover:bg-white/15 text-white font-medium text-sm rounded-full transition-all hover:scale-105 border border-white/10 text-center cursor-pointer"
             />
           </div>

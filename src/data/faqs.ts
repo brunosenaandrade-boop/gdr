@@ -65,7 +65,7 @@ export const planosFAQs: FAQItem[] = [
   guaranteeFAQ,
   {
     q: "Por que o anual sai mais barato?",
-    a: "Porque a gente evita a taxa de processamento recorrente mensal do Mercado Pago e você se compromete por mais tempo, o que reduz custo de aquisição. Esse desconto a gente repassa pra você: R$ 29,90/mês no anual contra R$ 49,90/mês no mensal — economia de R$ 240 no ano.",
+    a: "Porque a gente evita a taxa de processamento recorrente mensal do Mercado Pago e você se compromete por mais tempo, o que reduz custo de aquisição. Esse desconto a gente repassa pra você: R$ 29,90/mês no anual contra R$ 79,90/mês no mensal — economia de R$ 600 no ano (62% off).",
     category: "pagamento",
   },
   cancelFAQ,

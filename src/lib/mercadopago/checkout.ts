@@ -20,7 +20,7 @@ function extractMpError(err: unknown): string {
 export type PlanType = "mensal" | "anual";
 
 const PLANS = {
-  mensal: { price: 49.9, title: "Guarda Dinheiro — Plano Mensal", days: 30 },
+  mensal: { price: 79.9, title: "Guarda Dinheiro — Plano Mensal", days: 30 },
   anual: { price: 358.8, title: "Guarda Dinheiro — Plano Anual (12x R$ 29,90)", days: 365 },
 } as const;
 
@@ -93,7 +93,7 @@ export async function createCheckoutPreference(opts: {
  * Cria uma Assinatura (PreApproval) no Mercado Pago.
  * Diferente de createCheckoutPreference (pagamento único), este é recorrente.
  *
- * - Mensal: R$ 49,90/mês recorrente mensal
+ * - Mensal: R$ 79,90/mês recorrente mensal
  * - Anual: R$ 358,80/ano recorrente anual (uma cobrança por ano)
  *
  * O bump (R$ 67) NÃO é incluído aqui — é cobrado separadamente via payment.create()

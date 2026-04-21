@@ -16,8 +16,8 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
         body:
           "Opa! Pra eu registrar seus lançamentos e te mandar lembretes, precisa ter um plano ativo.\n\n" +
           "📋 *Escolha seu plano:*\n" +
-          "💚 *Anual* — R$ 29,90/mês (12x) ← economiza 40%\n" +
-          "💙 *Mensal* — R$ 49,90/mês\n\n" +
+          "💚 *Anual* — R$ 29,90/mês (12x) ← economiza 62%\n" +
+          "💙 *Mensal* — R$ 79,90/mês\n\n" +
           "✅ Assistente 24h no WhatsApp (texto e áudio)\n" +
           "✅ Painel web completo\n" +
           "✅ Score financeiro + agenda\n" +
@@ -34,7 +34,7 @@ function messageForReason(reason: AccessDenialReason): PaywallMessage {
           "Sua assinatura expirou, mas seus dados estão todos aqui! 🛡️\n\n" +
           "Pra voltar a lançar e receber lembretes:\n\n" +
           "💚 *Anual* — R$ 29,90/mês (12x) ← melhor custo\n" +
-          "💙 *Mensal* — R$ 49,90/mês\n\n" +
+          "💙 *Mensal* — R$ 79,90/mês\n\n" +
           "Seus dados ficam guardados por 90 dias. Consultas de saldo e extrato continuam funcionando.",
         displayText: "VER PLANOS E REATIVAR",
         footer: "Garantia de 7 dias. Cancele quando quiser.",
