@@ -5,6 +5,18 @@ import { getPreference, getPreApproval } from "./client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.guardadinheiro.com.br";
 
+function extractMpError(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object") {
+    const e = err as Record<string, unknown>;
+    if (typeof e.message === "string") return e.message;
+    if (typeof e.error === "string") return e.error;
+    if (typeof e.cause === "string") return e.cause;
+    if (e.status) return `Erro do Mercado Pago (status ${e.status})`;
+  }
+  return "Erro ao se comunicar com o Mercado Pago. Verifique sua conexão e tente novamente.";
+}
+
 export type PlanType = "mensal" | "anual";
 
 const PLANS = {
@@ -73,7 +85,7 @@ export async function createCheckoutPreference(opts: {
     return { ok: true, url, preferenceId: result.id! };
   } catch (err) {
     console.error("[mercadopago] Erro ao criar preferência:", err);
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: extractMpError(err) };
   }
 }
 
@@ -131,7 +143,7 @@ export async function createPreApprovalPlan(opts: {
     return { ok: true, url, preapprovalId: result.id! };
   } catch (err) {
     console.error("[mercadopago] Erro ao criar assinatura:", err);
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: extractMpError(err) };
   }
 }
 

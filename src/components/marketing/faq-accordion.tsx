@@ -12,8 +12,11 @@ type Props = {
 export function FAQAccordion({ items, page }: Props) {
   const handleToggle = useCallback(
     (question: string) => (event: React.SyntheticEvent<HTMLDetailsElement>) => {
-      if (event.currentTarget.open) {
+      if (!event.currentTarget.open) return;
+      try {
         posthog.capture("faq_question_expanded", { question, page });
+      } catch {
+        // posthog might not be initialized (dev, ad-blocker) — ignore silently
       }
     },
     [page],
