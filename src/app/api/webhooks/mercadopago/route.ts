@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -32,6 +33,47 @@ setInterval(() => {
 }, 300_000);
 
 /**
+ * Valida a assinatura HMAC-SHA256 do webhook do Mercado Pago.
+ * Documentação: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
+ *
+ * Formato do header x-signature:  "ts=1234567890,v1=abcdef..."
+ * Template assinado:              "id:{data.id};request-id:{x-request-id};ts:{ts};"
+ *
+ * Retorna `true` se válido ou se o secret não estiver configurado (modo permissivo
+ * para compatibilidade com setups legados — logamos um warning).
+ */
+function verifyMpSignature(request: NextRequest, dataId: string | undefined): boolean {
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+  if (!secret) {
+    console.warn("[mercadopago] MERCADOPAGO_WEBHOOK_SECRET não configurado — validação de assinatura desabilitada");
+    return true;
+  }
+
+  const signatureHeader = request.headers.get("x-signature");
+  const requestId = request.headers.get("x-request-id");
+  if (!signatureHeader || !requestId || !dataId) return false;
+
+  const parts = Object.fromEntries(
+    signatureHeader.split(",").map((kv) => {
+      const [k, ...v] = kv.trim().split("=");
+      return [k, v.join("=")];
+    }),
+  );
+  const ts = parts.ts;
+  const v1 = parts.v1;
+  if (!ts || !v1) return false;
+
+  const template = `id:${dataId};request-id:${requestId};ts:${ts};`;
+  const expected = crypto.createHmac("sha256", secret).update(template).digest("hex");
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(v1, "hex"));
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Webhook Mercado Pago — recebe IPN (Instant Payment Notification).
  *
  * Segurança:
@@ -54,6 +96,12 @@ export async function POST(request: NextRequest) {
     // MP pode enviar teste de conexão
     if (type === "test") {
       return NextResponse.json({ status: "ok" });
+    }
+
+    // Validação HMAC — bloqueia webhooks forjados
+    if (!verifyMpSignature(request, data?.id ? String(data.id) : undefined)) {
+      console.error("[mercadopago] Assinatura inválida — webhook rejeitado");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // === PREAPPROVAL (Assinaturas) ===
@@ -381,7 +429,8 @@ async function handlePreapproval(preapprovalId: string, action?: string) {
     const externalRef = data.external_reference ?? "";
     const payerEmail = data.payer_email?.toLowerCase() ?? null;
     const planAmount = data.auto_recurring?.transaction_amount ?? 0;
-    const frequencyType = data.auto_recurring?.frequency_type; // months | years
+    const frequency = data.auto_recurring?.frequency ?? 1;
+    const frequencyType = data.auto_recurring?.frequency_type ?? "months";
 
     const { tenantId: refTenantId, planType, hasBump } = parseExternalReference(externalRef);
 
@@ -415,11 +464,17 @@ async function handlePreapproval(preapprovalId: string, action?: string) {
       return NextResponse.json({ status: "ok", warning: "tenant_not_found" });
     }
 
-    // Calcular current_period_end baseado na frequência
+    // Calcular current_period_end baseado em frequency + frequency_type.
+    // MP aceita oficialmente "months" e "days". Anual = frequency:12 + type:months.
     const now = new Date();
     const periodEnd = new Date(now);
-    if (frequencyType === "years") {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    if (frequencyType === "months") {
+      periodEnd.setMonth(periodEnd.getMonth() + frequency);
+    } else if (frequencyType === "days") {
+      periodEnd.setDate(periodEnd.getDate() + frequency);
+    } else if (frequencyType === "years") {
+      // fallback para setups antigos (não é oficialmente aceito pelo MP)
+      periodEnd.setFullYear(periodEnd.getFullYear() + frequency);
     } else {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
     }

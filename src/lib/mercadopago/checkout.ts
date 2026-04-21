@@ -119,6 +119,12 @@ export async function createPreApprovalPlan(opts: {
 
     const preapproval = getPreApproval();
 
+    // MP PreApproval só aceita frequency_type = "days" ou "months".
+    // Anual = 12 meses. Mensal = 1 mês.
+    const frequency = opts.planType === "anual" ? 12 : 1;
+
+    // notification_url de PreApproval é configurado no painel do MP
+    // (Suas integrações → Webhooks), não no payload como em Preference.
     const result = await preapproval.create({
       body: {
         reason: plan.title,
@@ -126,8 +132,8 @@ export async function createPreApprovalPlan(opts: {
         payer_email: opts.email,
         back_url: `${SITE_URL}/compra-concluida`,
         auto_recurring: {
-          frequency: 1,
-          frequency_type: opts.planType === "anual" ? "years" : "months",
+          frequency,
+          frequency_type: "months",
           transaction_amount: plan.price,
           currency_id: "BRL",
         },
