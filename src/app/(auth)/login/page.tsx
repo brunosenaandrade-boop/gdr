@@ -13,12 +13,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setNeedsConfirmation(false);
     setLoading(true);
 
     const supabase = createClient();
@@ -28,12 +30,22 @@ export default function LoginPage() {
     });
 
     if (authError) {
-      setError("Email ou senha incorretos");
+      const msg = authError.message?.toLowerCase() ?? "";
+      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        setNeedsConfirmation(true);
+      } else if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+        setError("Email ou senha incorretos");
+      } else {
+        setError(authError.message || "Não foi possível entrar. Tente novamente.");
+      }
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
+    // setLoading(false) antes de navegar pra não travar o botão em caso
+    // de redirect intermediário do middleware (ex.: /verificar-email).
+    setLoading(false);
+    router.replace("/dashboard");
   }
 
   return (
@@ -67,6 +79,36 @@ export default function LoginPage() {
         />
 
         {error && <p className="text-sm text-red-400">{error}</p>}
+
+        {needsConfirmation && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+            <p className="text-amber-300 font-medium mb-1">Confirme seu email antes de entrar</p>
+            <p className="text-xs text-amber-200/80 leading-relaxed">
+              Enviamos um link de confirmação para <span className="font-semibold">{email}</span>.
+              Verifique sua caixa de entrada e a pasta de spam.
+            </p>
+            <button
+              type="button"
+              onClick={async () => {
+                setError("");
+                setLoading(true);
+                const supabase = createClient();
+                const { error: resendErr } = await supabase.auth.resend({ type: "signup", email });
+                setLoading(false);
+                if (resendErr) {
+                  setError("Não foi possível reenviar. Tente novamente em alguns minutos.");
+                  setNeedsConfirmation(false);
+                } else {
+                  setError("");
+                }
+              }}
+              className="mt-2 text-xs text-amber-200 underline underline-offset-2 hover:text-amber-100"
+              disabled={loading || !email}
+            >
+              Reenviar email de confirmação
+            </button>
+          </div>
+        )}
 
         <div className="flex justify-end">
           <Link href="/esqueci-senha" className="text-xs text-slate-500 hover:text-emerald-400 transition-colors">

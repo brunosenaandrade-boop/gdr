@@ -1,0 +1,199 @@
+<!--
+  Guarda Dinheiro — Template "Confirm signup" pro Supabase Auth
+  Cole este HTML em: Supabase Dashboard → Authentication → Email Templates → Confirm signup
+
+  Variáveis Supabase:
+    {{ .ConfirmationURL }}  link de confirmação (obrigatório)
+    {{ .Email }}            email do destinatário
+    {{ .SiteURL }}          URL base do site
+
+  Design inspirado em src/lib/email/templates/base-layout.tsx (emails transacionais).
+  Bulletproof button com MSO fallback pra Outlook. Max-width 600px. Tabelas em
+  vez de flexbox pra compatibilidade com Gmail/Outlook/Apple Mail.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="pt-BR" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="supported-color-schemes" content="dark light" />
+  <title>Confirme seu email — Guarda Dinheiro</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style>
+    table, td, div, h1, p { font-family: Arial, sans-serif !important; }
+  </style>
+  <![endif]-->
+  <style>
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .px-responsive { padding-left: 24px !important; padding-right: 24px !important; }
+      .hero-title { font-size: 24px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;">
+
+  <!-- Preheader (texto da preview na inbox) -->
+  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#000000;opacity:0;">
+    Só falta um clique pra ativar sua conta e começar a controlar suas finanças no WhatsApp.
+    &#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;&#8204;&nbsp;
+  </div>
+
+  <!-- Wrapper externo -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#000000;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <!-- Card principal -->
+        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#0f0f0f;border-radius:16px;border:1px solid rgba(255,255,255,0.1);overflow:hidden;">
+
+          <!-- Header com logo -->
+          <tr>
+            <td align="center" style="padding:40px 40px 28px;border-bottom:1px solid rgba(255,255,255,0.08);">
+              <!-- Escudo (CSS puro, coerente com favicon do site) -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 14px;">
+                <tr>
+                  <td align="center" valign="middle" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#34D399,#059669);background-color:#10B981;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                      <tr>
+                        <td align="center" valign="middle" style="width:28px;height:32px;border:3px solid #ffffff;border-radius:4px 4px 14px 14px;">
+                          <div style="width:8px;height:8px;background-color:#ffffff;border-radius:50%;margin:0 auto;font-size:0;line-height:0;">&nbsp;</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <div style="color:#10B981;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+                Guarda Dinheiro
+              </div>
+            </td>
+          </tr>
+
+          <!-- Hero -->
+          <tr>
+            <td class="px-responsive" style="padding:40px 40px 8px;">
+              <h1 class="hero-title" style="color:#F1F5F9;font-size:28px;font-weight:700;margin:0 0 12px;letter-spacing:-0.5px;line-height:1.25;">
+                Confirme seu email
+              </h1>
+              <p style="color:#94A3B8;font-size:16px;line-height:1.6;margin:0 0 8px;">
+                Quase lá. Pra ativar sua conta no <strong style="color:#E2E8F0;">Guarda Dinheiro</strong> e começar a controlar suas finanças pelo WhatsApp, basta um clique:
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA Button bulletproof -->
+          <tr>
+            <td class="px-responsive" align="center" style="padding:28px 40px 12px;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ .ConfirmationURL }}" style="height:54px;v-text-anchor:middle;width:280px;" arcsize="100%" strokecolor="#059669" fillcolor="#10B981">
+                <w:anchorlock/>
+                <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;">Confirmar meu email</center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-- -->
+              <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:16px 44px;background:linear-gradient(135deg,#059669,#10B981);background-color:#10B981;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;border-radius:9999px;letter-spacing:-0.2px;box-shadow:0 4px 16px rgba(16,185,129,0.3);">
+                Confirmar meu email
+              </a>
+              <!--<![endif]-->
+            </td>
+          </tr>
+
+          <!-- Fallback link -->
+          <tr>
+            <td class="px-responsive" style="padding:16px 40px 0;">
+              <p style="color:#64748B;font-size:13px;line-height:1.6;margin:0 0 6px;">
+                Botão não funcionou? Copie e cole este link no navegador:
+              </p>
+              <p style="margin:0;word-break:break-all;">
+                <a href="{{ .ConfirmationURL }}" style="color:#34D399;font-size:12px;text-decoration:underline;line-height:1.5;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td class="px-responsive" style="padding:32px 40px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-top:1px solid rgba(255,255,255,0.08);height:1px;line-height:1px;font-size:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- O que vem depois -->
+          <tr>
+            <td class="px-responsive" style="padding:24px 40px 0;">
+              <p style="color:#E2E8F0;font-size:14px;font-weight:600;margin:0 0 12px;">
+                Depois de confirmar, você pode:
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:22px;color:#10B981;font-size:14px;vertical-align:top;padding-bottom:8px;">●</td>
+                  <td style="color:#94A3B8;font-size:14px;line-height:1.6;padding-bottom:8px;">Registrar gastos pelo WhatsApp em 5 segundos</td>
+                </tr>
+                <tr>
+                  <td style="width:22px;color:#10B981;font-size:14px;vertical-align:top;padding-bottom:8px;">●</td>
+                  <td style="color:#94A3B8;font-size:14px;line-height:1.6;padding-bottom:8px;">Ver dashboard completo com gráficos e relatórios</td>
+                </tr>
+                <tr>
+                  <td style="width:22px;color:#10B981;font-size:14px;vertical-align:top;padding-bottom:8px;">●</td>
+                  <td style="color:#94A3B8;font-size:14px;line-height:1.6;padding-bottom:8px;">Conversar com a IA pra consultar saldos e dúvidas</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Security note -->
+          <tr>
+            <td class="px-responsive" style="padding:28px 40px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:12px;">
+                <tr>
+                  <td style="padding:14px 18px;">
+                    <p style="color:#86EFAC;font-size:13px;line-height:1.6;margin:0;">
+                      <span style="display:inline-block;margin-right:6px;">🔒</span>
+                      Este link é válido por 24 horas e só pode ser usado uma vez. Se não foi você que criou a conta, pode ignorar este email com segurança.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:36px 40px 32px;border-top:1px solid rgba(255,255,255,0.08);margin-top:32px;">
+              <p style="color:#64748B;font-size:12px;margin:0 0 6px;line-height:1.5;">
+                <strong style="color:#94A3B8;">Guarda Dinheiro</strong> — Seu assistente financeiro no WhatsApp
+              </p>
+              <p style="color:#475569;font-size:11px;margin:0 0 6px;line-height:1.6;">
+                <a href="https://www.guardadinheiro.com.br" style="color:#475569;text-decoration:none;">guardadinheiro.com.br</a>
+                &nbsp;·&nbsp;
+                <a href="mailto:contato@guardadinheiro.com.br" style="color:#475569;text-decoration:none;">contato@guardadinheiro.com.br</a>
+              </p>
+              <p style="color:#334155;font-size:10px;margin:12px 0 0;line-height:1.5;">
+                Email enviado para {{ .Email }} porque uma conta foi criada no Guarda Dinheiro.
+                <br />
+                Em conformidade com a LGPD (Lei 13.709/2018).
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
